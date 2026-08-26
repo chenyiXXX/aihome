@@ -209,31 +209,34 @@ export const DualColumnDiff: React.FC<DualColumnDiffProps> = ({
         </div>
 
         {/* Version Pickers Header */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 min-w-0">
           {/* Left Version Selector */}
-          <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
-                <span>基准版本 (左侧/旧版本)</span>
+          <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2 min-w-0 overflow-hidden">
+            <div className="flex items-center justify-between text-xs min-w-0">
+              <span className="font-bold text-slate-700 flex items-center gap-1.5 truncate">
+                <span className="w-2 h-2 rounded-full bg-rose-500 inline-block shrink-0"></span>
+                <span className="truncate">基准版本 (左侧/旧版本)</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">
+              <span className="text-[10px] text-slate-400 font-mono shrink-0 ml-2">
                 {leftItem?.timestamp || '初始记录'}
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <select
-                value={leftVersionId}
-                onChange={(e) => onSelectLeftVersion(e.target.value)}
-                className="flex-1 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-slate-400/20 focus:border-slate-400 shadow-2xs"
-              >
-                {versionOptions.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.version} - {v.label} ({v.timestamp})
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2 w-full min-w-0">
+              <div className="flex-1 min-w-0">
+                <select
+                  value={leftVersionId}
+                  onChange={(e) => onSelectLeftVersion(e.target.value)}
+                  title={leftItem ? `${leftItem.version} - ${leftItem.label} (${leftItem.timestamp})` : ''}
+                  className="w-full min-w-0 max-w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-slate-400/20 focus:border-slate-400 shadow-2xs truncate cursor-pointer"
+                >
+                  {versionOptions.map((v) => (
+                    <option key={v.id} value={v.id} title={`${v.version} - ${v.label} (${v.timestamp})`}>
+                      {v.version} - {v.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {onRollbackToVersion && leftItem && leftItem.id !== 'current' && (
                 <button
@@ -248,9 +251,9 @@ export const DualColumnDiff: React.FC<DualColumnDiffProps> = ({
               )}
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
-              <span>操作人: {leftItem?.operator} {leftItem?.operatorRole ? `(${leftItem.operatorRole})` : ''}</span>
-              <span className={`px-1.5 py-0.2 text-[10px] font-bold rounded ${
+            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5 min-w-0">
+              <span className="truncate">操作人: {leftItem?.operator} {leftItem?.operatorRole ? `(${leftItem.operatorRole})` : ''}</span>
+              <span className={`px-1.5 py-0.2 text-[10px] font-bold rounded shrink-0 ml-2 ${
                 leftItem?.status === '已发布'
                   ? 'bg-emerald-50 text-emerald-700'
                   : leftItem?.status === '等待复核'
@@ -263,29 +266,32 @@ export const DualColumnDiff: React.FC<DualColumnDiffProps> = ({
           </div>
 
           {/* Right Version Selector */}
-          <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                <span>比对目标版本 (右侧/新版本)</span>
+          <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2 min-w-0 overflow-hidden">
+            <div className="flex items-center justify-between text-xs min-w-0">
+              <span className="font-bold text-slate-700 flex items-center gap-1.5 truncate">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block shrink-0"></span>
+                <span className="truncate">比对目标版本 (右侧/新版本)</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">
+              <span className="text-[10px] text-slate-400 font-mono shrink-0 ml-2">
                 {rightItem?.timestamp || '最新'}
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <select
-                value={rightVersionId}
-                onChange={(e) => onSelectRightVersion(e.target.value)}
-                className="flex-1 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-slate-400/20 focus:border-slate-400 shadow-2xs"
-              >
-                {versionOptions.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.version} - {v.label} ({v.timestamp})
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2 w-full min-w-0">
+              <div className="flex-1 min-w-0">
+                <select
+                  value={rightVersionId}
+                  onChange={(e) => onSelectRightVersion(e.target.value)}
+                  title={rightItem ? `${rightItem.version} - ${rightItem.label} (${rightItem.timestamp})` : ''}
+                  className="w-full min-w-0 max-w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-slate-400/20 focus:border-slate-400 shadow-2xs truncate cursor-pointer"
+                >
+                  {versionOptions.map((v) => (
+                    <option key={v.id} value={v.id} title={`${v.version} - ${v.label} (${v.timestamp})`}>
+                      {v.version} - {v.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {onRollbackToVersion && rightItem && rightItem.id !== 'current' && (
                 <button
@@ -300,9 +306,9 @@ export const DualColumnDiff: React.FC<DualColumnDiffProps> = ({
               )}
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
-              <span>操作人: {rightItem?.operator} {rightItem?.operatorRole ? `(${rightItem.operatorRole})` : ''}</span>
-              <span className={`px-1.5 py-0.2 text-[10px] font-bold rounded ${
+            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5 min-w-0">
+              <span className="truncate">操作人: {rightItem?.operator} {rightItem?.operatorRole ? `(${rightItem.operatorRole})` : ''}</span>
+              <span className={`px-1.5 py-0.2 text-[10px] font-bold rounded shrink-0 ml-2 ${
                 rightItem?.status === '已发布'
                   ? 'bg-emerald-50 text-emerald-700'
                   : rightItem?.status === '等待复核'

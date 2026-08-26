@@ -277,7 +277,7 @@ export const initialKBArticles: KBArticle[] = [
   // 1. 基础知识库 / 品牌实力
   {
     id: 'KB-BRAND-01',
-    title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络.pdf',
+    title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络',
     category: '基础知识库 / 品牌实力',
     code: 'KB-BRAND-2026-01',
     version: 'v2.4.0',
@@ -304,7 +304,7 @@ export const initialKBArticles: KBArticle[] = [
         reviewComment: '已核验2026年度最新12万平智造基地产线扩建数据与FSC/ISO14001环保全链条认证，数据准确完备，同意发布。',
         diffSummary: '版本晋升为 v2.4.0，补充2026年最新50,000+全球豪宅工程交付案例与ISO14001认证',
         beforeSnapshot: {
-          title: '品爱家居 2008-2025 发展历程与全球 80+ 国家外贸网络.pdf',
+          title: '品爱家居 2008-2025 发展历程与全球 80+ 国家外贸网络',
           version: 'v2.2.0',
           status: '已发布',
           category: '基础知识库 / 品牌实力',
@@ -312,7 +312,7 @@ export const initialKBArticles: KBArticle[] = [
           content: '品爱家居成立于2008年，拥有8万平方米标准制造生产车间，引进数控开料机与封边机。业务辐射中东、北美、东南亚等全球80多个国家，服务超过30,000+海内外业主，具备ISO9001认证。'
         },
         afterSnapshot: {
-          title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络.pdf',
+          title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络',
           version: 'v2.4.0',
           status: '已发布',
           category: '基础知识库 / 品牌实力',
@@ -332,7 +332,7 @@ export const initialKBArticles: KBArticle[] = [
         wasPublished: false,
         diffSummary: '将基地面积从8万㎡更新为12万㎡，全球交付国由80+扩增至100+，增加德国豪迈HOMAG柔性线标定',
         beforeSnapshot: {
-          title: '品爱家居 2008-2025 发展历程与全球 80+ 国家外贸网络.pdf',
+          title: '品爱家居 2008-2025 发展历程与全球 80+ 国家外贸网络',
           version: 'v2.2.0',
           status: '已发布',
           category: '基础知识库 / 品牌实力',
@@ -340,7 +340,7 @@ export const initialKBArticles: KBArticle[] = [
           content: '品爱家居成立于2008年，拥有8万平方米标准制造生产车间，引进数控开料机与封边机。业务辐射中东、北美、东南亚等全球80多个国家，服务超过30,000+海内外业主，具备ISO9001认证。'
         },
         afterSnapshot: {
-          title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络.pdf',
+          title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络',
           version: 'v2.3.0',
           status: '等待复核',
           category: '基础知识库 / 品牌实力',
@@ -360,7 +360,7 @@ export const initialKBArticles: KBArticle[] = [
         wasPublished: true,
         diffSummary: '系统首次录入品爱外贸品牌历史与基本生产交付资质',
         afterSnapshot: {
-          title: '品爱家居发展历程与外贸网络.pdf',
+          title: '品爱家居发展历程与外贸网络',
           version: 'v1.0.0',
           status: '已发布',
           category: '基础知识库 / 品牌实力',
@@ -372,7 +372,7 @@ export const initialKBArticles: KBArticle[] = [
   },
   {
     id: 'KB-BRAND-02',
-    title: '品爱工业4.0智能制造基地与德国豪迈HOMAG柔性生产线白皮书.docx',
+    title: '品爱工业4.0智能制造基地与德国豪迈HOMAG柔性生产线白皮书',
     category: '基础知识库 / 品牌实力',
     code: 'KB-BRAND-2026-02',
     version: 'v2.2.0',
@@ -399,7 +399,7 @@ export const initialKBArticles: KBArticle[] = [
         reviewComment: '激光无缝封边加工公差±0.3mm与CAD/CAM直通接口参数核验通过，予以发布上线。',
         diffSummary: '升级封边加工公差标准由±0.5mm提升至±0.3mm，新增激光无缝封边技术指标',
         beforeSnapshot: {
-          title: '品爱工业智造基地与柔性生产线白皮书.docx',
+          title: '品爱工业智造基地与柔性生产线白皮书',
           version: 'v2.0.0',
           status: '已发布',
           category: '基础知识库 / 品牌实力',
@@ -407,7 +407,7 @@ export const initialKBArticles: KBArticle[] = [
           content: '工厂配备4条自动封边机及板件分拣仓。加工公差控制在±0.5mm以内，日均产能800标准柜体单元。'
         },
         afterSnapshot: {
-          title: '品爱工业4.0智能制造基地与德国豪迈HOMAG柔性生产线白皮书.docx',
+          title: '品爱工业4.0智能制造基地与德国豪迈HOMAG柔性生产线白皮书',
           version: 'v2.2.0',
           status: '已发布',
           category: '基础知识库 / 品牌实力',
@@ -421,7 +421,7 @@ export const initialKBArticles: KBArticle[] = [
   // 2. 基础知识库 / 产品与技术百科 / 产品百科 / 柜类
   {
     id: 'KB-SERIES-01',
-    title: '2026年度意式极简「米兰晨曦」全屋高端定制系列手册.pdf',
+    title: '2026年度意式极简「米兰晨曦」全屋高端定制系列手册',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
     code: 'KB-SERIES-MILAN-01',
     version: 'v2.3.0',
@@ -437,7 +437,7 @@ export const initialKBArticles: KBArticle[] = [
   },
   {
     id: 'KB-SERIES-02',
-    title: '新中式「东方印月」原木整装系列结构与选配工艺指南.docx',
+    title: '新中式「东方印月」原木整装系列结构与选配工艺指南',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
     code: 'KB-SERIES-ORIENTAL-02',
     version: 'v1.8.0',
@@ -455,7 +455,7 @@ export const initialKBArticles: KBArticle[] = [
   // 3. 基础知识库 / 产品与技术百科 / 产品百科 / 柜类
   {
     id: 'KB-BRAND-HARDWARE-01',
-    title: '品爱PinAi与国际五金联名品牌（Blum百隆/海蒂诗/萨利切）供应链名录.xlsx',
+    title: '品爱PinAi与国际五金联名品牌（Blum百隆/海蒂诗/萨利切）供应链名录',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
     code: 'KB-BRAND-BLUM-01',
     version: 'v2.5.0',
@@ -471,7 +471,7 @@ export const initialKBArticles: KBArticle[] = [
   },
   {
     id: 'KB-BRAND-PANEL-02',
-    title: '进口克诺斯邦（Kronospan）与爱格（EGGER）原厂正品溯源及授权书.pdf',
+    title: '进口克诺斯邦（Kronospan）与爱格（EGGER）原厂正品溯源及授权书',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
     code: 'KB-BRAND-EGGER-02',
     version: 'v2.0.0',
@@ -489,7 +489,7 @@ export const initialKBArticles: KBArticle[] = [
   // 4. 基础知识库 / 产品与技术百科 / 产品百科 / 柜类
   {
     id: 'KB-CABINET-01',
-    title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+    title: '出口美欧外贸全屋定制家具通用规格与板材标准',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
     code: 'KB-FUR-2026-01',
     version: 'v2.4.0',
@@ -519,7 +519,7 @@ export const initialKBArticles: KBArticle[] = [
         reviewComment: '符合美欧外贸全屋柜体出口标准，环保检测指标完备，予以正式发布上线。',
         diffSummary: '复核通过，状态变更为【已发布】，版本号晋升为 v2.4.0',
         beforeSnapshot: {
-          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准',
           version: 'v2.3.0',
           status: '等待复核',
           category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
@@ -527,7 +527,7 @@ export const initialKBArticles: KBArticle[] = [
           tags: ['空间: 步入式衣帽间', '环保等级: E1级环保']
         },
         afterSnapshot: {
-          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准',
           version: 'v2.4.0',
           status: '已发布',
           category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
@@ -547,7 +547,7 @@ export const initialKBArticles: KBArticle[] = [
         wasPublished: false,
         diffSummary: '升级环保等级至E0/CARB P2标准，将柜体厚度从16mm加厚为18mm，添加防尘盖规范',
         beforeSnapshot: {
-          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准',
           version: 'v2.3.0',
           status: '已发布',
           category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
@@ -555,7 +555,7 @@ export const initialKBArticles: KBArticle[] = [
           tags: ['空间: 步入式衣帽间', '环保等级: E1级环保']
         },
         afterSnapshot: {
-          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准',
           version: 'v2.3.0',
           status: '等待复核',
           category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
@@ -575,7 +575,7 @@ export const initialKBArticles: KBArticle[] = [
         wasPublished: true,
         diffSummary: '首次录入美欧板材与柜体通用尺寸规范文档',
         afterSnapshot: {
-          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准',
           version: 'v1.0.0',
           status: '已发布',
           category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
@@ -587,7 +587,7 @@ export const initialKBArticles: KBArticle[] = [
   },
   {
     id: 'KB-CABINET-02',
-    title: '全屋定制橱柜与步入式衣帽间收纳模数与内部功能五金安装规范.docx',
+    title: '全屋定制橱柜与步入式衣帽间收纳模数与内部功能五金安装规范',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
     code: 'KB-CABINET-MOD-02',
     version: 'v2.1.0',
@@ -605,7 +605,7 @@ export const initialKBArticles: KBArticle[] = [
   // 5. 基础知识库 / 产品与技术百科 / 产品百科 / 门墙
   {
     id: 'KB-WALL-01',
-    title: '外贸定制门墙一体化技术深化与金属收口规范.docx',
+    title: '外贸定制门墙一体化技术深化与金属收口规范',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 门墙',
     code: 'KB-WALL-2026-02',
     version: 'v2.2.0',
@@ -621,7 +621,7 @@ export const initialKBArticles: KBArticle[] = [
   },
   {
     id: 'KB-WALL-02',
-    title: '极简隐形门与碳晶木饰面护墙干挂铝合金龙骨施工节点图解.pdf',
+    title: '极简隐形门与碳晶木饰面护墙干挂铝合金龙骨施工节点图解',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 门墙',
     code: 'KB-WALL-NODE-02',
     version: 'v1.9.0',
@@ -639,7 +639,7 @@ export const initialKBArticles: KBArticle[] = [
   // 6. 基础知识库 / 产品与技术百科 / 产品百科 / 门窗
   {
     id: 'KB-WINDOW-01',
-    title: '断桥铝系统门窗外贸出口欧标CE认证与抗风压水密性检测报告.pdf',
+    title: '断桥铝系统门窗外贸出口欧标CE认证与抗风压水密性检测报告',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 门窗',
     code: 'KB-WIN-CE-01',
     version: 'v2.0.0',
@@ -657,7 +657,7 @@ export const initialKBArticles: KBArticle[] = [
   // 7. 基础知识库 / 产品与技术百科 / 产品百科 / 全卫
   {
     id: 'KB-BATH-01',
-    title: '防潮多层实木智能浴室柜与一体化岩板台盆定制技术指南.docx',
+    title: '防潮多层实木智能浴室柜与一体化岩板台盆定制技术指南',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 全卫',
     code: 'KB-BATH-VANITY-01',
     version: 'v2.1.0',
@@ -675,7 +675,7 @@ export const initialKBArticles: KBArticle[] = [
   // 8. 基础知识库 / 产品与技术百科 / 产品百科 / 智能对接
   {
     id: 'KB-SMART-01',
-    title: '智能家居Zigbee/Tuya协议在全屋定制感应灯带与电动升降柜中的集成规范.docx',
+    title: '智能家居Zigbee/Tuya协议在全屋定制感应灯带与电动升降柜中的集成规范',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 智能对接',
     code: 'KB-SMART-IOT-01',
     version: 'v1.9.0',
@@ -693,7 +693,7 @@ export const initialKBArticles: KBArticle[] = [
   // 9. 基础知识库 / 产品与技术百科 / 产品组合 / 按低中高端
   {
     id: 'KB-TIER-01',
-    title: '全屋定制经济型/舒适型/奢华型三大梯度材料配置与报价梯队对照表.xlsx',
+    title: '全屋定制经济型/舒适型/奢华型三大梯度材料配置与报价梯队对照表',
     category: '基础知识库 / 产品与技术百科 / 产品组合 / 按低中高端',
     code: 'KB-TIER-MATRIX-01',
     version: 'v2.2.0',
@@ -711,7 +711,7 @@ export const initialKBArticles: KBArticle[] = [
   // 10. 基础知识库 / 产品与技术百科 / 产品组合 / 按风格
   {
     id: 'KB-STYLE-COMBO-01',
-    title: '主流外贸出海全屋定制六大风格（地中海/现代简约/意式极简等）搭配清单.pdf',
+    title: '主流外贸出海全屋定制六大风格（地中海/现代简约/意式极简等）搭配清单',
     category: '基础知识库 / 产品与技术百科 / 产品组合 / 按风格',
     code: 'KB-COMBO-STYLE-01',
     version: 'v2.3.0',
@@ -729,7 +729,7 @@ export const initialKBArticles: KBArticle[] = [
   // 11. 基础知识库 / 产品与技术百科 / 产品组合 / 按预算
   {
     id: 'KB-BUDGET-01',
-    title: '外贸工程单按总价预算（$10K/$30K/$80K+）全屋柜体与门墙配比推荐方案.xlsx',
+    title: '外贸工程单按总价预算（$10K/$30K/$80K+）全屋柜体与门墙配比推荐方案',
     category: '基础知识库 / 产品与技术百科 / 产品组合 / 按预算',
     code: 'KB-COMBO-BUDGET-01',
     version: 'v2.0.0',
@@ -747,7 +747,7 @@ export const initialKBArticles: KBArticle[] = [
   // 12. 基础知识库 / 产品与技术百科 / 产品组合 / 按户型分类 / 按色系
   {
     id: 'KB-COLOR-COMBO-01',
-    title: '全屋定制2026流行色系（暖色调/冷色调/大地暖灰/莫兰迪绿）色卡与样块指南.pdf',
+    title: '全屋定制2026流行色系（暖色调/冷色调/大地暖灰/莫兰迪绿）色卡与样块指南',
     category: '基础知识库 / 产品与技术百科 / 产品组合 / 按户型分类 / 按色系',
     code: 'KB-COMBO-COLOR-01',
     version: 'v2.1.0',
@@ -765,7 +765,7 @@ export const initialKBArticles: KBArticle[] = [
   // 13. 基础知识库 / 空间设计与美学案例库 / 按户型
   {
     id: 'KB-SPACE-LAYOUT-01',
-    title: '大平层豪宅（200-500㎡）全屋动线规划与开放式客餐厅定制方案.pdf',
+    title: '大平层豪宅（200-500㎡）全屋动线规划与开放式客餐厅定制方案',
     category: '基础知识库 / 空间设计与美学案例库 / 按户型',
     code: 'KB-SPACE-LAYOUT-01',
     version: 'v2.2.0',
@@ -783,7 +783,7 @@ export const initialKBArticles: KBArticle[] = [
   // 14. 基础知识库 / 空间设计与美学案例库 / 按风格
   {
     id: 'KB-SPACE-STYLE-01',
-    title: '地中海浪漫风情与海景度假别墅整屋定制落地实景图鉴.pdf',
+    title: '地中海浪漫风情与海景度假别墅整屋定制落地实景图鉴',
     category: '基础知识库 / 空间设计与美学案例库 / 按风格',
     code: 'KB-SPACE-STYLE-01',
     version: 'v2.4.0',
@@ -801,7 +801,7 @@ export const initialKBArticles: KBArticle[] = [
   // 15. 基础知识库 / 空间设计与美学案例库 / 按色系
   {
     id: 'KB-SPACE-COLOR-01',
-    title: '经典冷色调与黑白灰极简工业风全屋定制配色与灯光氛围指引.pdf',
+    title: '经典冷色调与黑白灰极简工业风全屋定制配色与灯光氛围指引',
     category: '基础知识库 / 空间设计与美学案例库 / 按色系',
     code: 'KB-SPACE-COLOR-01',
     version: 'v1.9.0',
@@ -819,7 +819,7 @@ export const initialKBArticles: KBArticle[] = [
   // 16. 基础知识库 / 空间设计与美学案例库 / 业主真实案例
   {
     id: 'KB-105',
-    title: '迪拜帆船酒店海景公寓 480㎡ 全屋定制落地美学案例.pdf',
+    title: '迪拜帆船酒店海景公寓 480㎡ 全屋定制落地美学案例',
     category: '基础知识库 / 空间设计与美学案例库 / 业主真实案例',
     code: 'KB-CASE-2026-08',
     version: 'v2.0.0',
@@ -835,7 +835,7 @@ export const initialKBArticles: KBArticle[] = [
   },
   {
     id: 'KB-CASE-02',
-    title: '悉尼海湾独栋别墅 620㎡ 全案全屋定制海运与海外工人组装全纪实.pdf',
+    title: '悉尼海湾独栋别墅 620㎡ 全案全屋定制海运与海外工人组装全纪实',
     category: '基础知识库 / 空间设计与美学案例库 / 业主真实案例',
     code: 'KB-CASE-SYDNEY-02',
     version: 'v2.2.0',
@@ -853,7 +853,7 @@ export const initialKBArticles: KBArticle[] = [
   // 17. 销售话术 / 跟进阶段话术 / 第一阶段：首次进店/咨询（破冰建信）
   {
     id: 'KB-103',
-    title: '首次进店/线上咨询破冰话术：3分钟建立信任与需求画像.docx',
+    title: '首次进店/线上咨询破冰话术：3分钟建立信任与需求画像',
     category: '销售话术 / 跟进阶段话术 / 第一阶段：首次进店/咨询（破冰建信）',
     code: 'KB-SALES-STAGE-01',
     version: 'v2.1.0',
@@ -869,7 +869,7 @@ export const initialKBArticles: KBArticle[] = [
   },
   {
     id: 'KB-STAGE-1-WHATSAPP',
-    title: '海外WhatsApp与官网LiveChat进线10秒黄金首问与客户甄别话术.docx',
+    title: '海外WhatsApp与官网LiveChat进线10秒黄金首问与客户甄别话术',
     category: '销售话术 / 跟进阶段话术 / 第一阶段：首次进店/咨询（破冰建信）',
     code: 'KB-STAGE-1-CHAT',
     version: 'v2.3.0',
@@ -887,7 +887,7 @@ export const initialKBArticles: KBArticle[] = [
   // 18. 销售话术 / 跟进阶段话术 / 第二阶段：上门初测/复尺（痛点挖掘）
   {
     id: 'KB-STAGE-2-01',
-    title: '外贸CAD图纸初审与海外现场激光测距复尺沟通专业话术清单.docx',
+    title: '外贸CAD图纸初审与海外现场激光测距复尺沟通专业话术清单',
     category: '销售话术 / 跟进阶段话术 / 第二阶段：上门初测/复尺（痛点挖掘）',
     code: 'KB-STAGE-02-SURVEY',
     version: 'v2.0.0',
@@ -905,7 +905,7 @@ export const initialKBArticles: KBArticle[] = [
   // 19. 销售话术 / 跟进阶段话术 / 第三阶段：方案讲解/出图（美学引导）
   {
     id: 'KB-STAGE-3-01',
-    title: '3D云渲染效果图远程在线投屏讲解与高级感美学引导话术模板.docx',
+    title: '3D云渲染效果图远程在线投屏讲解与高级感美学引导话术模板',
     category: '销售话术 / 跟进阶段话术 / 第三阶段：方案讲解/出图（美学引导）',
     code: 'KB-STAGE-03-3D',
     version: 'v2.2.0',
@@ -923,7 +923,7 @@ export const initialKBArticles: KBArticle[] = [
   // 20. 销售话术 / 跟进阶段话术 / 第四阶段：逼单与谈判（临门一脚）
   {
     id: 'KB-STAGE-4-01',
-    title: '外贸大客户海运订舱截止日前限时锁价与定金支付逼单话术.docx',
+    title: '外贸大客户海运订舱截止日前限时锁价与定金支付逼单话术',
     category: '销售话术 / 跟进阶段话术 / 第四阶段：逼单与谈判（临门一脚）',
     code: 'KB-STAGE-04-CLOSE',
     version: 'v2.4.0',
@@ -941,7 +941,7 @@ export const initialKBArticles: KBArticle[] = [
   // 21. 销售话术 / 跟进阶段话术 / 第五阶段：沉寂客户激活（长尾唤醒）
   {
     id: 'KB-STAGE-5-01',
-    title: '海外沉睡客户30天/60天/90天多波次精准唤醒文案与展会邀请话术.docx',
+    title: '海外沉睡客户30天/60天/90天多波次精准唤醒文案与展会邀请话术',
     category: '销售话术 / 跟进阶段话术 / 第五阶段：沉寂客户激活（长尾唤醒）',
     code: 'KB-STAGE-05-WAKE',
     version: 'v1.9.0',
@@ -959,7 +959,7 @@ export const initialKBArticles: KBArticle[] = [
   // 22. 销售话术 / 销售实战、竞对与风险控制 / 竞争对手话术
   {
     id: 'KB-COMBAT-RIVAL-01',
-    title: '面对本地本土高价定制工坊 vs 品爱中国超级工厂性价比竞争截杀话术.docx',
+    title: '面对本地本土高价定制工坊 vs 品爱中国超级工厂性价比竞争截杀话术',
     category: '销售话术 / 销售实战、竞对与风险控制 / 竞争对手话术',
     code: 'KB-RIVAL-LOCAL-01',
     version: 'v2.2.0',
@@ -977,7 +977,7 @@ export const initialKBArticles: KBArticle[] = [
   // 23. 销售话术 / 销售实战、竞对与风险控制 / 算价公式、权限与合同法务
   {
     id: 'KB-104',
-    title: '外贸整柜定制阶梯报价折算法与外贸合同履约法务条例.xlsx',
+    title: '外贸整柜定制阶梯报价折算法与外贸合同履约法务条例',
     category: '销售话术 / 销售实战、竞对与风险控制 / 算价公式、权限与合同法务',
     code: 'KB-LEGAL-2026-04',
     version: 'v1.9.0',
@@ -995,7 +995,7 @@ export const initialKBArticles: KBArticle[] = [
   // 24. 销售话术 / 销售实战、竞对与风险控制 / 决策链攻防策略
   {
     id: 'KB-COMBAT-CHAIN-01',
-    title: '海外工程项目甲方业主、设计事务所主创与总包施工方多方利益平衡话术.docx',
+    title: '海外工程项目甲方业主、设计事务所主创与总包施工方多方利益平衡话术',
     category: '销售话术 / 销售实战、竞对与风险控制 / 决策链攻防策略',
     code: 'KB-CHAIN-DECISION-01',
     version: 'v2.1.0',
@@ -1013,7 +1013,7 @@ export const initialKBArticles: KBArticle[] = [
   // 25. 全球合规与文化红线/禁用话术库 / 法律法规与通用禁用词表
   {
     id: 'KB-108',
-    title: '欧盟与美国外贸广告宣传禁用词及反不当竞争合规清单.docx',
+    title: '欧盟与美国外贸广告宣传禁用词及反不当竞争合规清单',
     category: '全球合规与文化红线/禁用话术库 / 法律法规与通用禁用词表',
     code: 'KB-FORBIDDEN-LAWS-01',
     version: 'v2.0.0',
@@ -1031,7 +1031,7 @@ export const initialKBArticles: KBArticle[] = [
   // 26. 全球合规与文化红线/禁用话术库 / 分区域文化与宗教禁忌红线 / 中东/伊斯兰市场
   {
     id: 'KB-107',
-    title: '中东与海湾七国伊斯兰文化风俗与销售禁忌红线手册.docx',
+    title: '中东与海湾七国伊斯兰文化风俗与销售禁忌红线手册',
     category: '全球合规与文化红线/禁用话术库 / 分区域文化与宗教禁忌红线 / 中东/伊斯兰市场',
     code: 'KB-FORBIDDEN-MIDEAST-01',
     version: 'v1.5.0',
@@ -1049,7 +1049,7 @@ export const initialKBArticles: KBArticle[] = [
   // 27. 全球合规与文化红线/禁用话术库 / 分区域文化与宗教禁忌红线 / 欧美/北美市场
   {
     id: 'KB-FORBIDDEN-WEST-01',
-    title: '欧美市场禁用童工、强迫劳动合规溯源声明与FSC森林环保监管要求.pdf',
+    title: '欧美市场禁用童工、强迫劳动合规溯源声明与FSC森林环保监管要求',
     category: '全球合规与文化红线/禁用话术库 / 分区域文化与宗教禁忌红线 / 欧美/北美市场',
     code: 'KB-FORBIDDEN-WEST-01',
     version: 'v2.1.0',
@@ -1067,7 +1067,7 @@ export const initialKBArticles: KBArticle[] = [
   // 28. 全球合规与文化红线/禁用话术库 / 分区域文化与宗教禁忌红线 / 东南亚/东亚市场
   {
     id: 'KB-FORBIDDEN-ASIA-01',
-    title: '东南亚高湿热气候白蚁防虫防潮板材选型及当地风水禁忌指引.docx',
+    title: '东南亚高湿热气候白蚁防虫防潮板材选型及当地风水禁忌指引',
     category: '全球合规与文化红线/禁用话术库 / 分区域文化与宗教禁忌红线 / 东南亚/东亚市场',
     code: 'KB-FORBIDDEN-ASIA-01',
     version: 'v1.8.0',
@@ -1118,7 +1118,7 @@ export const initialKBArticles: KBArticle[] = [
   // 30. PPT文档：新品全屋定制方案发布与外贸培训PPT
   {
     id: 'KB-PPT-01',
-    title: '【培训PPT】2026米兰国际设计周全屋定制系列方案与高端选材推介.pptx',
+    title: '【培训PPT】2026米兰国际设计周全屋定制系列方案与高端选材推介',
     category: '销售话术与对齐百科 / 业务员标准跟进话术 / 方案讲解/出图（美学引导）',
     code: 'KB-PPT-MILAN-2026',
     version: 'v2.0.0',
@@ -1165,7 +1165,7 @@ export const initialKBArticles: KBArticle[] = [
   // 32. 国际贸易与海运交付术语
   {
     id: 'KB-GLOSSARY-TRADE-01',
-    title: '【词汇表】国际贸易海运与国际交付术语速查表 (Incoterms 2020 · FOB/CIF/DDP/EXW及海运装载术语).md',
+    title: '【词汇表】国际贸易海运与国际交付术语速查表 (Incoterms 2020 · FOB/CIF/DDP/EXW及海运装载术语)',
     category: '专业术语词汇表 / 国际贸易与海运交付术语 (Incoterms & Shipping)',
     code: 'KB-TERM-TRADE-01',
     version: 'v2.5.0',
@@ -1211,7 +1211,7 @@ export const initialKBArticles: KBArticle[] = [
   // 33. 家具定制、材质与五金工艺术语
   {
     id: 'KB-GLOSSARY-FURNITURE-02',
-    title: '【词汇表】全屋定制家具材质、板材基材与功能五金结构多语种术语库 (中/英/西/阿/德).md',
+    title: '【词汇表】全屋定制家具材质、板材基材与功能五金结构多语种术语库 (中/英/西/阿/德)',
     category: '专业术语词汇表 / 家具定制、材质与五金工艺术语 (Materials & Craft)',
     code: 'KB-TERM-FURN-02',
     version: 'v2.3.0',
@@ -1260,7 +1260,7 @@ export const initialKBArticles: KBArticle[] = [
   // 34. 国际支付、外汇与信用证术语
   {
     id: 'KB-GLOSSARY-PAYMENT-03',
-    title: '【词汇表】外贸国际结算、外汇金融与信用证(L/C)跟单标准术语释义表 (中英双语版).docx',
+    title: '【词汇表】外贸国际结算、外汇金融与信用证(L/C)跟单标准术语释义表 (中英双语版)',
     category: '专业术语词汇表 / 国际支付、外汇与信用证术语 (Payment & Financial)',
     code: 'KB-TERM-PAY-03',
     version: 'v2.1.0',
@@ -1308,7 +1308,7 @@ export const initialKBArticles: KBArticle[] = [
   // 35. 国际质量认证与绿色环保术语
   {
     id: 'KB-GLOSSARY-CERT-04',
-    title: '【词汇表】全球绿色环保、防虫抗火与家具质量检测认证术语与标准解析库.pdf',
+    title: '【词汇表】全球绿色环保、防虫抗火与家具质量检测认证术语与标准解析库',
     category: '专业术语词汇表 / 国际质量认证与绿色环保术语 (Certifications & Eco)',
     code: 'KB-TERM-CERT-04',
     version: 'v2.4.0',
@@ -1353,7 +1353,7 @@ export const initialKBArticles: KBArticle[] = [
   // 36. 外贸商务沟通与询盘报价术语
   {
     id: 'KB-GLOSSARY-COMM-05',
-    title: '【词汇表】外贸B2B商务洽谈、询盘跟进与交期客诉多语种高频术语对照表 (中/英/西/阿/俄).md',
+    title: '【词汇表】外贸B2B商务洽谈、询盘跟进与交期客诉多语种高频术语对照表 (中/英/西/阿/俄)',
     category: '专业术语词汇表 / 外贸商务沟通与询盘报价术语 (Business Inquiry & RFQ)',
     code: 'KB-TERM-RFQ-05',
     version: 'v2.0.0',
@@ -1394,7 +1394,7 @@ export const initialKBArticles: KBArticle[] = [
   // 37. 营销活动 / 限时促销与商务返点政策
   {
     id: 'KB-MKT-PROMO-01',
-    title: '【营销方案】2026海外工程样板房上样补贴与首单定金膨胀促销执行案.docx',
+    title: '【营销方案】2026海外工程样板房上样补贴与首单定金膨胀促销执行案',
     category: '营销活动 / 限时促销与商务返点政策 / 海外样板房/展厅上样补贴政策',
     code: 'KB-MKT-PROMO-01',
     version: 'v1.5.0',
@@ -1435,7 +1435,7 @@ export const initialKBArticles: KBArticle[] = [
   // 38. 营销活动 / 国际展会与海外招商专案
   {
     id: 'KB-MKT-EXPO-01',
-    title: '【展会邀约】第138届中国进出口商品交易会（广交会）外贸全屋定制海外客商专享签约礼包与邀约指南.pdf',
+    title: '【展会邀约】第138届中国进出口商品交易会（广交会）外贸全屋定制海外客商专享签约礼包与邀约指南',
     category: '营销活动 / 国际展会与海外招商专案 / 广交会 / 广州建博会专属邀约案',
     code: 'KB-MKT-EXPO-01',
     version: 'v2.0.0',
@@ -1473,7 +1473,7 @@ export const initialKBArticles: KBArticle[] = [
   // 39. 营销活动 / 节假日与季度主题营销
   {
     id: 'KB-MKT-RAMADAN-01',
-    title: '【节日大促】2026中东斋月（Ramadan）与海湾豪宅整装季联合促销方案及专属话术.md',
+    title: '【节日大促】2026中东斋月（Ramadan）与海湾豪宅整装季联合促销方案及专属话术',
     category: '营销活动 / 节假日与季度主题营销 / 中东斋月与开斋节 (Ramadan) 专享方案',
     code: 'KB-MKT-RAMADAN-01',
     version: 'v2.1.0',
@@ -1510,7 +1510,7 @@ export const initialKBArticles: KBArticle[] = [
   // 40. 内部培训 / 新人入职通识与外贸全流程 SOP
   {
     id: 'KB-TRAIN-SOP-01',
-    title: '【新人通识】外贸全屋定制大单全流程跟进与风控交付 SOP 培训手册.docx',
+    title: '【新人通识】外贸全屋定制大单全流程跟进与风控交付 SOP 培训手册',
     category: '内部培训 / 新人入职通识与外贸全流程 SOP / 外贸定制大单全流程跟进 SOP',
     code: 'KB-TRAIN-SOP-01',
     version: 'v2.6.0',
@@ -1546,7 +1546,7 @@ export const initialKBArticles: KBArticle[] = [
   // 41. 内部培训 / 产品结构、板材选型与 CAD 深化实战
   {
     id: 'KB-TRAIN-CAD-01',
-    title: '【设计进阶】全屋定制柜体模数、公差控制与 3D 渲染光影表现实操指引.pdf',
+    title: '【设计进阶】全屋定制柜体模数、公差控制与 3D 渲染光影表现实操指引',
     category: '内部培训 / 产品结构、板材选型与 CAD 深化实战 / CAD 平面拆图与 3D 云渲染出图规范',
     code: 'KB-TRAIN-CAD-01',
     version: 'v2.2.0',
@@ -1582,7 +1582,7 @@ export const initialKBArticles: KBArticle[] = [
   // 42. 内部培训 / 销冠技能实战演练与跨文化商务谈判
   {
     id: 'KB-TRAIN-SALES-01',
-    title: '【销冠演练】面对中东与欧美高净值客户的异议化解话术与心理攻防策略.md',
+    title: '【销冠演练】面对中东与欧美高净值客户的异议化解话术与心理攻防策略',
     category: '内部培训 / 销冠技能实战演练与跨文化商务谈判 / 高净值客户异议化解与心理博弈',
     code: 'KB-TRAIN-SALES-01',
     version: 'v2.3.0',
@@ -1610,7 +1610,7 @@ export const initialKBArticles: KBArticle[] = [
   // 43. 待复核条目 1: 新建知识待复核 (未发布过版本)
   {
     id: 'KB-REVIEW-PENDING-01',
-    title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）.pdf',
+    title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
     code: 'KB-COMPLIANCE-AU-01',
     version: 'v1.0.0-rc1',
@@ -1656,7 +1656,7 @@ export const initialKBArticles: KBArticle[] = [
         wasPublished: false,
         diffSummary: '新建【AS/NZS 3837 阻燃与环保检验规程】，提交平台管理员审核',
         afterSnapshot: {
-          title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）.pdf',
+          title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）',
           category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
           content: '澳洲与新西兰全屋定制 AS/NZS 3837 阻燃与环保检验规程...',
           version: 'v1.0.0',
@@ -1669,7 +1669,7 @@ export const initialKBArticles: KBArticle[] = [
   // 44. 待复核条目 2: 已有历史发布版本，正在复核新版本
   {
     id: 'KB-REVIEW-PENDING-02',
-    title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版.xlsx',
+    title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版',
     category: '基础知识库 / 品牌实力',
     code: 'KB-FIN-CBM-02',
     version: 'v2.0.0',
@@ -1713,13 +1713,13 @@ export const initialKBArticles: KBArticle[] = [
         wasPublished: false,
         diffSummary: '修正 40HQ 实际排柜安全系数从 85% 上调为 88.5%，更新 HS Code 关税申报分拆细则',
         beforeSnapshot: {
-          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)计算规则.xlsx',
+          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)计算规则',
           version: 'v2.0.0',
           status: '已发布',
           content: '标准 40HQ 高柜实际排柜系数为 85%...'
         },
         afterSnapshot: {
-          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版.xlsx',
+          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版',
           version: 'v2.1.0',
           status: '等待复核',
           content: '标准 40HQ 高柜有效排柜系数设定为 88.5% (即 60.2 CBM)...'
@@ -1731,7 +1731,7 @@ export const initialKBArticles: KBArticle[] = [
   // 45. 复核不通过条目: 驳回条目 (未发布过版本)
   {
     id: 'KB-REVIEW-REJECTED-01',
-    title: '中东GCC大客户私人折扣与佣金返点内部执行细则（未经审批版）.md',
+    title: '中东GCC大客户私人折扣与佣金返点内部执行细则（未经审批版）',
     category: '销售话术 / 销售实战、竞对与风险控制 / 算价公式、权限与合同法务',
     code: 'KB-SALES-DISCOUNT-FORBIDDEN',
     version: 'v1.0.0',
@@ -1788,7 +1788,7 @@ export const initialKBArticles: KBArticle[] = [
   // 46. 已失效条目
   {
     id: 'KB-REVIEW-EXPIRED-01',
-    title: '2025年度春季广交会客商现场签约全屋柜体定金双倍膨胀优惠细则（已过期作废）.pdf',
+    title: '2025年度春季广交会客商现场签约全屋柜体定金双倍膨胀优惠细则（已过期作废）',
     category: '营销活动 / 限时促销与商务返点政策 / 全屋柜体首单定金膨胀方案',
     code: 'KB-MKT-EXPIRED-2025',
     version: 'v1.2.0',
@@ -1832,7 +1832,7 @@ export const initialKBArticles: KBArticle[] = [
   // 47. 草稿条目
   {
     id: 'KB-REVIEW-DRAFT-01',
-    title: '智能升降中岛台与意大利岩板热弯一体成型工艺生产标准（草稿初审稿）.docx',
+    title: '智能升降中岛台与意大利岩板热弯一体成型工艺生产标准（草稿初审稿）',
     category: '基础知识库 / 产品与技术百科 / 产品百科 / 全卫',
     code: 'KB-DRAFT-SMART-ISLAND',
     version: 'v0.9.0-draft',

@@ -145,7 +145,7 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
         </div>
 
         {/* Category */}
-        <div className="space-y-1.5 flex flex-col justify-start">
+        <div className="space-y-1.5 flex flex-col justify-start min-w-0">
           <div className="flex justify-between items-center h-5">
             <label className="font-bold text-slate-700 block">
               <span className="text-red-500 mr-1">*</span>归属分类
@@ -154,7 +154,7 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
           <select
             value={articleFormCategory}
             onChange={(e) => setArticleFormCategory(e.target.value)}
-            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer text-xs shadow-2xs"
+            className="w-full min-w-0 max-w-full truncate px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer text-xs shadow-2xs"
           >
             {allCategoryPaths.map((c) => (
               <option key={c.id} value={c.fullPath}>
