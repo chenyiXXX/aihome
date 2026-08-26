@@ -289,7 +289,86 @@ export const initialKBArticles: KBArticle[] = [
     fileType: 'PDF',
     fileSize: '18.4 MB',
     chunksCount: 68,
-    tags: ['外贸交付: 全球交付网络', '外贸交付: 德国豪迈智造', '合规风控: FSC产销监管链']
+    tags: ['外贸交付: 全球交付网络', '外贸交付: 德国豪迈智造', '合规风控: FSC产销监管链'],
+    auditLogs: [
+      {
+        id: 'LOG-BRAND-003',
+        articleId: 'KB-BRAND-01',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-18 14:30:10',
+        action: 'approve',
+        actionLabel: '平台管理员复核通过并发布',
+        version: 'v2.4.0',
+        wasPublished: true,
+        reviewComment: '已核验2026年度最新12万平智造基地产线扩建数据与FSC/ISO14001环保全链条认证，数据准确完备，同意发布。',
+        diffSummary: '版本晋升为 v2.4.0，补充2026年最新50,000+全球豪宅工程交付案例与ISO14001认证',
+        beforeSnapshot: {
+          title: '品爱家居 2008-2025 发展历程与全球 80+ 国家外贸网络.pdf',
+          version: 'v2.2.0',
+          status: '已发布',
+          category: '基础知识库 / 品牌实力',
+          tags: ['外贸交付: 全球交付网络', '合规风控: FSC产销监管链'],
+          content: '品爱家居成立于2008年，拥有8万平方米标准制造生产车间，引进数控开料机与封边机。业务辐射中东、北美、东南亚等全球80多个国家，服务超过30,000+海内外业主，具备ISO9001认证。'
+        },
+        afterSnapshot: {
+          title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络.pdf',
+          version: 'v2.4.0',
+          status: '已发布',
+          category: '基础知识库 / 品牌实力',
+          tags: ['外贸交付: 全球交付网络', '外贸交付: 德国豪迈智造', '合规风控: FSC产销监管链'],
+          content: '品爱家居成立于2008年，拥有12万平方米工业4.0智能制造生产基地，全面引进德国豪迈（HOMAG）全自动封边及智能柔性切割生产线。业务辐射中东、北美、澳洲、东南亚等全球100多个国家和地区，服务超过50,000+海内外工程及高端豪宅业主，具备ISO9001/ISO14001与FSC全链条认证。'
+        }
+      },
+      {
+        id: 'LOG-BRAND-002',
+        articleId: 'KB-BRAND-01',
+        operator: 'Franklin Jr (管理员)',
+        operatorRole: '内容维护员',
+        timestamp: '2026-08-18 10:15:00',
+        action: 'submit_review',
+        actionLabel: '更新智造基地面积与出口国数据并提交复核',
+        version: 'v2.3.0',
+        wasPublished: false,
+        diffSummary: '将基地面积从8万㎡更新为12万㎡，全球交付国由80+扩增至100+，增加德国豪迈HOMAG柔性线标定',
+        beforeSnapshot: {
+          title: '品爱家居 2008-2025 发展历程与全球 80+ 国家外贸网络.pdf',
+          version: 'v2.2.0',
+          status: '已发布',
+          category: '基础知识库 / 品牌实力',
+          tags: ['外贸交付: 全球交付网络'],
+          content: '品爱家居成立于2008年，拥有8万平方米标准制造生产车间，引进数控开料机与封边机。业务辐射中东、北美、东南亚等全球80多个国家，服务超过30,000+海内外业主，具备ISO9001认证。'
+        },
+        afterSnapshot: {
+          title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络.pdf',
+          version: 'v2.3.0',
+          status: '等待复核',
+          category: '基础知识库 / 品牌实力',
+          tags: ['外贸交付: 全球交付网络', '外贸交付: 德国豪迈智造', '合规风控: FSC产销监管链'],
+          content: '品爱家居成立于2008年，拥有12万平方米工业4.0智能制造生产基地，全面引进德国豪迈（HOMAG）全自动封边及智能柔性切割生产线。业务辐射中东、北美、澳洲、东南亚等全球100多个国家和地区，服务超过50,000+海内外工程及高端豪宅业主，具备ISO9001/ISO14001与FSC全链条认证。'
+        }
+      },
+      {
+        id: 'LOG-BRAND-001',
+        articleId: 'KB-BRAND-01',
+        operator: 'Alex (外贸业务员)',
+        operatorRole: '初始录入员',
+        timestamp: '2026-06-10 09:00:00',
+        action: 'create',
+        actionLabel: '初始创建品牌历程白皮书',
+        version: 'v1.0.0',
+        wasPublished: true,
+        diffSummary: '系统首次录入品爱外贸品牌历史与基本生产交付资质',
+        afterSnapshot: {
+          title: '品爱家居发展历程与外贸网络.pdf',
+          version: 'v1.0.0',
+          status: '已发布',
+          category: '基础知识库 / 品牌实力',
+          tags: ['外贸交付: 全球交付网络'],
+          content: '品爱家居始创于2008年佛山，专注海外全屋定制外贸出口，产品涵盖整体橱柜、全屋衣柜与浴室柜定制，服务全球多个国家。'
+        }
+      }
+    ]
   },
   {
     id: 'KB-BRAND-02',
@@ -305,7 +384,38 @@ export const initialKBArticles: KBArticle[] = [
     fileType: 'DOCX',
     fileSize: '8.6 MB',
     chunksCount: 52,
-    tags: ['外贸交付: 德国豪迈智造', '材质: 激光无缝封边', '环保等级: ENF级无醛']
+    tags: ['外贸交付: 德国豪迈智造', '材质: 激光无缝封边', '环保等级: ENF级无醛'],
+    auditLogs: [
+      {
+        id: 'LOG-FACTORY-002',
+        articleId: 'KB-BRAND-02',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-15 15:40:00',
+        action: 'approve',
+        actionLabel: '平台管理员复核通过并发布',
+        version: 'v2.2.0',
+        wasPublished: true,
+        reviewComment: '激光无缝封边加工公差±0.3mm与CAD/CAM直通接口参数核验通过，予以发布上线。',
+        diffSummary: '升级封边加工公差标准由±0.5mm提升至±0.3mm，新增激光无缝封边技术指标',
+        beforeSnapshot: {
+          title: '品爱工业智造基地与柔性生产线白皮书.docx',
+          version: 'v2.0.0',
+          status: '已发布',
+          category: '基础知识库 / 品牌实力',
+          tags: ['外贸交付: 德国豪迈智造'],
+          content: '工厂配备4条自动封边机及板件分拣仓。加工公差控制在±0.5mm以内，日均产能800标准柜体单元。'
+        },
+        afterSnapshot: {
+          title: '品爱工业4.0智能制造基地与德国豪迈HOMAG柔性生产线白皮书.docx',
+          version: 'v2.2.0',
+          status: '已发布',
+          category: '基础知识库 / 品牌实力',
+          tags: ['外贸交付: 德国豪迈智造', '材质: 激光无缝封边', '环保等级: ENF级无醛'],
+          content: '工厂配备6条全自动智能封边加工中心、激光无缝封边系统及智能立体板件分拣仓储。加工公差严格控制在±0.3mm以内，日均产能达1500标准柜体单元，实现从CAD/CAM深化设计到数控机床生产数据无缝直通。'
+        }
+      }
+    ]
   },
 
   // 2. 基础知识库 / 产品与技术百科 / 产品百科 / 柜类
@@ -391,7 +501,89 @@ export const initialKBArticles: KBArticle[] = [
     fileType: 'PDF',
     fileSize: '14.8 MB',
     chunksCount: 142,
-    tags: ['空间: 步入式衣帽间', '环保等级: E0级环保', '合规风控: CARB P2认证']
+    tags: ['空间: 步入式衣帽间', '环保等级: E0级环保', '合规风控: CARB P2认证'],
+    reviewStatus: 'approved',
+    reviewer: 'Sophia (平台管理员)',
+    reviewedAt: '2026-08-15 16:20:45',
+    auditLogs: [
+      {
+        id: 'LOG-KB-003',
+        articleId: 'KB-CABINET-01',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-15 16:20:45',
+        action: 'approve',
+        actionLabel: '平台管理员复核通过并发布',
+        version: 'v2.4.0',
+        wasPublished: true,
+        reviewComment: '符合美欧外贸全屋柜体出口标准，环保检测指标完备，予以正式发布上线。',
+        diffSummary: '复核通过，状态变更为【已发布】，版本号晋升为 v2.4.0',
+        beforeSnapshot: {
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          version: 'v2.3.0',
+          status: '等待复核',
+          category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
+          content: '本规定涵盖出口北美及欧盟的所有柜体（橱柜、衣柜、浴室柜）的技术指标。强制采用E1级多层实木板。柜体厚度标准为16mm，背板5mm贴面。',
+          tags: ['空间: 步入式衣帽间', '环保等级: E1级环保']
+        },
+        afterSnapshot: {
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          version: 'v2.4.0',
+          status: '已发布',
+          category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
+          content: '本规定涵盖出口北美及欧盟的所有柜体（橱柜、衣柜、浴室柜）的技术指标。强制采用E0级多层实木板/马尾松实木颗粒板。柜体厚度标准为18mm，背板5mm/9mm带双面三聚氰胺贴面。五金件默认配置DTC或Blum阻尼抽屉轨与门铰，所有暴露孔位须配备隐藏防尘盖。',
+          tags: ['空间: 步入式衣帽间', '环保等级: E0级环保', '合规风控: CARB P2认证']
+        }
+      },
+      {
+        id: 'LOG-KB-002',
+        articleId: 'KB-CABINET-01',
+        operator: 'Alex (外贸业务员)',
+        operatorRole: '业务录入员',
+        timestamp: '2026-08-15 10:15:20',
+        action: 'submit_review',
+        actionLabel: '编辑正文与参数并提交复核',
+        version: 'v2.3.0',
+        wasPublished: false,
+        diffSummary: '升级环保等级至E0/CARB P2标准，将柜体厚度从16mm加厚为18mm，添加防尘盖规范',
+        beforeSnapshot: {
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          version: 'v2.3.0',
+          status: '已发布',
+          category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
+          content: '本规定涵盖出口北美及欧盟的所有柜体（橱柜、衣柜、浴室柜）的技术指标。强制采用E1级多层实木板。柜体厚度标准为16mm，背板5mm贴面。',
+          tags: ['空间: 步入式衣帽间', '环保等级: E1级环保']
+        },
+        afterSnapshot: {
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          version: 'v2.3.0',
+          status: '等待复核',
+          category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
+          content: '本规定涵盖出口北美及欧盟的所有柜体（橱柜、衣柜、浴室柜）的技术指标。强制采用E0级多层实木板/马尾松实木颗粒板。柜体厚度标准为18mm，背板5mm/9mm带双面三聚氰胺贴面。五金件默认配置DTC或Blum阻尼抽屉轨与门铰，所有暴露孔位须配备隐藏防尘盖。',
+          tags: ['空间: 步入式衣帽间', '环保等级: E0级环保', '合规风控: CARB P2认证']
+        }
+      },
+      {
+        id: 'LOG-KB-001',
+        articleId: 'KB-CABINET-01',
+        operator: 'Alex (外贸业务员)',
+        operatorRole: '业务录入员',
+        timestamp: '2026-07-20 09:30:00',
+        action: 'create',
+        actionLabel: '初始创建知识条目',
+        version: 'v1.0.0',
+        wasPublished: true,
+        diffSummary: '首次录入美欧板材与柜体通用尺寸规范文档',
+        afterSnapshot: {
+          title: '出口美欧外贸全屋定制家具通用规格与板材标准.pdf',
+          version: 'v1.0.0',
+          status: '已发布',
+          category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
+          content: '本规定涵盖出口北美及欧盟的所有柜体（橱柜、衣柜、浴室柜）的技术指标。强制采用E1级多层实木板。柜体厚度标准为16mm，背板5mm贴面。',
+          tags: ['空间: 步入式衣帽间', '环保等级: E1级环保']
+        }
+      }
+    ]
   },
   {
     id: 'KB-CABINET-02',
@@ -1413,6 +1605,269 @@ export const initialKBArticles: KBArticle[] = [
     chunksCount: 32,
     expiryType: 'permanent',
     tags: ['培训阶段: 销冠谈判攻防', '培训阶段: 跨文化沟通', '销售阶段: 逼单与谈判', '语言: 英语 (English)']
+  },
+
+  // 43. 待复核条目 1: 新建知识待复核 (未发布过版本)
+  {
+    id: 'KB-REVIEW-PENDING-01',
+    title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）.pdf',
+    category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
+    code: 'KB-COMPLIANCE-AU-01',
+    version: 'v1.0.0-rc1',
+    wasPublished: false,
+    author: 'Alex (外贸业务员)',
+    updatedAt: '2026-08-20 14:15',
+    content: `# 澳洲与新西兰全屋定制 AS/NZS 3837 阻燃与环保检验规程
+
+## 1. 适用工程背景
+针对出口悉尼、墨尔本及奥克兰高层公寓与商业写字楼的全屋固定式柜体（Joinery）阻燃合规要求。
+
+## 2. 核心技术指标
+- **Group Number 等级**：公共区域走廊柜门必须达到 Group 1 或 Group 2 阻燃要求；
+- **烟雾释放指数（Smoke Growth Rate Index）**：SMOGRA 指数必须小于等于 100 m²/s²；
+- **环保甲醛释放量**：严格执行 AS/NZS 1859.1 规定的 Super E0（≤0.3mg/L）标准。
+
+## 3. 随柜报关必备附带资料
+1. 具备 NATA 认可资质的第三方实验室阻燃燃烧测试报告原件扫描件；
+2. 每一个包装箱外侧粘贴澳新合规二维码防伪溯源码。`,
+    status: '等待复核',
+    viewCount: 12,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '8.6 MB',
+    chunksCount: 24,
+    pendingAction: 'create',
+    reviewStatus: 'pending',
+    tags: ['合规风控: CARB P2认证', '环保等级: 欧洲F4星', '语言: 英语 (English)'],
+    applicableRoles: ['外贸销售岗', '方案设计师', '报关合规官'],
+    applicableRegions: ['大洋洲/澳洲新西兰', '欧美英美澳加'],
+    securityLevel: '内部',
+    expiryType: 'permanent',
+    auditLogs: [
+      {
+        id: 'LOG-KB-PENDING-001',
+        articleId: 'KB-REVIEW-PENDING-01',
+        operator: 'Alex (外贸业务员)',
+        operatorRole: '业务录入员',
+        timestamp: '2026-08-20 14:15:30',
+        action: 'submit_review',
+        actionLabel: '上传新建知识条目并提交复核',
+        version: 'v1.0.0',
+        wasPublished: false,
+        diffSummary: '新建【AS/NZS 3837 阻燃与环保检验规程】，提交平台管理员审核',
+        afterSnapshot: {
+          title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）.pdf',
+          category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
+          content: '澳洲与新西兰全屋定制 AS/NZS 3837 阻燃与环保检验规程...',
+          version: 'v1.0.0',
+          status: '等待复核'
+        }
+      }
+    ]
+  },
+
+  // 44. 待复核条目 2: 已有历史发布版本，正在复核新版本
+  {
+    id: 'KB-REVIEW-PENDING-02',
+    title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版.xlsx',
+    category: '基础知识库 / 品牌实力',
+    code: 'KB-FIN-CBM-02',
+    version: 'v2.0.0',
+    wasPublished: true,
+    pendingVersion: 'v2.1.0',
+    author: 'Emma (报价核算员)',
+    updatedAt: '2026-08-20 16:30',
+    content: `# 出口北美工程定制单 CBM 与托盘免税配比算法 (2026修订)
+
+## 1. 箱规与打托优化系数
+- 标准 40HQ 高柜理论装载 68 CBM，经过三层瓦楞护角与熏蒸木托加固后，实际有效排柜系数设定为 **88.5% (即 60.2 CBM)**；
+- 针对异形台面与超长门板（>2700mm），强制采用实木免熏蒸胶合板箱，按毛体积增加 12% 预留防震缓冲裕度。
+
+## 2. 关税加征豁免分类与 HS Code 申报指引
+- 厨房橱柜 HS 编码：9403.40.0000；
+- 卧室衣柜 HS 编码：9403.50.0000；
+- 所有 BOQ 报价单必须分拆五金件与木制品品类税率。`,
+    status: '等待复核',
+    viewCount: 45,
+    contentType: 'document',
+    fileType: 'XLSX',
+    fileSize: '4.2 MB',
+    chunksCount: 18,
+    pendingAction: 'update',
+    reviewStatus: 'pending',
+    tags: ['外贸交付: FOB条款', '外贸交付: CIF到港', '合规风控: 原产地证'],
+    applicableRoles: ['外贸销售岗', '财务核算岗'],
+    applicableRegions: ['北美美加地区'],
+    securityLevel: '机密',
+    expiryType: 'permanent',
+    auditLogs: [
+      {
+        id: 'LOG-KB-PENDING-002',
+        articleId: 'KB-REVIEW-PENDING-02',
+        operator: 'Emma (报价核算员)',
+        operatorRole: '财务核算员',
+        timestamp: '2026-08-20 16:30:12',
+        action: 'edit',
+        actionLabel: '编辑正文与HS编码申报规则并提交复核',
+        version: 'v2.1.0',
+        wasPublished: false,
+        diffSummary: '修正 40HQ 实际排柜安全系数从 85% 上调为 88.5%，更新 HS Code 关税申报分拆细则',
+        beforeSnapshot: {
+          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)计算规则.xlsx',
+          version: 'v2.0.0',
+          status: '已发布',
+          content: '标准 40HQ 高柜实际排柜系数为 85%...'
+        },
+        afterSnapshot: {
+          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版.xlsx',
+          version: 'v2.1.0',
+          status: '等待复核',
+          content: '标准 40HQ 高柜有效排柜系数设定为 88.5% (即 60.2 CBM)...'
+        }
+      }
+    ]
+  },
+
+  // 45. 复核不通过条目: 驳回条目 (未发布过版本)
+  {
+    id: 'KB-REVIEW-REJECTED-01',
+    title: '中东GCC大客户私人折扣与佣金返点内部执行细则（未经审批版）.md',
+    category: '销售话术 / 销售实战、竞对与风险控制 / 算价公式、权限与合同法务',
+    code: 'KB-SALES-DISCOUNT-FORBIDDEN',
+    version: 'v1.0.0',
+    wasPublished: false,
+    author: 'Leo (新员工)',
+    updatedAt: '2026-08-19 11:20',
+    content: `# 中东区域大客户返佣与私人特批折扣参考标准
+
+## 1. 特批折扣档位
+- 针对 50 万美金以上整单，业务员可自主在 PI 形式发票上给予 8% 现金折让；
+- 允许通过海外离岸账户向中介商支付 3% 居间咨询费。
+
+（注：本条款需经合规审核）`,
+    status: '复核不通过',
+    viewCount: 8,
+    contentType: 'markdown',
+    fileType: 'MD',
+    fileSize: '3.1 KB',
+    chunksCount: 10,
+    reviewStatus: 'rejected',
+    reviewComment: '严重违反公司外贸合规与财务反洗钱准则：业务员严禁擅自承诺现金折让与离岸佣金，所有返点必须通过法务特批合同并出具合法 BOQ 佣金协议。已驳回，请重新修改。',
+    reviewer: 'Sophia (主管/平台管理员)',
+    reviewedAt: '2026-08-19 11:45:00',
+    tags: ['合规风控: 敏感词拦截', '销售阶段: 逼单与谈判'],
+    auditLogs: [
+      {
+        id: 'LOG-KB-REJ-002',
+        articleId: 'KB-REVIEW-REJECTED-01',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-19 11:45:00',
+        action: 'reject',
+        actionLabel: '平台管理员复核驳回',
+        version: 'v1.0.0',
+        wasPublished: false,
+        reviewComment: '严重违反公司外贸合规与财务反洗钱准则：业务员严禁擅自承诺现金折让与离岸佣金，所有返点必须通过法务特批合同并出具合法 BOQ 佣金协议。已驳回，请重新修改。',
+        diffSummary: '复核不通过，状态变更为【复核不通过】，退回作者修订'
+      },
+      {
+        id: 'LOG-KB-REJ-001',
+        articleId: 'KB-REVIEW-REJECTED-01',
+        operator: 'Leo (新员工)',
+        operatorRole: '业务员',
+        timestamp: '2026-08-19 11:20:00',
+        action: 'submit_review',
+        actionLabel: '提交新规复核申请',
+        version: 'v1.0.0',
+        wasPublished: false,
+        diffSummary: '首次提交中东大客户返点条款'
+      }
+    ]
+  },
+
+  // 46. 已失效条目
+  {
+    id: 'KB-REVIEW-EXPIRED-01',
+    title: '2025年度春季广交会客商现场签约全屋柜体定金双倍膨胀优惠细则（已过期作废）.pdf',
+    category: '营销活动 / 限时促销与商务返点政策 / 全屋柜体首单定金膨胀方案',
+    code: 'KB-MKT-EXPIRED-2025',
+    version: 'v1.2.0',
+    author: 'Alex (外贸业务员)',
+    updatedAt: '2025-05-30',
+    content: `# 2025春季广交会展位现场签约限时优惠补贴政策
+
+## 1. 活动有效期
+- 2025年4月15日 - 2025年5月5日止（现已全面失效）。
+
+## 2. 优惠条款
+- 现场交付 $2,000 定金抵扣 $5,000 货款；
+- 免费赠送 1 套德国海蒂诗抽屉滑轨展架。`,
+    status: '失效',
+    viewCount: 890,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '5.1 MB',
+    chunksCount: 16,
+    reviewStatus: 'expired',
+    tags: ['营销活动: 订舱限时直降', '营销活动: 展会专案'],
+    expiryType: 'custom',
+    validityStartDate: '2025-04-15',
+    validityEndDate: '2025-05-05',
+    auditLogs: [
+      {
+        id: 'LOG-KB-EXP-001',
+        articleId: 'KB-REVIEW-EXPIRED-01',
+        operator: '系统自动时效调度器',
+        operatorRole: '系统服务',
+        timestamp: '2025-05-06 00:00:00',
+        action: 'expire',
+        actionLabel: '有效期届满自动失效',
+        version: 'v1.2.0',
+        wasPublished: true,
+        diffSummary: '活动截止日期到达，系统自动将知识条目置为【已失效】状态'
+      }
+    ]
+  },
+
+  // 47. 草稿条目
+  {
+    id: 'KB-REVIEW-DRAFT-01',
+    title: '智能升降中岛台与意大利岩板热弯一体成型工艺生产标准（草稿初审稿）.docx',
+    category: '基础知识库 / 产品与技术百科 / 产品百科 / 全卫',
+    code: 'KB-DRAFT-SMART-ISLAND',
+    version: 'v0.9.0-draft',
+    author: 'David (结构工程师)',
+    updatedAt: '2026-08-20 17:00',
+    content: `# 智能升降岛台与岩板热弯工艺拆单标准 (草稿未定稿)
+
+## 1. 结构骨架选材
+- 内部立柱采用 2.5mm 加厚航空级铝合金；
+- 双电机同步驱动，行程 650mm-1050mm，承重测试 ≥ 180kg。
+
+## 2. 待确认事项
+- [ ] 需与意大利岩板供应商确认 12mm 弯折 R 角最大弧度公差；
+- [ ] 需补充 220V/110V 宽电压电机防夹手传感器布线方案。`,
+    status: '草稿',
+    viewCount: 4,
+    contentType: 'document',
+    fileType: 'DOCX',
+    fileSize: '3.8 MB',
+    chunksCount: 8,
+    tags: ['空间: 中西岛台厨柜', '材质: 岩板一体台盆'],
+    auditLogs: [
+      {
+        id: 'LOG-KB-DRAFT-001',
+        articleId: 'KB-REVIEW-DRAFT-01',
+        operator: 'David (结构工程师)',
+        operatorRole: '工程师',
+        timestamp: '2026-08-20 17:00:00',
+        action: 'create',
+        actionLabel: '保存为本地草稿',
+        version: 'v0.9.0',
+        wasPublished: false,
+        diffSummary: '初始草稿录入，未提交复核'
+      }
+    ]
   }
 ];
 
@@ -1615,20 +2070,27 @@ export const initialKBTags: KBTag[] = [
 ];
 
 export const initialKBCategories: KBCategory[] = [
-  // 1. 基础知识库
+  // 1. 基础知识库 (开启管理员复核)
   {
     id: 'CAT-BASE',
     name: '基础知识库',
     code: 'KB-BASE',
     itemCount: 48,
     isBuiltin: true,
+    requireReview: true,
+    reviewTriggers: {
+      onUpload: true,
+      onEdit: true,
+      onDelete: true
+    },
     children: [
       {
         id: 'CAT-BASE-BRAND',
         name: '品牌实力',
         code: 'KB-BRAND',
         itemCount: 14,
-        isBuiltin: true
+        isBuiltin: true,
+        requireReview: true
       },
       {
         id: 'CAT-BASE-PROD-TECH',
@@ -1636,6 +2098,7 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-PROD-TECH',
         itemCount: 22,
         isBuiltin: true,
+        requireReview: true,
         children: [
           {
             id: 'CAT-BASE-PROD-ENCY',
@@ -1643,12 +2106,13 @@ export const initialKBCategories: KBCategory[] = [
             code: 'KB-PROD-ENCY',
             itemCount: 14,
             isBuiltin: true,
+            requireReview: true,
             children: [
-              { id: 'CAT-PROD-CABINET', name: '柜类', code: 'KB-ITEM-CABINET', itemCount: 5, isBuiltin: true },
-              { id: 'CAT-PROD-WALL', name: '门墙', code: 'KB-ITEM-WALL', itemCount: 3, isBuiltin: true },
-              { id: 'CAT-PROD-WINDOW', name: '门窗', code: 'KB-ITEM-WINDOW', itemCount: 2, isBuiltin: true },
-              { id: 'CAT-PROD-BATH', name: '全卫', code: 'KB-ITEM-BATH', itemCount: 2, isBuiltin: true },
-              { id: 'CAT-PROD-SMART', name: '智能对接', code: 'KB-ITEM-SMART', itemCount: 2, isBuiltin: true }
+              { id: 'CAT-PROD-CABINET', name: '柜类', code: 'KB-ITEM-CABINET', itemCount: 5, isBuiltin: true, requireReview: true },
+              { id: 'CAT-PROD-WALL', name: '门墙', code: 'KB-ITEM-WALL', itemCount: 3, isBuiltin: true, requireReview: true },
+              { id: 'CAT-PROD-WINDOW', name: '门窗', code: 'KB-ITEM-WINDOW', itemCount: 2, isBuiltin: true, requireReview: false },
+              { id: 'CAT-PROD-BATH', name: '全卫', code: 'KB-ITEM-BATH', itemCount: 2, isBuiltin: true, requireReview: true },
+              { id: 'CAT-PROD-SMART', name: '智能对接', code: 'KB-ITEM-SMART', itemCount: 2, isBuiltin: true, requireReview: false }
             ]
           },
           {
@@ -1657,6 +2121,7 @@ export const initialKBCategories: KBCategory[] = [
             code: 'KB-PROD-COMBO',
             itemCount: 8,
             isBuiltin: true,
+            requireReview: false,
             children: [
               { id: 'CAT-PROD-TIER', name: '按低中高端', code: 'KB-COMBO-TIER', itemCount: 2, isBuiltin: true },
               { id: 'CAT-PROD-STYLE', name: '按风格', code: 'KB-COMBO-STYLE', itemCount: 2, isBuiltin: true },
@@ -1681,6 +2146,7 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-SPACE-AESTHETICS',
         itemCount: 12,
         isBuiltin: true,
+        requireReview: false,
         children: [
           { id: 'CAT-SPACE-LAYOUT', name: '按户型', code: 'KB-SPACE-LAYOUT', itemCount: 3, isBuiltin: true },
           { id: 'CAT-SPACE-STYLE', name: '按风格', code: 'KB-SPACE-STYLE', itemCount: 3, isBuiltin: true },
@@ -1690,13 +2156,19 @@ export const initialKBCategories: KBCategory[] = [
       }
     ]
   },
-  // 2. 销售话术
+  // 2. 销售话术 (开启管理员复核)
   {
     id: 'CAT-SALES-SCRIPTS',
     name: '销售话术',
     code: 'KB-SALES-SCRIPTS',
     itemCount: 36,
     isBuiltin: true,
+    requireReview: true,
+    reviewTriggers: {
+      onUpload: true,
+      onEdit: true,
+      onDelete: true
+    },
     children: [
       {
         id: 'CAT-SALES-STAGES',

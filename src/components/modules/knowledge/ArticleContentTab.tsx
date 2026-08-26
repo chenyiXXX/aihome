@@ -117,49 +117,54 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
 
   return (
     <div className="space-y-4 animate-in fade-in duration-150 text-xs">
-      {/* Row 1: Title */}
-      <div className="space-y-1.5">
-        <div className="flex justify-between items-center">
-          <label className="font-bold text-slate-700 block">
-            <span className="text-red-500 mr-1">*</span>条目标题
-          </label>
-          <span className="text-[11px] text-slate-400 font-mono">
-            {articleFormTitle.length}/100
-          </span>
-        </div>
-        <input
-          type="text"
-          maxLength={100}
-          placeholder="例如：2026现代意式轻奢定制衣帽间五金与板材规范"
-          value={articleFormTitle}
-          onChange={(e) => setArticleFormTitle(e.target.value)}
-          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20] text-xs shadow-2xs"
-        />
-      </div>
-
-      {/* Row 2: Category */}
-      <div className="space-y-1">
-        <label className="font-bold text-slate-700 block">
-          <span className="text-red-500 mr-1">*</span>归属分类
-        </label>
-        <select
-          value={articleFormCategory}
-          onChange={(e) => setArticleFormCategory(e.target.value)}
-          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer text-xs shadow-2xs"
-        >
-          {allCategoryPaths.map((c) => (
-            <option key={c.id} value={c.fullPath}>
-              {c.fullPath}
-            </option>
-          ))}
-        </select>
-        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5 px-0.5">
-          <span>条目归属对应分类，将自动继承该分类的权限与检索索引权重</span>
-          {editingArticle && (
-            <span className="font-mono text-slate-500">
-              系统编号: {editingArticle.code} · 版本: {editingArticle.version}
+      {/* Row 1: Title & Category in One Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Title */}
+        <div className="space-y-1.5 flex flex-col justify-start">
+          <div className="flex justify-between items-center h-5">
+            <label className="font-bold text-slate-700 block">
+              <span className="text-red-500 mr-1">*</span>条目标题
+            </label>
+            <span className="text-[11px] text-slate-400 font-mono">
+              {articleFormTitle.length}/100
             </span>
+          </div>
+          <input
+            type="text"
+            maxLength={100}
+            placeholder="例如：2026现代意式轻奢定制衣帽间五金与板材规范"
+            value={articleFormTitle}
+            onChange={(e) => setArticleFormTitle(e.target.value)}
+            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20] text-xs shadow-2xs"
+          />
+          {editingArticle && (
+            <div className="text-[11px] text-slate-400 font-mono px-0.5 pt-0.5 truncate">
+              系统编号: {editingArticle.code} · 版本: {editingArticle.version}
+            </div>
           )}
+        </div>
+
+        {/* Category */}
+        <div className="space-y-1.5 flex flex-col justify-start">
+          <div className="flex justify-between items-center h-5">
+            <label className="font-bold text-slate-700 block">
+              <span className="text-red-500 mr-1">*</span>归属分类
+            </label>
+          </div>
+          <select
+            value={articleFormCategory}
+            onChange={(e) => setArticleFormCategory(e.target.value)}
+            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer text-xs shadow-2xs"
+          >
+            {allCategoryPaths.map((c) => (
+              <option key={c.id} value={c.fullPath}>
+                {c.fullPath}
+              </option>
+            ))}
+          </select>
+          <div className="text-[11px] text-slate-400 px-0.5 pt-0.5 truncate">
+            条目归属对应分类，将自动继承权限与检索权重
+          </div>
         </div>
       </div>
 

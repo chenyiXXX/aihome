@@ -130,6 +130,36 @@ export interface KBTag {
   creator?: string;
 }
 
+export interface KBAuditLog {
+  id: string;
+  articleId: string;
+  operator: string;
+  operatorRole?: string;
+  timestamp: string;
+  action: 'create' | 'edit' | 'submit_review' | 'approve' | 'reject' | 'delete_request' | 'rollback' | 'expire';
+  actionLabel: string; // e.g. "新建知识条目", "编辑修改提交", "平台管理员复核通过", "复核驳回", "版本回滚"
+  version: string; // e.g. "v2.4.0"
+  wasPublished: boolean; // 是否曾经发布
+  reviewComment?: string; // 审批/驳回审核意见
+  diffSummary?: string; // 变更摘要
+  beforeSnapshot?: {
+    title?: string;
+    content?: string;
+    category?: string;
+    tags?: string[];
+    version?: string;
+    status?: string;
+  };
+  afterSnapshot?: {
+    title?: string;
+    content?: string;
+    category?: string;
+    tags?: string[];
+    version?: string;
+    status?: string;
+  };
+}
+
 // 5. Knowledge Management Types (知识库管理)
 export interface KBArticle {
   id: string;
@@ -140,13 +170,23 @@ export interface KBArticle {
   author: string;
   updatedAt: string;
   content: string;
-  status: '已发布' | '草稿' | '已作废';
+  status: '草稿' | '等待复核' | '已发布' | '复核不通过' | '失效';
   viewCount: number;
   contentType?: 'markdown' | 'document' | 'video'; // 知识内容形式：Markdown文本、文档附件、视频
   fileType?: 'PDF' | 'DOCX' | 'PPTX' | 'XLSX' | 'VIDEO' | 'MD' | 'MANUAL';
   fileSize?: string;
   chunksCount?: number;
   tags?: string[];
+  // 复核流转信息
+  wasPublished?: boolean; // 是否曾有正式发布版本
+  pendingVersion?: string; // 正在复核中未生效的新版本号 (如 v2.5.0)
+  reviewStatus?: 'pending' | 'approved' | 'rejected' | 'expired';
+  reviewComment?: string; // 复核审核意见或驳回原因
+  reviewer?: string; // 审核人 (平台管理员)
+  reviewedAt?: string; // 审核时间
+  pendingAction?: 'create' | 'update' | 'delete'; // 待复核动作类型
+  // 变更与审计历史
+  auditLogs?: KBAuditLog[];
   // 业务适用与权限管控配置
   applicableRoles?: string[]; // 适用岗位* (多选，如：外贸销售岗、内容推广岗、方案设计师等)
   applicableRegions?: string[]; // 适用地区/语种* (多选，如：GCC中东六国、英文/阿拉伯语等)
@@ -181,6 +221,12 @@ export interface KBCategory {
   code: string;
   itemCount: number;
   isBuiltin?: boolean;
+  requireReview?: boolean; // 该分类下上传/编辑/删除是否需要平台管理员复核
+  reviewTriggers?: {
+    onUpload?: boolean; // 上传新知识需复核
+    onEdit?: boolean;   // 编辑修改需复核
+    onDelete?: boolean; // 删除需复核
+  };
   children?: KBCategory[];
 }
 

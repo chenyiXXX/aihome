@@ -291,10 +291,19 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
             <button
               onClick={() => onSelectSubView('知识库内容编辑')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '知识库内容编辑' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+                subView === '知识库内容编辑' || subView === '内容上传' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
               知识库内容编辑
+            </button>
+            <button
+              onClick={() => onSelectSubView('知识复核')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer flex items-center justify-between ${
+                subView === '知识复核' || subView === '知识条目复核' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              <span>知识复核</span>
+              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
             </button>
             <button
               onClick={() => onSelectSubView('知识库分类管理')}

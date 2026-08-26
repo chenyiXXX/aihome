@@ -154,7 +154,7 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       label: '知识库管理',
       icon: RotateCw,
       defaultSubView: '内容上传',
-      subViews: ['内容上传', '分类管理', '标签管理', '知识库版本']
+      subViews: ['内容上传', '知识复核', '分类管理', '标签管理', '知识库版本']
     },
     {
       id: 'analytics' as ModuleType,

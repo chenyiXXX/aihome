@@ -59,14 +59,17 @@ import {
   ShieldAlert,
   Globe,
   Users,
-  AlertTriangle
+  AlertTriangle,
+  XCircle,
+  AlertCircle
 } from 'lucide-react';
-import { KBArticle, KBCategory, KBTag, KBVersion } from '../../types';
+import { KBArticle, KBCategory, KBTag, KBVersion, KBAuditLog } from '../../types';
 import { initialKBTags } from '../../data/mockData';
 import { ArticleContentTab } from './knowledge/ArticleContentTab';
 import { ArticleTagsTab } from './knowledge/ArticleTagsTab';
 import { ArticlePermissionsTab } from './knowledge/ArticlePermissionsTab';
 import { ArticleDetailDrawer } from './knowledge/ArticleDetailDrawer';
+import { ArticleReviewSubView } from './knowledge/ArticleReviewSubView';
 
 // 预设配置选项 (用于知识条目新建/编辑配置)
 export const PRESET_ROLES = [
@@ -212,11 +215,23 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const [modalParentNode, setModalParentNode] = useState<KBCategory | null>(null);
   const [newCatName, setNewCatName] = useState('');
   const [newCatCode, setNewCatCode] = useState('');
+  const [newCatRequireReview, setNewCatRequireReview] = useState<boolean>(false);
+  const [newCatReviewTriggers, setNewCatReviewTriggers] = useState<{ onUpload: boolean; onEdit: boolean; onDelete: boolean }>({
+    onUpload: true,
+    onEdit: true,
+    onDelete: true
+  });
 
   const [isEditCatModalOpen, setIsEditCatModalOpen] = useState(false);
   const [editingCatNode, setEditingCatNode] = useState<KBCategory | null>(null);
   const [editCatName, setEditCatName] = useState('');
   const [editCatCode, setEditCatCode] = useState('');
+  const [editCatRequireReview, setEditCatRequireReview] = useState<boolean>(false);
+  const [editCatReviewTriggers, setEditCatReviewTriggers] = useState<{ onUpload: boolean; onEdit: boolean; onDelete: boolean }>({
+    onUpload: true,
+    onEdit: true,
+    onDelete: true
+  });
 
   // ============================================================================
   // User Role for Tag Operations (平台管理员 admin vs 普通人员 staff)
@@ -278,13 +293,16 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   };
 
   // Determine active view mode
-  const currentView: '内容上传' | '分类管理' | '标签管理' | '版本记录' = subView.includes('分类')
-    ? '分类管理'
-    : subView.includes('标签')
-    ? '标签管理'
-    : subView.includes('版本')
-    ? '版本记录'
-    : '内容上传';
+  const currentView: '内容上传' | '知识复核' | '分类管理' | '标签管理' | '版本记录' =
+    subView.includes('复核')
+      ? '知识复核'
+      : subView.includes('分类')
+      ? '分类管理'
+      : subView.includes('标签')
+      ? '标签管理'
+      : subView.includes('版本')
+      ? '版本记录'
+      : '内容上传';
 
   // Helper to parse key-value paired tags, e.g. "风格: 地中海" -> { key: "风格", value: "地中海", isPair: true }
   const parseTagPair = (tagStr: string): { key: string; value: string; isPair: boolean } => {
@@ -338,41 +356,22 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     }).length;
   };
 
-  // Tag Color Badge Style Map
-  const getTagBadgeStyle = (color?: string) => {
-    switch (color) {
-      case 'red':
-        return 'bg-red-50 text-red-700 border-red-200/80 hover:bg-red-100/70';
-      case 'blue':
-        return 'bg-blue-50 text-blue-700 border-blue-200/80 hover:bg-blue-100/70';
-      case 'emerald':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100/70';
-      case 'amber':
-        return 'bg-amber-50 text-amber-800 border-amber-200/80 hover:bg-amber-100/70';
-      case 'purple':
-        return 'bg-purple-50 text-purple-700 border-purple-200/80 hover:bg-purple-100/70';
-      case 'rose':
-        return 'bg-rose-50 text-rose-700 border-rose-200/80 hover:bg-rose-100/70';
-      case 'cyan':
-        return 'bg-cyan-50 text-cyan-800 border-cyan-200/80 hover:bg-cyan-100/70';
-      case 'indigo':
-        return 'bg-indigo-50 text-indigo-700 border-indigo-200/80 hover:bg-indigo-100/70';
-      default:
-        return 'bg-slate-50 text-slate-700 border-slate-200/80 hover:bg-slate-100';
-    }
+  // Tag Color Badge Style Map - Unified calm neutral styling with subtle indicators
+  const getTagBadgeStyle = (_color?: string) => {
+    return 'bg-slate-50 text-slate-700 border-slate-200/90 hover:bg-slate-100 hover:border-slate-300';
   };
 
   const getTagDotColor = (color?: string) => {
     switch (color) {
-      case 'red': return 'bg-red-500';
-      case 'blue': return 'bg-blue-500';
+      case 'red': return 'bg-rose-500';
+      case 'blue': return 'bg-sky-500';
       case 'emerald': return 'bg-emerald-500';
       case 'amber': return 'bg-amber-500';
       case 'purple': return 'bg-purple-500';
       case 'rose': return 'bg-rose-500';
       case 'cyan': return 'bg-cyan-500';
       case 'indigo': return 'bg-indigo-500';
-      default: return 'bg-slate-500';
+      default: return 'bg-slate-400';
     }
   };
 
@@ -789,58 +788,16 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
         <span
           key={tagStr}
           onClick={onClick}
-          className={`inline-flex items-center rounded-lg border overflow-hidden text-[11px] font-medium transition-all select-none ${
-            onClick ? 'cursor-pointer hover:shadow-2xs hover:scale-102 active:scale-98' : ''
-          } ${
-            color === 'purple'
-              ? 'border-purple-200/90 bg-purple-50/50'
-              : color === 'amber'
-              ? 'border-amber-200/90 bg-amber-50/50'
-              : color === 'blue'
-              ? 'border-blue-200/90 bg-blue-50/50'
-              : color === 'emerald'
-              ? 'border-emerald-200/90 bg-emerald-50/50'
-              : color === 'rose'
-              ? 'border-rose-200/90 bg-rose-50/50'
-              : color === 'cyan'
-              ? 'border-cyan-200/90 bg-cyan-50/50'
-              : color === 'indigo'
-              ? 'border-indigo-200/90 bg-indigo-50/50'
-              : color === 'red'
-              ? 'border-red-200/90 bg-red-50/50'
-              : 'border-slate-200/90 bg-slate-50/50'
+          className={`inline-flex items-center rounded-lg border border-slate-200/90 bg-white overflow-hidden text-[11px] font-medium transition-all select-none shadow-2xs ${
+            onClick ? 'cursor-pointer hover:shadow-xs hover:border-slate-300 hover:scale-101 active:scale-98' : ''
           }`}
-          title={`${parsed.key} : ${parsed.value} (${isBuiltin ? '公司内置标准标签' : '团队自定义标签'})`}
+          title={`${parsed.key} : ${parsed.value} (${isBuiltin ? '内置标准标签' : '自定义标签'})`}
         >
-          <span
-            className={`px-1.5 py-0.5 text-[10px] font-bold shrink-0 border-r flex items-center gap-1 ${
-              color === 'purple'
-                ? 'bg-purple-100/80 text-purple-800 border-purple-200'
-                : color === 'amber'
-                ? 'bg-amber-100/80 text-amber-900 border-amber-200'
-                : color === 'blue'
-                ? 'bg-blue-100/80 text-blue-800 border-blue-200'
-                : color === 'emerald'
-                ? 'bg-emerald-100/80 text-emerald-800 border-emerald-200'
-                : color === 'rose'
-                ? 'bg-rose-100/80 text-rose-800 border-rose-200'
-                : color === 'cyan'
-                ? 'bg-cyan-100/80 text-cyan-800 border-cyan-200'
-                : color === 'indigo'
-                ? 'bg-indigo-100/80 text-indigo-800 border-indigo-200'
-                : color === 'red'
-                ? 'bg-red-100/80 text-red-800 border-red-200'
-                : 'bg-slate-100/80 text-slate-700 border-slate-200'
-            }`}
-          >
-            {isBuiltin ? (
-              <span className="text-[9px] text-slate-400">🏢</span>
-            ) : (
-              <span className="text-[9px] text-amber-600">🏷️</span>
-            )}
+          <span className="px-1.5 py-0.5 text-[10px] font-semibold shrink-0 border-r border-slate-200/80 bg-slate-100/90 text-slate-600 flex items-center gap-1">
+            <span className={`w-1.5 h-1.5 rounded-full ${getTagDotColor(color)} shrink-0`} />
             <span>{parsed.key}</span>
           </span>
-          <span className={`px-2 py-0.5 text-[11px] font-bold text-slate-800 bg-white`}>
+          <span className="px-2 py-0.5 text-[11px] font-medium text-slate-800 bg-white">
             {parsed.value}
           </span>
         </span>
@@ -851,11 +808,11 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       <span
         key={tagStr}
         onClick={onClick}
-        className={`px-2 py-0.5 rounded-lg text-xs font-bold border inline-flex items-center gap-1.5 ${getTagBadgeStyle(
-          color
-        )} ${onClick ? 'cursor-pointer hover:shadow-2xs' : ''}`}
+        className={`px-2 py-0.5 rounded-lg text-[11px] font-medium border border-slate-200/90 bg-white text-slate-700 inline-flex items-center gap-1.5 shadow-2xs ${
+          onClick ? 'cursor-pointer hover:bg-slate-50 hover:border-slate-300 hover:shadow-xs' : ''
+        }`}
       >
-        <span className={`w-1.5 h-1.5 rounded-full ${getTagDotColor(color)}`} />
+        <span className={`w-1.5 h-1.5 rounded-full ${getTagDotColor(color)} shrink-0`} />
         <span>#{tagStr}</span>
       </span>
     );
@@ -1111,6 +1068,248 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setIsArticleModalOpen(true);
   };
 
+  // Category lookup helper for review policy checking
+  const findCategoryByPathOrName = (catPath: string): KBCategory | null => {
+    if (!catPath) return null;
+    const parts = catPath.split(/[\/\->]/).map((s) => s.trim());
+    const targetName = parts[parts.length - 1] || catPath;
+
+    const searchTree = (nodes: KBCategory[]): KBCategory | null => {
+      for (const node of nodes) {
+        if (node.name === targetName || node.name === catPath || catPath.includes(node.name)) {
+          return node;
+        }
+        if (node.children && node.children.length > 0) {
+          const found = searchTree(node.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return searchTree(categoryList);
+  };
+
+  // Review Workflow Action Handlers
+  const handleApproveArticle = (article: KBArticle, comment?: string) => {
+    const isDelete = article.pendingAction === 'delete';
+    if (isDelete) {
+      setContentList((prev) => prev.filter((c) => c.id !== article.id));
+      setSelectedContentIds((prev) => {
+        const next = new Set(prev);
+        next.delete(article.id);
+        return next;
+      });
+      showToast(`✅ 条目「${article.title}」删除复核已通过，已正式下线！`);
+      return;
+    }
+
+    const newVer = article.pendingVersion
+      ? article.pendingVersion.replace('-rc', '')
+      : article.version.includes('-rc')
+      ? article.version.replace('-rc', '')
+      : article.version;
+
+    const auditLog: KBAuditLog = {
+      id: `LOG-${Date.now()}`,
+      articleId: article.id,
+      operator: 'Sophia (平台管理员)',
+      operatorRole: '平台管理员',
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      action: 'approve',
+      actionLabel: '平台管理员复核通过',
+      version: newVer,
+      wasPublished: true,
+      reviewComment: comment || '经平台管理员合规核对无误，符合外贸定制知识规范，复核通过',
+      diffSummary: `平台管理员复核通过，版本定稿 ${newVer} 正式发布上线`,
+      afterSnapshot: {
+        title: article.title,
+        category: article.category,
+        content: article.content,
+        version: newVer,
+        status: '已发布',
+        tags: article.tags
+      }
+    };
+
+    setContentList((prev) =>
+      prev.map((item) =>
+        item.id === article.id
+          ? {
+              ...item,
+              status: '已发布',
+              reviewStatus: 'approved',
+              reviewer: 'Sophia (平台管理员)',
+              reviewedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+              reviewComment: comment || '复核通过',
+              pendingAction: undefined,
+              pendingVersion: undefined,
+              wasPublished: true,
+              version: newVer,
+              auditLogs: [auditLog, ...(item.auditLogs || [])]
+            }
+          : item
+      )
+    );
+
+    setPreviewArticle((prev) =>
+      prev && prev.id === article.id
+        ? {
+            ...prev,
+            status: '已发布',
+            reviewStatus: 'approved',
+            reviewer: 'Sophia (平台管理员)',
+            reviewedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+            reviewComment: comment || '复核通过',
+            pendingAction: undefined,
+            pendingVersion: undefined,
+            wasPublished: true,
+            version: newVer,
+            auditLogs: [auditLog, ...(prev.auditLogs || [])]
+          }
+        : prev
+    );
+
+    showToast(`✅ 知识条目「${article.title}」复核通过并已正式发布！`);
+  };
+
+  const handleRejectArticle = (article: KBArticle, reason: string) => {
+    const auditLog: KBAuditLog = {
+      id: `LOG-${Date.now()}`,
+      articleId: article.id,
+      operator: 'Sophia (平台管理员)',
+      operatorRole: '平台管理员',
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      action: 'reject',
+      actionLabel: '平台管理员复核驳回',
+      version: article.pendingVersion || article.version,
+      wasPublished: Boolean(article.wasPublished),
+      reviewComment: reason,
+      diffSummary: `复核不通过驳回：${reason}`,
+      beforeSnapshot: {
+        title: article.title,
+        category: article.category,
+        content: article.content,
+        version: article.version,
+        status: article.status,
+        tags: article.tags
+      }
+    };
+
+    setContentList((prev) =>
+      prev.map((item) =>
+        item.id === article.id
+          ? {
+              ...item,
+              status: item.wasPublished ? '已发布' : '复核不通过',
+              reviewStatus: 'rejected',
+              pendingVersion: undefined,
+              pendingAction: undefined,
+              reviewer: 'Sophia (平台管理员)',
+              reviewedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+              reviewComment: reason,
+              auditLogs: [auditLog, ...(item.auditLogs || [])]
+            }
+          : item
+      )
+    );
+
+    setPreviewArticle((prev) =>
+      prev && prev.id === article.id
+        ? {
+            ...prev,
+            status: prev.wasPublished ? '已发布' : '复核不通过',
+            reviewStatus: 'rejected',
+            pendingVersion: undefined,
+            pendingAction: undefined,
+            reviewer: 'Sophia (平台管理员)',
+            reviewedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+            reviewComment: reason,
+            auditLogs: [auditLog, ...(prev.auditLogs || [])]
+          }
+        : prev
+    );
+
+    showToast(`❌ 知识条目「${article.title}」复核已驳回，原因已记录至详情日志`);
+  };
+
+  const handleBatchApprove = (articleIds: string[], comment?: string) => {
+    if (articleIds.length === 0) return;
+    const count = articleIds.length;
+    articleIds.forEach((id) => {
+      const art = contentList.find((c) => c.id === id);
+      if (art) handleApproveArticle(art, comment);
+    });
+    showToast(`✅ 批量复核完成，已审批通过 ${count} 条知识条目！`);
+  };
+
+  const handleBatchReject = (articleIds: string[], reason: string) => {
+    if (articleIds.length === 0) return;
+    const count = articleIds.length;
+    articleIds.forEach((id) => {
+      const art = contentList.find((c) => c.id === id);
+      if (art) handleRejectArticle(art, reason);
+    });
+    showToast(`❌ 批量驳回完成，已驳回 ${count} 条知识条目！`);
+  };
+
+  const handleRollbackArticle = (article: KBArticle, log: KBAuditLog) => {
+    const targetSnapshot = log.beforeSnapshot || log.afterSnapshot;
+    if (!targetSnapshot) {
+      showToast('⚠️ 该历史日志未包含快照数据，无法执行回滚！');
+      return;
+    }
+
+    const currentVerNum = parseFloat(article.version.replace(/[^0-9.]/g, '')) || 2.0;
+    const newRollbackVersion = `v${(currentVerNum + 0.1).toFixed(1)}.0-rollback`;
+
+    const rollbackAuditLog: KBAuditLog = {
+      id: `LOG-${Date.now()}`,
+      articleId: article.id,
+      operator: 'Sophia (平台管理员)',
+      operatorRole: '平台管理员',
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      action: 'rollback',
+      actionLabel: `版本回滚到历史版本 ${log.version}`,
+      version: newRollbackVersion,
+      wasPublished: true,
+      diffSummary: `执行版本回滚，将知识正文、标题与成对标签恢复至 ${log.version} (${log.timestamp}) 状态`,
+      beforeSnapshot: {
+        title: article.title,
+        category: article.category,
+        content: article.content,
+        version: article.version,
+        status: article.status,
+        tags: article.tags
+      },
+      afterSnapshot: {
+        title: targetSnapshot.title || article.title,
+        category: targetSnapshot.category || article.category,
+        content: targetSnapshot.content || article.content,
+        version: newRollbackVersion,
+        status: '已发布',
+        tags: targetSnapshot.tags || article.tags
+      }
+    };
+
+    const updatedArticle: KBArticle = {
+      ...article,
+      title: targetSnapshot.title || article.title,
+      category: targetSnapshot.category || article.category,
+      content: targetSnapshot.content || article.content,
+      tags: targetSnapshot.tags || article.tags,
+      version: newRollbackVersion,
+      status: '已发布',
+      reviewStatus: 'approved',
+      pendingAction: undefined,
+      updatedAt: new Date().toISOString().split('T')[0],
+      auditLogs: [rollbackAuditLog, ...(article.auditLogs || [])]
+    };
+
+    setContentList((prev) => prev.map((c) => (c.id === article.id ? updatedArticle : c)));
+    setPreviewArticle(updatedArticle);
+    showToast(`⏪ 知识条目「${article.title}」已成功回滚至 ${log.version}，生成定稿版本 ${newRollbackVersion}！`);
+  };
+
   const handleSaveArticleForm = () => {
     if (!articleFormTitle.trim()) {
       showToast('请输入知识条目标题！');
@@ -1179,8 +1378,61 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       transcript: articleFormVideoTranscript || articleFormContent
     } : undefined;
 
+    // Check category review rule
+    const targetCatObj = findCategoryByPathOrName(articleFormCategory);
+
     if (editingArticle) {
-      // Update (keep original code and version intact)
+      const requiresReview = Boolean(
+        targetCatObj?.requireReview && (targetCatObj.reviewTriggers?.onEdit !== false)
+      );
+
+      const wasAlreadyPublished = Boolean(editingArticle.wasPublished || editingArticle.status === '已发布');
+
+      const nextVer = editingArticle.version.startsWith('v')
+        ? `v${(parseFloat(editingArticle.version.slice(1)) + 0.1).toFixed(1)}.0`
+        : 'v2.0.0';
+
+      const finalVersion = requiresReview
+        ? (wasAlreadyPublished ? editingArticle.version : `${nextVer}-rc`)
+        : nextVer;
+
+      const pendingVer = requiresReview && wasAlreadyPublished ? `${nextVer}-rc` : undefined;
+      const finalStatus = requiresReview ? '等待复核' : '已发布';
+      const finalWasPublished = wasAlreadyPublished || !requiresReview;
+
+      const auditLog: KBAuditLog = {
+        id: `LOG-${Date.now()}`,
+        articleId: editingArticle.id,
+        operator: 'Sophia (主管)',
+        operatorRole: '业务主管',
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        action: requiresReview ? 'submit_review' : 'edit',
+        actionLabel: requiresReview ? (editingArticle.status === '复核不通过' ? '重新编辑并提交复核' : '编辑知识条目并提交复核') : '直接更新发布知识条目',
+        version: pendingVer || finalVersion,
+        wasPublished: finalWasPublished,
+        diffSummary: requiresReview
+          ? (wasAlreadyPublished
+              ? `修改已发布条目【${articleFormTitle}】，生成新版本 ${pendingVer} 提交平台管理员复核（当前 ${finalVersion} 继续生效）`
+              : `修改条目【${articleFormTitle}】（所属分类开启了编辑复核规则），已提交平台管理员复核`)
+          : `直接更新知识条目【${articleFormTitle}】`,
+        beforeSnapshot: {
+          title: editingArticle.title,
+          category: editingArticle.category,
+          content: editingArticle.content,
+          version: editingArticle.version,
+          status: editingArticle.status,
+          tags: editingArticle.tags
+        },
+        afterSnapshot: {
+          title: articleFormTitle,
+          category: articleFormCategory,
+          content: articleFormContent,
+          version: pendingVer || finalVersion,
+          status: finalStatus,
+          tags: tagsArray
+        }
+      };
+
       setContentList((prev) =>
         prev.map((item) =>
           item.id === editingArticle.id
@@ -1189,7 +1441,12 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 title: articleFormTitle,
                 category: articleFormCategory,
                 code: editingArticle.code,
-                version: editingArticle.version,
+                version: finalVersion,
+                pendingVersion: pendingVer,
+                wasPublished: finalWasPublished,
+                status: finalStatus,
+                reviewStatus: requiresReview ? 'pending' : undefined,
+                pendingAction: requiresReview ? 'update' : undefined,
                 tags: tagsArray,
                 contentType: articleContentType,
                 fileType: finalFileType,
@@ -1206,25 +1463,61 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 relatedArticleIds: articleFormRelatedIds,
                 attachmentFile: attachmentPayload,
                 videoInfo: videoPayload,
-                updatedAt: new Date().toISOString().split('T')[0]
+                updatedAt: new Date().toISOString().split('T')[0],
+                auditLogs: [auditLog, ...(item.auditLogs || [])]
               }
             : item
         )
       );
-      showToast(`已成功更新知识条目「${articleFormTitle}」`);
+
+      if (requiresReview) {
+        showToast(`📝 知识条目「${articleFormTitle}」修改已提交！因所属分类开启了复核，需平台管理员审核通过后正式发布。`);
+      } else {
+        showToast(`已成功更新知识条目「${articleFormTitle}」`);
+      }
     } else {
-      // Create (system auto generates code and assigns v1.0.0 version)
+      // Create new article
+      const requiresReview = Boolean(
+        targetCatObj?.requireReview && (targetCatObj.reviewTriggers?.onUpload !== false)
+      );
       const autoCode = `KB-ART-${Date.now().toString().slice(-6)}`;
+      const newId = `KB-${Date.now()}`;
+
+      const auditLog: KBAuditLog = {
+        id: `LOG-${Date.now()}`,
+        articleId: newId,
+        operator: 'Sophia (主管)',
+        operatorRole: '业务主管',
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        action: requiresReview ? 'submit_review' : 'create',
+        actionLabel: requiresReview ? '新建知识条目并提交复核' : '新建并发布知识条目',
+        version: requiresReview ? 'v1.0.0-rc' : 'v1.0.0',
+        wasPublished: !requiresReview,
+        diffSummary: requiresReview
+          ? `新建条目【${articleFormTitle}】（所属分类开启了上传复核规则），已提交平台管理员复核`
+          : `新建并发布知识条目【${articleFormTitle}】`,
+        afterSnapshot: {
+          title: articleFormTitle,
+          category: articleFormCategory,
+          content: articleFormContent,
+          version: requiresReview ? 'v1.0.0-rc' : 'v1.0.0',
+          status: requiresReview ? '等待复核' : '已发布',
+          tags: tagsArray
+        }
+      };
+
       const newArticle: KBArticle = {
-        id: `KB-${Date.now()}`,
+        id: newId,
         title: articleFormTitle,
         category: articleFormCategory,
         code: autoCode,
-        version: 'v1.0.0',
+        version: requiresReview ? 'v1.0.0-rc' : 'v1.0.0',
         author: 'Sophia (主管)',
         updatedAt: new Date().toISOString().split('T')[0],
         content: articleFormContent,
-        status: '已发布',
+        status: requiresReview ? '等待复核' : '已发布',
+        reviewStatus: requiresReview ? 'pending' : undefined,
+        pendingAction: requiresReview ? 'create' : undefined,
         viewCount: 1,
         contentType: articleContentType,
         fileType: finalFileType,
@@ -1240,23 +1533,73 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
         expiryDate: articleFormExpiryType === 'custom' ? articleFormEndDate : undefined,
         relatedArticleIds: articleFormRelatedIds,
         attachmentFile: attachmentPayload,
-        videoInfo: videoPayload
+        videoInfo: videoPayload,
+        auditLogs: [auditLog]
       };
       setContentList((prev) => [newArticle, ...prev]);
-      showToast(`已成功创建「${articleContentType === 'video' ? '视频知识' : articleContentType === 'document' ? '文档知识' : 'Markdown知识'}」并完成配置！`);
+
+      if (requiresReview) {
+        showToast(`🛡️ 知识条目「${articleFormTitle}」已创建并提交复核（当前分类需管理员审批通过后上线）`);
+      } else {
+        showToast(`已成功创建「${articleContentType === 'video' ? '视频知识' : articleContentType === 'document' ? '文档知识' : 'Markdown知识'}」并完成配置！`);
+      }
     }
     setIsArticleModalOpen(false);
   };
 
   const handleDeleteArticle = (id: string, title: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setContentList((prev) => prev.filter((item) => item.id !== id));
-    setSelectedContentIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
-    showToast(`已删除「${title}」`);
+    const art = contentList.find((c) => c.id === id);
+    const targetCatObj = art ? findCategoryByPathOrName(art.category) : null;
+    const requiresReview = Boolean(
+      targetCatObj?.requireReview && (targetCatObj.reviewTriggers?.onDelete !== false)
+    );
+
+    if (requiresReview && art) {
+      const auditLog: KBAuditLog = {
+        id: `LOG-${Date.now()}`,
+        articleId: art.id,
+        operator: 'Sophia (业务员)',
+        operatorRole: '业务员',
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        action: 'delete_request',
+        actionLabel: '申请删除知识条目 (提交复核)',
+        version: art.version,
+        wasPublished: art.status === '已发布',
+        diffSummary: `申请删除知识条目【${title}】，等待平台管理员复核下线`,
+        beforeSnapshot: {
+          title: art.title,
+          category: art.category,
+          content: art.content,
+          version: art.version,
+          status: art.status,
+          tags: art.tags
+        }
+      };
+
+      setContentList((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                status: '等待复核',
+                reviewStatus: 'pending',
+                pendingAction: 'delete',
+                auditLogs: [auditLog, ...(item.auditLogs || [])]
+              }
+            : item
+        )
+      );
+      showToast(`🛡️ 已提交删除申请！因「${art.category}」配置了删除复核规则，需平台管理员在复核中心确认。`);
+    } else {
+      setContentList((prev) => prev.filter((item) => item.id !== id));
+      setSelectedContentIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      showToast(`已删除「${title}」`);
+    }
   };
 
   const handleRevectorize = (art: KBArticle, e?: React.MouseEvent) => {
@@ -1323,32 +1666,71 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setIsUploading(true);
     setTimeout(() => {
       const targetCat = uploadCategory || (selectedCategoryFilter ? selectedCategoryFilter : '产品与技术百科 / 产品百科 / 按单品 / 柜类');
+      const targetCatObj = findCategoryByPathOrName(targetCat);
+      const requiresReview = Boolean(
+        targetCatObj?.requireReview && (targetCatObj.reviewTriggers?.onUpload !== false)
+      );
+
       const newArticles: KBArticle[] = Array.from(files).map((f, idx) => {
         const ext = f.name.split('.').pop()?.toUpperCase() || 'FILE';
         const fileType: 'PDF' | 'DOCX' | 'XLSX' | 'MD' | 'MANUAL' =
           ext === 'PDF' ? 'PDF' : ext === 'DOCX' || ext === 'DOC' ? 'DOCX' : ext === 'XLSX' || ext === 'XLS' ? 'XLSX' : 'MD';
+        const newArtId = `KB-UPLOAD-${Date.now()}-${idx}`;
+        const autoCode = `KB-DOC-${Date.now().toString().slice(-4)}-${idx + 1}`;
+        const autoVersion = requiresReview ? 'v1.0.0-rc' : 'v1.0.0';
+
+        const auditLog: KBAuditLog = {
+          id: `LOG-UP-${Date.now()}-${idx}`,
+          articleId: newArtId,
+          operator: 'Sophia (主管)',
+          operatorRole: '业务录入员',
+          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+          action: requiresReview ? 'submit_review' : 'create',
+          actionLabel: requiresReview ? '批量上传文档并提交复核' : '批量上传并发布文档',
+          version: autoVersion,
+          wasPublished: !requiresReview,
+          diffSummary: requiresReview
+            ? `批量上传文档《${f.name}》（所属分类开启了上传复核规则），已提交平台管理员复核`
+            : `批量上传并发布文档《${f.name}》`,
+          afterSnapshot: {
+            title: f.name,
+            category: targetCat,
+            content: `【文件提取内容】：已对文档《${f.name}》完成 OCR 与高精度版面分析，共提取语义段落。`,
+            version: autoVersion,
+            status: requiresReview ? '等待复核' : '已发布',
+            tags: ['批量上传', ext, '最新向量化']
+          }
+        };
+
         return {
-          id: `KB-UPLOAD-${Date.now()}-${idx}`,
+          id: newArtId,
           title: f.name,
           category: targetCat,
-          code: `KB-DOC-${Date.now().toString().slice(-4)}-${idx + 1}`,
-          version: 'v1.0.0',
+          code: autoCode,
+          version: autoVersion,
           author: 'Sophia (主管)',
           updatedAt: new Date().toISOString().split('T')[0],
           content: `【文件提取内容】：已对文档《${f.name}》完成 OCR 与高精度版面分析，共提取语义段落。支持智能体在全屋定制业务对话中根据关键词自动召回本知识分段。`,
-          status: '已发布',
+          status: requiresReview ? '等待复核' : '已发布',
+          reviewStatus: requiresReview ? 'pending' : undefined,
+          pendingAction: requiresReview ? 'create' : undefined,
           viewCount: 1,
           fileType,
           fileSize: `${(f.size / (1024 * 1024)).toFixed(1)} MB`,
           chunksCount: Math.floor(Math.random() * 60) + 30,
-          tags: ['批量上传', ext, '最新向量化']
+          tags: ['批量上传', ext, '最新向量化'],
+          auditLogs: [auditLog]
         };
       });
 
       setContentList((prev) => [...newArticles, ...prev]);
       setIsUploading(false);
       setIsUploadModalOpen(false);
-      showToast(`已成功上传 ${newArticles.length} 篇知识文档并完成向量嵌入！`);
+      if (requiresReview) {
+        showToast(`🛡️ 已上传 ${newArticles.length} 篇文档！因「${targetCat}」开启了复核，已提交平台管理员审批。`);
+      } else {
+        showToast(`已成功上传 ${newArticles.length} 篇知识文档并完成向量嵌入！`);
+      }
     }, 1200);
   };
 
@@ -1360,6 +1742,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setModalParentNode(parentNode);
     setNewCatName('');
     setNewCatCode(parentNode ? `${parentNode.code}-SUB` : 'KB-CAT-NEW');
+    setNewCatRequireReview(false);
+    setNewCatReviewTriggers({ onUpload: true, onEdit: true, onDelete: true });
     setIsAddCatModalOpen(true);
   };
 
@@ -1375,6 +1759,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       code: newCatCode.trim() || `KB-CAT-${Date.now().toString().slice(-4)}`,
       itemCount: 0,
       isBuiltin: false,
+      requireReview: newCatRequireReview,
+      reviewTriggers: newCatRequireReview ? newCatReviewTriggers : undefined,
       children: []
     };
 
@@ -1404,7 +1790,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       setExpandedNodeIds((prev) => new Set(prev).add(modalParentNode.id));
     }
     setIsAddCatModalOpen(false);
-    showToast(`分类「${newNode.name}」添加成功！`);
+    showToast(`分类「${newNode.name}」添加成功！${newCatRequireReview ? '（已开启管理员复核机制）' : ''}`);
   };
 
   const handleOpenEditCatModal = (node: KBCategory, e?: React.MouseEvent) => {
@@ -1416,6 +1802,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setEditingCatNode(node);
     setEditCatName(node.name);
     setEditCatCode(node.code);
+    setEditCatRequireReview(Boolean(node.requireReview));
+    setEditCatReviewTriggers(node.reviewTriggers || { onUpload: true, onEdit: true, onDelete: true });
     setIsEditCatModalOpen(true);
   };
 
@@ -1428,7 +1816,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
           return {
             ...item,
             name: editCatName.trim(),
-            code: editCatCode.trim() || item.code
+            code: editCatCode.trim() || item.code,
+            requireReview: editCatRequireReview,
+            reviewTriggers: editCatRequireReview ? editCatReviewTriggers : undefined
           };
         }
         if (item.children && item.children.length > 0) {
@@ -1615,6 +2005,19 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   内置
                 </span>
               )}
+              {node.requireReview && (
+                <span
+                  title={`需复核: ${[
+                    node.reviewTriggers?.onUpload !== false ? '上传' : '',
+                    node.reviewTriggers?.onEdit !== false ? '编辑' : '',
+                    node.reviewTriggers?.onDelete !== false ? '删除' : ''
+                  ].filter(Boolean).join(' / ')}`}
+                  className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded font-medium shrink-0 flex items-center gap-1"
+                >
+                  <ShieldCheck className="w-2.5 h-2.5 text-amber-600" />
+                  需复核
+                </span>
+              )}
             </div>
           </div>
 
@@ -1705,11 +2108,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               ? '知识库分类管理'
               : currentView === '标签管理'
               ? '知识库标签管理'
+              : currentView === '知识复核'
+              ? '知识复核中心'
               : currentView === '版本记录'
               ? '知识库版本记录'
               : '知识库内容管理'}
           </h1>
-          {currentView === '分类管理' ? (
+          {currentView === '知识复核' ? (
+            <span className="text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+              <span>审批工作流 · {contentList.filter(a => a.status === '等待复核').length} 条待复核</span>
+            </span>
+          ) : currentView === '分类管理' ? (
             <span className="text-[11px] font-medium text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md shrink-0">
               共 {totalNodes} 个分类 · {totalItems} 条知识
             </span>
@@ -2093,10 +2503,10 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <span>知识库条目 / 文档名称</span>
                 </div>
 
-                <div className="flex items-center gap-6 shrink-0">
+                <div className="flex items-center gap-4 shrink-0">
                   <span className="hidden md:inline-block w-28 text-left">归属分类</span>
                   <span className="hidden lg:inline-block w-24 text-left">切片 & 向量</span>
-                  <span className="hidden sm:inline-block w-20 text-left">版本/更新</span>
+                  <span className="hidden sm:inline-block w-36 text-left">版本/更新</span>
                   <span className="w-32 text-right">操作</span>
                 </div>
               </div>
@@ -2125,6 +2535,13 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 ) : (
                   filteredContentList.map((item) => {
                     const isSelected = selectedContentIds.has(item.id);
+                    // Version & Review status logic
+                    const hasPublished = item.wasPublished || item.status === '已发布';
+                    const hasPendingReview = Boolean(item.pendingVersion || (item.status === '等待复核' && item.wasPublished));
+                    const isReviewLock = !item.wasPublished && item.status === '等待复核';
+                    const isRejectedNeverPub = !item.wasPublished && item.status === '复核不通过';
+                    const isDraft = item.status === '草稿';
+
                     return (
                       <div
                         key={item.id}
@@ -2193,7 +2610,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                         </div>
 
                         {/* Middle Columns */}
-                        <div className="flex items-center gap-6 shrink-0">
+                        <div className="flex items-center gap-4 shrink-0">
                           {/* Category Column */}
                           <div className="hidden md:block w-28 truncate text-[11px] text-slate-500 font-medium">
                             <span className="truncate block" title={item.category}>
@@ -2212,9 +2629,67 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                           </div>
 
                           {/* Version & Date Column */}
-                          <div className="hidden sm:block w-20 text-left">
-                            <span className="text-[10px] font-mono text-slate-600 block">{item.version}</span>
-                            <span className="text-[10px] text-slate-400">{item.updatedAt}</span>
+                          <div className="hidden sm:flex flex-col items-start justify-center w-36 min-w-0">
+                            {!hasPublished ? (
+                              // 没有发布过历史版本
+                              isDraft ? (
+                                <div className="flex flex-col items-start gap-0.5">
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                    <FileText className="w-2.5 h-2.5 text-slate-500" />
+                                    <span>草稿</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              ) : isReviewLock ? (
+                                <div className="flex flex-col items-start gap-0.5">
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                                    <Clock className="w-2.5 h-2.5 text-blue-600" />
+                                    <span>复核审批中</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              ) : isRejectedNeverPub ? (
+                                <div className="flex flex-col items-start gap-0.5">
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                                    <XCircle className="w-2.5 h-2.5 text-rose-600" />
+                                    <span>复核不通过</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-start gap-0.5">
+                                  <span className="text-[10px] font-mono text-slate-600">{item.version}</span>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              )
+                            ) : (
+                              // 已经有历史发布版本
+                              hasPendingReview ? (
+                                <div className="flex flex-col items-start gap-0.5 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-mono font-bold text-slate-700">{item.version}</span>
+                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                                      生效中
+                                    </span>
+                                  </div>
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/90 shadow-2xs">
+                                    <Clock className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                                    <span className="whitespace-nowrap">新版 {item.pendingVersion || '审核中'}(未生效)</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-start gap-0.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-mono text-slate-700">{item.version}</span>
+                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/50">
+                                      已发布
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              )
+                            )}
                           </div>
 
                           {/* Operations Column */}
@@ -2229,13 +2704,39 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </button>
-                            <button
-                              onClick={(e) => handleOpenEditArticle(item, e)}
-                              title="编辑条目"
-                              className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                            </button>
+
+                            {isReviewLock ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  showToast('⚠️ 该知识条目正在复核审批中，已被系统锁定编辑，待管理员审批完成。');
+                                }}
+                                title="复核审批中，暂时不能编辑"
+                                className="p-1 rounded-lg text-slate-300 hover:text-slate-400 hover:bg-slate-100/50 cursor-not-allowed transition-colors"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                            ) : isRejectedNeverPub ? (
+                              <button
+                                type="button"
+                                onClick={(e) => handleOpenEditArticle(item, e)}
+                                title="复核不通过，点击重新编辑并再次提交复核"
+                                className="p-1 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(e) => handleOpenEditArticle(item, e)}
+                                title={isDraft ? '编辑草稿并提交复核' : hasPendingReview ? '编辑条目（已有新版本在复核中）' : '编辑条目'}
+                                className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
                             <button
                               onClick={(e) => handleOpenMoveCategory(item, e)}
                               title="变更分类"
@@ -2271,6 +2772,28 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 <span className="font-mono text-[10px]">向量检索引擎: Active · HNSW Index</span>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB: 知识复核 (Review Workflow SubView) */}
+        {/* ========================================================================= */}
+        {currentView === '知识复核' && (
+          <div className="flex-1 flex flex-col min-h-0">
+            <ArticleReviewSubView
+              articles={contentList}
+              categories={allCategoryPaths}
+              onApprove={handleApproveArticle}
+              onReject={handleRejectArticle}
+              onBatchApprove={handleBatchApprove}
+              onBatchReject={handleBatchReject}
+              onPreviewArticle={(art) => setPreviewArticle(art)}
+              onEditArticle={(art) => handleOpenEditArticle(art)}
+              onRollback={handleRollbackArticle}
+              renderPairedTagBadge={renderPairedTagBadge}
+              showToast={showToast}
+              onShowToast={showToast}
+            />
           </div>
         )}
 
@@ -2771,6 +3294,48 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </button>
             </div>
 
+            {/* Status notice banner */}
+            {editingArticle && (
+              <>
+                {editingArticle.status === '复核不通过' && (
+                  <div className="mx-6 mt-3 px-3.5 py-2.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-800 shrink-0">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <p className="font-bold">上次复核未通过（已驳回）</p>
+                      <p className="text-[11px] text-rose-700">
+                        驳回原因：{editingArticle.reviewComment || '不符合合规要求，请根据审核意见修改知识正文后重新提交复核'}
+                      </p>
+                      <p className="text-[10px] text-rose-600">
+                        修改完成后点击下方“重新提交复核”即可再次提交平台管理员复核。
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {editingArticle.status === '草稿' && (
+                  <div className="mx-6 mt-3 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-2.5 text-xs text-slate-700 shrink-0">
+                    <FileText className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <p className="font-bold">当前知识条目为【草稿】状态（未发布）</p>
+                      <p className="text-[11px] text-slate-600">
+                        您可以自由完善知识内容、适用岗位与标签配置，保存并提交复核。
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {editingArticle.pendingVersion && (
+                  <div className="mx-6 mt-3 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-800 shrink-0">
+                    <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <p className="font-bold">当前已有新版本【{editingArticle.pendingVersion}】在复核中</p>
+                      <p className="text-[11px] text-amber-700">
+                        当前生效版本为 {editingArticle.version}，继续保存将覆盖复核中的待审核版本草稿。
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
             {/* 3 Step Tabs Navigation Header */}
             <div className="px-6 pt-3 pb-2 border-b border-slate-100 bg-white shrink-0">
               <div className="flex items-center gap-2 p-1 bg-slate-100/80 rounded-xl">
@@ -2786,7 +3351,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                     articleModalStepTab === 'content' ? 'bg-[#EA3A20] text-white' : 'bg-slate-200 text-slate-600'
                   }`}>1</span>
-                  <span>1. 设置知识内容</span>
+                  <span>设置知识内容</span>
                 </button>
 
                 <button
@@ -2801,7 +3366,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                     articleModalStepTab === 'tags' ? 'bg-[#EA3A20] text-white' : 'bg-slate-200 text-slate-600'
                   }`}>2</span>
-                  <span>2. 打标签</span>
+                  <span>打标签</span>
                 </button>
 
                 <button
@@ -2816,7 +3381,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                     articleModalStepTab === 'permissions' ? 'bg-[#EA3A20] text-white' : 'bg-slate-200 text-slate-600'
                   }`}>3</span>
-                  <span>3. 配置业务范围和权限</span>
+                  <span>配置业务范围和权限</span>
                 </button>
               </div>
             </div>
@@ -2958,7 +3523,15 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   className="px-5 py-2 text-xs font-bold text-white bg-[#EA3A20] hover:bg-[#c42810] rounded-xl shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>保存并更新向量库</span>
+                  <span>
+                    {editingArticle?.status === '复核不通过'
+                      ? '重新提交复核'
+                      : editingArticle?.status === '草稿'
+                      ? '提交复核'
+                      : editingArticle
+                      ? '保存并提交'
+                      : '保存并更新向量库'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -2976,10 +3549,20 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
           setPreviewArticle(null);
           handleOpenEditArticle(art);
         }}
+        onRollback={handleRollbackArticle}
         onSelectRelated={(art) => setPreviewArticle(art)}
         allArticles={contentList}
         renderPairedTagBadge={renderPairedTagBadge}
         onShowToast={showToast}
+        isReviewMode={currentView === '知识复核'}
+        onApprove={(art, comment) => {
+          handleApproveArticle(art, comment);
+          setPreviewArticle(null);
+        }}
+        onReject={(art, reason) => {
+          handleRejectArticle(art, reason);
+          setPreviewArticle(null);
+        }}
       />
 
       {/* ========================================================================= */}
@@ -3128,6 +3711,71 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   />
                   <p className="text-[11px] text-slate-400">用于系统或外部 API 对接的唯一标识码，留空自动生成</p>
                 </div>
+
+                {/* 平台管理员复核策略配置 */}
+                <div className="pt-3 border-t border-slate-100 space-y-3">
+                  <div className="flex items-start justify-between gap-3 p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/70">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>开启平台管理员复核 (发布控制)</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        设置此分类下的知识上传、编辑或删除时是否需要平台管理员复核。开启后条目必须复核通过才能正式发布。
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={newCatRequireReview}
+                        onChange={(e) => setNewCatRequireReview(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                    </label>
+                  </div>
+
+                  {newCatRequireReview && (
+                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5 animate-in fade-in">
+                      <span className="text-[11px] font-bold text-slate-700 block">触发复核的具体操作场景</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={newCatReviewTriggers.onUpload}
+                            onChange={(e) =>
+                              setNewCatReviewTriggers((prev) => ({ ...prev, onUpload: e.target.checked }))
+                            }
+                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                          />
+                          <span className="text-xs text-slate-700 font-medium">上传新知识</span>
+                        </label>
+                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={newCatReviewTriggers.onEdit}
+                            onChange={(e) =>
+                              setNewCatReviewTriggers((prev) => ({ ...prev, onEdit: e.target.checked }))
+                            }
+                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                          />
+                          <span className="text-xs text-slate-700 font-medium">编辑修改</span>
+                        </label>
+                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={newCatReviewTriggers.onDelete}
+                            onChange={(e) =>
+                              setNewCatReviewTriggers((prev) => ({ ...prev, onDelete: e.target.checked }))
+                            }
+                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                          />
+                          <span className="text-xs text-slate-700 font-medium">删除知识</span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -3202,6 +3850,71 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                     onChange={(e) => setEditCatCode(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20]"
                   />
+                </div>
+
+                {/* 平台管理员复核策略配置 */}
+                <div className="pt-3 border-t border-slate-100 space-y-3">
+                  <div className="flex items-start justify-between gap-3 p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/70">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>开启平台管理员复核 (发布控制)</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        设置此分类下的知识上传、编辑或删除时是否需要平台管理员复核。开启后条目必须复核通过才能正式发布。
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={editCatRequireReview}
+                        onChange={(e) => setEditCatRequireReview(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                    </label>
+                  </div>
+
+                  {editCatRequireReview && (
+                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5 animate-in fade-in">
+                      <span className="text-[11px] font-bold text-slate-700 block">触发复核的具体操作场景</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={editCatReviewTriggers.onUpload}
+                            onChange={(e) =>
+                              setEditCatReviewTriggers((prev) => ({ ...prev, onUpload: e.target.checked }))
+                            }
+                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                          />
+                          <span className="text-xs text-slate-700 font-medium">上传新知识</span>
+                        </label>
+                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={editCatReviewTriggers.onEdit}
+                            onChange={(e) =>
+                              setEditCatReviewTriggers((prev) => ({ ...prev, onEdit: e.target.checked }))
+                            }
+                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                          />
+                          <span className="text-xs text-slate-700 font-medium">编辑修改</span>
+                        </label>
+                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={editCatReviewTriggers.onDelete}
+                            onChange={(e) =>
+                              setEditCatReviewTriggers((prev) => ({ ...prev, onDelete: e.target.checked }))
+                            }
+                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                          />
+                          <span className="text-xs text-slate-700 font-medium">删除知识</span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
