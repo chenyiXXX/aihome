@@ -180,6 +180,9 @@ export interface KBArticle {
   // 复核流转信息
   wasPublished?: boolean; // 是否曾有正式发布版本
   pendingVersion?: string; // 正在复核中未生效的新版本号 (如 v2.5.0)
+  rejectedVersion?: string; // 新版本复核被驳回/未通过的版本号 (如 v2.1.0)
+  pendingEffectiveVersion?: string; // 复核已通过但尚未到达生效日期的新版本号 (如 v2.3.0)
+  pendingEffectiveStartDate?: string; // 待生效起始生效日期 (如 2026-09-01)
   reviewStatus?: 'pending' | 'approved' | 'rejected' | 'expired';
   reviewComment?: string; // 复核审核意见或驳回原因
   reviewer?: string; // 审核人 (平台管理员)

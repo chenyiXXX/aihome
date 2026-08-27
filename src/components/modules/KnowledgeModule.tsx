@@ -61,7 +61,8 @@ import {
   Users,
   AlertTriangle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  CalendarClock
 } from 'lucide-react';
 import { KBArticle, KBCategory, KBTag, KBVersion, KBAuditLog } from '../../types';
 import { initialKBTags } from '../../data/mockData';
@@ -2538,8 +2539,11 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   filteredContentList.map((item) => {
                     const isSelected = selectedContentIds.has(item.id);
                     // Version & Review status logic
-                    const hasPublished = item.wasPublished || item.status === '已发布';
+                    const isExpired = item.status === '失效' || (item.expiryType === 'custom' && Boolean(item.validityEndDate || item.expiryDate) && (item.validityEndDate || item.expiryDate)! < '2026-08-26');
+                    const hasPublished = Boolean(item.wasPublished || item.status === '已发布');
                     const hasPendingReview = Boolean(item.pendingVersion || (item.status === '等待复核' && item.wasPublished));
+                    const hasRejectedReview = Boolean(item.rejectedVersion || (item.status === '复核不通过' && item.wasPublished));
+                    const hasPendingEffective = Boolean(item.pendingEffectiveVersion);
                     const isReviewLock = !item.wasPublished && item.status === '等待复核';
                     const isRejectedNeverPub = !item.wasPublished && item.status === '复核不通过';
                     const isDraft = item.status === '草稿';
@@ -2652,30 +2656,50 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
                           {/* Version & Date Column */}
                           <div className="hidden sm:flex flex-col items-start justify-center w-36 min-w-0">
-                            {!hasPublished ? (
+                            {isExpired ? (
+                              <div className="flex flex-col items-start gap-0.5 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[10px] font-mono text-slate-500 line-through font-medium">{item.version}</span>
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200" title="该条目历史复核通过并曾正式发布，现已过有效期">
+                                    <Clock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                    <span>已过有效期</span>
+                                  </span>
+                                </div>
+                                <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                              </div>
+                            ) : !hasPublished ? (
                               // 没有发布过历史版本
                               isDraft ? (
                                 <div className="flex flex-col items-start gap-0.5">
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                                    <FileText className="w-2.5 h-2.5 text-slate-500" />
-                                    <span>草稿</span>
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-mono text-slate-600 font-bold">{item.version}</span>
+                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                      <FileText className="w-2.5 h-2.5 text-slate-500" />
+                                      <span>草稿</span>
+                                    </span>
+                                  </div>
                                   <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
                                 </div>
                               ) : isReviewLock ? (
                                 <div className="flex flex-col items-start gap-0.5">
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                                    <Clock className="w-2.5 h-2.5 text-blue-600" />
-                                    <span>复核审批中</span>
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-mono text-slate-600 font-bold">{item.version}</span>
+                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                                      <Clock className="w-2.5 h-2.5 text-blue-600" />
+                                      <span>复核审批中</span>
+                                    </span>
+                                  </div>
                                   <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
                                 </div>
                               ) : isRejectedNeverPub ? (
                                 <div className="flex flex-col items-start gap-0.5">
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
-                                    <XCircle className="w-2.5 h-2.5 text-rose-600" />
-                                    <span>复核不通过</span>
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-mono text-slate-600 font-bold">{item.version}</span>
+                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                                      <XCircle className="w-2.5 h-2.5 text-rose-600" />
+                                      <span>复核不通过</span>
+                                    </span>
+                                  </div>
                                   <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
                                 </div>
                               ) : (
@@ -2685,8 +2709,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                 </div>
                               )
                             ) : (
-                              // 已经有历史发布版本
+                              // 已经有历史发布版本且处于有效期限内
                               hasPendingReview ? (
+                                // 情况 2: 已有发布的版本，新版本复核审批中
                                 <div className="flex flex-col items-start gap-0.5 min-w-0">
                                   <div className="flex items-center gap-1.5">
                                     <span className="text-[10px] font-mono font-bold text-slate-700">{item.version}</span>
@@ -2696,16 +2721,50 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                   </div>
                                   <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/90 shadow-2xs">
                                     <Clock className="w-2.5 h-2.5 text-amber-600 shrink-0" />
-                                    <span className="whitespace-nowrap">新版 {item.pendingVersion || '审核中'}(未生效)</span>
+                                    <span className="whitespace-nowrap">新版 {item.pendingVersion || '审核中'}(复核审批中)</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              ) : hasRejectedReview ? (
+                                // 情况 1: 已有发布的版本，但是新的版本复核不通过
+                                <div className="flex flex-col items-start gap-0.5 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-mono font-bold text-slate-700">{item.version}</span>
+                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                                      生效中
+                                    </span>
+                                  </div>
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200 shadow-2xs">
+                                    <XCircle className="w-2.5 h-2.5 text-rose-600 shrink-0" />
+                                    <span className="whitespace-nowrap">新版 {item.rejectedVersion || '修订版'}(复核不通过)</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              ) : hasPendingEffective ? (
+                                // 情况 3: 已有发布的版本，新版本复核已通过，但新版本生效日期尚未到达 (待生效)
+                                <div className="flex flex-col items-start gap-0.5 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-mono font-bold text-slate-700">{item.version}</span>
+                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                                      生效中
+                                    </span>
+                                  </div>
+                                  <span
+                                    className="inline-flex items-center gap-1 text-[9px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200/90 shadow-2xs"
+                                    title={`新版本 ${item.pendingEffectiveVersion} 已复核通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 自动生效上线`}
+                                  >
+                                    <CalendarClock className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
+                                    <span className="whitespace-nowrap">新版 {item.pendingEffectiveVersion}(待生效{item.pendingEffectiveStartDate ? `:${item.pendingEffectiveStartDate.slice(5)}` : ''})</span>
                                   </span>
                                   <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
                                 </div>
                               ) : (
+                                // 常规生效中版本 (统一显示为 生效中)
                                 <div className="flex flex-col items-start gap-0.5">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-mono text-slate-700">{item.version}</span>
-                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/50">
-                                      已发布
+                                    <span className="text-[10px] font-mono font-bold text-slate-700">{item.version}</span>
+                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                                      生效中
                                     </span>
                                   </div>
                                   <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
@@ -2739,7 +2798,31 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                               </button>
-                            ) : isRejectedNeverPub ? (
+                            ) : hasPendingReview ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  showToast(`⚠️ 该条目已有新版本【${item.pendingVersion || ''}】在复核审批中，线上版本正常运行中。`);
+                                }}
+                                title="已有新版本在复核审批中"
+                                className="p-1 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 transition-colors cursor-pointer"
+                              >
+                                <Clock className="w-3.5 h-3.5" />
+                              </button>
+                            ) : hasPendingEffective ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  showToast(`ℹ️ 该条目新版本【${item.pendingEffectiveVersion || ''}】已复核通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 自动生效切换。`);
+                                }}
+                                title={`新版本 ${item.pendingEffectiveVersion} 已复核通过，排期待生效`}
+                                className="p-1 rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-200/80 transition-colors cursor-pointer"
+                              >
+                                <CalendarClock className="w-3.5 h-3.5" />
+                              </button>
+                            ) : hasRejectedReview || isRejectedNeverPub ? (
                               <button
                                 type="button"
                                 onClick={(e) => handleOpenEditArticle(item, e)}
@@ -2752,7 +2835,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               <button
                                 type="button"
                                 onClick={(e) => handleOpenEditArticle(item, e)}
-                                title={isDraft ? '编辑草稿并提交复核' : hasPendingReview ? '编辑条目（已有新版本在复核中）' : '编辑条目'}
+                                title={isDraft ? '编辑草稿并提交复核' : isExpired ? '已过有效期，点击编辑重新生效' : '编辑条目'}
                                 className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />

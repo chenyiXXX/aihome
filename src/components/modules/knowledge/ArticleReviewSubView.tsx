@@ -270,11 +270,11 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
   const getTabArticles = (tab: '待复核' | '复核通过' | '复核不通过') => {
     switch (tab) {
       case '待复核':
-        return articles.filter((a) => a.status === '等待复核');
+        return articles.filter((a) => a.status === '等待复核' || (Boolean(a.pendingVersion) && a.reviewStatus === 'pending'));
       case '复核通过':
-        return articles.filter((a) => a.status === '已发布');
+        return articles.filter((a) => a.status === '已发布' && !a.pendingVersion && !a.rejectedVersion);
       case '复核不通过':
-        return articles.filter((a) => a.status === '复核不通过');
+        return articles.filter((a) => a.status === '复核不通过' || Boolean(a.rejectedVersion) || (a.reviewStatus === 'rejected' && a.wasPublished));
       default:
         return [];
     }
@@ -827,10 +827,30 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
                     </div>
 
                     {/* Version */}
-                    <div className="hidden xl:block w-20 text-left">
-                      <span className="font-mono text-xs font-bold text-slate-700 block">
-                        {item.version}
-                      </span>
+                    <div className="hidden xl:block w-28 text-left">
+                      {item.rejectedVersion ? (
+                        <div className="flex flex-col">
+                          <span className="font-mono text-xs font-bold text-slate-700">
+                            {item.version}
+                          </span>
+                          <span className="text-[10px] font-mono text-rose-600 font-semibold">
+                            新版 {item.rejectedVersion} (驳回)
+                          </span>
+                        </div>
+                      ) : item.pendingVersion ? (
+                        <div className="flex flex-col">
+                          <span className="font-mono text-xs font-bold text-slate-700">
+                            {item.version}
+                          </span>
+                          <span className="text-[10px] font-mono text-amber-600 font-semibold">
+                            新版 {item.pendingVersion} (审核中)
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="font-mono text-xs font-bold text-slate-700 block">
+                          {item.version}
+                        </span>
+                      )}
                     </div>
 
                     {/* Actions Column */}

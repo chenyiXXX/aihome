@@ -51,7 +51,8 @@ import {
   Filter,
   Terminal,
   Columns,
-  ListTree
+  ListTree,
+  CalendarClock
 } from 'lucide-react';
 import { KBArticle, KBAuditLog } from '../../../types';
 import { DualColumnDiff, VersionOption } from './DualColumnDiff';
@@ -907,17 +908,48 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
   };
 
   // Helper to render status badge
-  const renderStatusBadge = (status: string) => {
+  const renderStatusBadge = (status: string, art?: KBArticle) => {
+    const item = art || article;
+    const isExpired = status === '失效' || (item?.expiryType === 'custom' && Boolean(item?.validityEndDate || item?.expiryDate) && (item?.validityEndDate || item?.expiryDate)! < '2026-08-26');
+
+    if (isExpired) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+          <Clock className="w-3.5 h-3.5 text-slate-400" /> 已过有效期 (已失效)
+        </span>
+      );
+    }
+    if (item?.pendingEffectiveVersion) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+          <CalendarClock className="w-3.5 h-3.5" /> 新版 {item.pendingEffectiveVersion} 待生效 (线上生效中)
+        </span>
+      );
+    }
+    if (item?.rejectedVersion || (item?.status === '复核不通过' && item?.wasPublished)) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+          <XCircle className="w-3.5 h-3.5" /> 新版复核不通过 (线上生效中)
+        </span>
+      );
+    }
+    if (item?.pendingVersion || (item?.status === '等待复核' && item?.wasPublished)) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+          <Clock className="w-3.5 h-3.5" /> 新版复核审批中 (线上生效中)
+        </span>
+      );
+    }
     switch (status) {
       case '已发布':
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <CheckCircle2 className="w-3.5 h-3.5" /> 已发布
+            <CheckCircle2 className="w-3.5 h-3.5" /> 生效中
           </span>
         );
       case '等待复核':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 animate-pulse">
             <Clock className="w-3.5 h-3.5" /> 等待复核
           </span>
         );
@@ -936,7 +968,7 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
       case '失效':
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
-            <AlertCircle className="w-3.5 h-3.5" /> 已失效
+            <AlertCircle className="w-3.5 h-3.5" /> 已过有效期 (已失效)
           </span>
         );
       default:
@@ -1149,9 +1181,29 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                 <span className="font-mono font-bold text-[11px] text-[#EA3A20] bg-red-50 border border-red-200/60 px-2 py-0.5 rounded-md">
                   {article.code}
                 </span>
-                <span className="font-mono text-[11px] text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-semibold">
-                  {article.version}
-                </span>
+                {article.rejectedVersion ? (
+                  <div className="inline-flex items-center gap-1.5">
+                    <span className="font-mono text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md font-semibold">
+                      {article.version} (生效中)
+                    </span>
+                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md font-semibold">
+                      <XCircle className="w-3 h-3 text-rose-600" /> 新版 {article.rejectedVersion} 复核不通过
+                    </span>
+                  </div>
+                ) : article.pendingVersion ? (
+                  <div className="inline-flex items-center gap-1.5">
+                    <span className="font-mono text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md font-semibold">
+                      {article.version} (生效中)
+                    </span>
+                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-semibold">
+                      <Clock className="w-3 h-3 text-amber-600" /> 新版 {article.pendingVersion} 复核审批中
+                    </span>
+                  </div>
+                ) : (
+                  <span className="font-mono text-[11px] text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-semibold">
+                    {article.version}
+                  </span>
+                )}
                 <span className="text-slate-300">|</span>
                 <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
                   <Folder className="w-3.5 h-3.5 text-amber-500 shrink-0" />

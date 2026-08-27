@@ -1728,6 +1728,150 @@ export const initialKBArticles: KBArticle[] = [
     ]
   },
 
+  // 44-B. 已有发布版本，但新版本复核不通过 (生效中 v1.8.0, 新版 v1.9.0 驳回)
+  {
+    id: 'KB-REVIEW-REJECTED-02',
+    title: '中东沙特及阿联酋高端别墅阻燃防腐木饰面板施工工艺标准与验收规范（2026修订案）',
+    category: '基础知识库 / 产品与技术百科 / 工艺百科 / 全屋五金与工艺标准',
+    code: 'KB-ENG-GCC-FIRE-03',
+    version: 'v1.8.0',
+    wasPublished: true,
+    rejectedVersion: 'v1.9.0',
+    author: 'David (工程技术员)',
+    updatedAt: '2026-08-20 15:40',
+    content: `# 中东沙特与阿联酋高端别墅阻燃防腐木饰面工程规范 (v1.8.0 正式生效版)
+
+## 1. 适用工程范围
+针对中东海湾国家（沙特利雅得、吉达，阿联酋迪拜、阿布扎比）高温、高湿、高盐雾气候环境的高定木饰面、隐形门及护墙板工程。
+
+## 2. 阻燃与环保强制标准
+- **阻燃等级**：依据沙特民防总局（SCDI）规范，木饰面板芯材必须达到 **ASTM E84 Class A (或 EN 13501-1 Class A1)** 级阻燃；
+- **防腐防潮处理**：背板与侧边必须采用三道环氧树脂封边，喷涂抗霉菌隔离涂层；
+- **甲醛释放量**：执行欧洲 F4 星 / E0 级超低释放环保要求。
+
+## 3. 验收与交工报告
+每批次随柜必须附带国际认可第三方实验室（如 SGS / Intertek）出具的 Class A 防火耐燃检测报告原件。`,
+    status: '已发布',
+    viewCount: 168,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '6.8 MB',
+    chunksCount: 22,
+    reviewStatus: 'rejected',
+    reviewer: 'Sophia (主管/平台管理员)',
+    reviewedAt: '2026-08-20 15:40:00',
+    reviewComment: '经法务与工程部审核：修订草案第3条擅自将中东阻燃等级从 Class A-1 降级为商业级 B-2，不符合沙特民防总局(SCDI)强制标准，存在重大索赔违约风险。新版 v1.9.0 复核不通过，请维持线上 v1.8.0 规范并重新修正后提交！',
+    tags: ['环保等级: 欧洲F4星', '合规风控: 敏感词拦截', '外贸交付: CIF到港'],
+    applicableRoles: ['外贸销售岗', '方案设计师', '报关合规官'],
+    applicableRegions: ['GCC中东六国', '沙特阿拉伯', '阿联酋迪拜'],
+    securityLevel: '内部',
+    expiryType: 'permanent',
+    auditLogs: [
+      {
+        id: 'LOG-KB-REJ-PUB-002',
+        articleId: 'KB-REVIEW-REJECTED-02',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-20 15:40:00',
+        action: 'reject',
+        actionLabel: '平台管理员复核驳回',
+        version: 'v1.9.0',
+        wasPublished: true,
+        reviewComment: '经法务与工程部审核：修订草案第3条擅自将中东阻燃等级从 Class A-1 降级为商业级 B-2，不符合沙特民防总局(SCDI)强制标准，存在重大索赔违约风险。新版 v1.9.0 复核不通过，请维持线上 v1.8.0 规范并重新修正后提交！',
+        diffSummary: '新版 v1.9.0 复核不通过，驳回修改；线上继续保留生效 v1.8.0 版本',
+        beforeSnapshot: {
+          title: '中东沙特及阿联酋高端别墅阻燃防腐木饰面板施工工艺标准与验收规范',
+          version: 'v1.8.0',
+          status: '已发布',
+          content: '依据沙特民防总局（SCDI）规范，木饰面板芯材必须达到 ASTM E84 Class A 级阻燃...'
+        },
+        afterSnapshot: {
+          title: '中东沙特及阿联酋高端别墅阻燃防腐木饰面板施工工艺标准与验收规范（2026修订案）',
+          version: 'v1.9.0',
+          status: '复核不通过',
+          content: '依据沙特民防总局（SCDI）规范，木饰面板芯材调整为 Class B-2 商业级阻燃...'
+        }
+      },
+      {
+        id: 'LOG-KB-REJ-PUB-001',
+        articleId: 'KB-REVIEW-REJECTED-02',
+        operator: 'David (工程技术员)',
+        operatorRole: '工程技术员',
+        timestamp: '2026-08-20 14:50:00',
+        action: 'edit',
+        actionLabel: '提交工程标准修订版 v1.9.0',
+        version: 'v1.9.0',
+        wasPublished: true,
+        diffSummary: '提交修改中东工程阻燃分级与背板涂层工艺'
+      }
+    ]
+  },
+
+  // 44-C. 已有发布版本，新版本复核已通过，但有效期未到 (待生效)
+  {
+    id: 'KB-REVIEW-PENDING-EFFECTIVE-01',
+    title: '2026年Q4全屋定制外贸出口退税结汇与海关申报合规指引（新版过审待生效）',
+    category: '报关认证 / 外贸合规与退税清关 / 欧美及中东清关申报与海关编码',
+    code: 'KB-CUSTOMS-TAX-2026Q4',
+    version: 'v2.0.0',
+    wasPublished: true,
+    pendingEffectiveVersion: 'v2.1.0',
+    pendingEffectiveStartDate: '2026-09-01',
+    author: 'Emily (关务合规主管)',
+    updatedAt: '2026-08-22 10:15',
+    content: `# 2026年Q4全屋定制出口退税结汇规范 (v2.0.0 正式生效版)
+
+## 1. 现行结汇与退税税率
+- 实木及板式家具综合退税率维持 13%；
+- 单证备案需在报关单结关后 15 个工作日内完成系统核销。
+
+## 2. 报关单证要求
+- 报关单、提单、增值税专用发票“三单一致”；
+- 境外汇款水单对应客户名称需与备案合同保持一致。`,
+    status: '已发布',
+    viewCount: 342,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '4.2 MB',
+    chunksCount: 18,
+    reviewStatus: 'approved',
+    reviewer: 'Sophia (主管/平台管理员)',
+    reviewedAt: '2026-08-22 10:15:00',
+    reviewComment: '新版本 v2.1.0 经关务总监与财务部联合复核通过！由于涉及海关2026年9月1日新关税税则调整，系统已锁定并将于 2026-09-01 零点准时自动切换为线上正式生效版本。',
+    tags: ['外贸合规: 退税申报', '外贸合规: 报关单证'],
+    applicableRoles: ['关务跟单岗', '外贸销售岗', '财务审计岗'],
+    applicableRegions: ['欧美市场', 'GCC中东六国'],
+    securityLevel: '内部',
+    expiryType: 'permanent',
+    auditLogs: [
+      {
+        id: 'LOG-KB-PEFF-002',
+        articleId: 'KB-REVIEW-PENDING-EFFECTIVE-01',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-22 10:15:00',
+        action: 'approve',
+        actionLabel: '复核通过（排期自动生效）',
+        version: 'v2.1.0',
+        wasPublished: true,
+        reviewComment: '新版本 v2.1.0 经关务总监与财务部联合复核通过！由于涉及海关2026年9月1日新关税税则调整，系统已锁定并将于 2026-09-01 零点准时自动切换为线上正式生效版本。',
+        diffSummary: '新版本 v2.1.0 审批通过，设定于 2026-09-01 自动生效上线；当前保留运行 v2.0.0'
+      },
+      {
+        id: 'LOG-KB-PEFF-001',
+        articleId: 'KB-REVIEW-PENDING-EFFECTIVE-01',
+        operator: 'Emily (关务合规主管)',
+        operatorRole: '关务合规主管',
+        timestamp: '2026-08-21 16:30:00',
+        action: 'edit',
+        actionLabel: '提交关税新规修订版 v2.1.0',
+        version: 'v2.1.0',
+        wasPublished: true,
+        diffSummary: '根据海关总署最新公告预先更新Q4结汇税率'
+      }
+    ]
+  },
+
   // 45. 复核不通过条目: 驳回条目 (未发布过版本)
   {
     id: 'KB-REVIEW-REJECTED-01',
