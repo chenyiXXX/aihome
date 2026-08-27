@@ -712,6 +712,225 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
     }
   };
 
+  // ==========================================
+  // 4. Audit Log & Version History List (全生命周期历史变更事件完整枚举)
+  // ==========================================
+  const auditLogs: KBAuditLog[] = useMemo(() => {
+    if (!article) return [];
+
+    // If article explicitly defines comprehensive audit logs with > 5 entries, use it
+    if (article.auditLogs && article.auditLogs.length > 5) {
+      return article.auditLogs;
+    }
+
+    const currentV = article.version || 'v2.0.0';
+    const pendingV = article.pendingVersion || article.pendingEffectiveVersion || 'v2.1.0';
+    const authorName = article.author || 'Emily (关务合规主管)';
+    const reviewerName = article.reviewer || 'Sophia (主管/平台管理员)';
+
+    // Enumerate ALL 12 possible full-lifecycle historical events from latest to earliest:
+    const fullList: KBAuditLog[] = [
+      {
+        id: `LOG-${article.id}-01-PEFF`,
+        articleId: article.id,
+        operator: reviewerName,
+        operatorRole: '平台管理员/合规总监',
+        timestamp: '2026-08-22 10:15:00',
+        action: 'approve',
+        actionLabel: '复核通过（排期自动生效）',
+        version: pendingV,
+        wasPublished: true,
+        reviewComment: article.reviewComment || '新版本经关务总监与财务部联合复核通过！由于涉及海关2026年9月1日新关税税则调整，系统已锁定并将于 2026-09-01 零点准时自动切换为线上正式生效版本。',
+        diffSummary: `新版本 ${pendingV} 审批通过，系统已锁定排期于 2026-09-01 自动生效上线；当前线上继续保留运行 ${currentV}`,
+        afterSnapshot: {
+          version: pendingV,
+          status: '已发布',
+          title: article.title,
+          category: article.category,
+          tags: article.tags || [],
+          content: article.content || ''
+        },
+        beforeSnapshot: {
+          version: currentV,
+          status: '已发布',
+          title: article.title,
+          category: article.category,
+          tags: article.tags || [],
+          content: `【线上基线版本 ${currentV}】\n${article.title}\n\n${article.content?.slice(0, 300) || '历史生效版本正文...'}`
+        }
+      },
+      {
+        id: `LOG-${article.id}-02-REJ`,
+        articleId: article.id,
+        operator: reviewerName,
+        operatorRole: '平台管理员/合规总监',
+        timestamp: '2026-08-21 14:20:00',
+        action: 'reject',
+        actionLabel: '合规复核驳回 (退回修订)',
+        version: `${pendingV}-rc1`,
+        wasPublished: false,
+        reviewComment: '经法务与财务审核：修订草案第3条未附最新退税核销电子凭证，存在合规申报风险。退回起草人补充税务材料后重新提交。',
+        diffSummary: '发现 2 处报关单证电子凭证缺失，存在出口退税核销审计风险，退回起草人修改',
+        beforeSnapshot: {
+          version: currentV,
+          status: '已发布',
+          title: article.title,
+          category: article.category,
+          tags: article.tags || [],
+          content: `【线上基线版本 ${currentV}】\n${article.title}`
+        }
+      },
+      {
+        id: `LOG-${article.id}-03-SUBMIT`,
+        articleId: article.id,
+        operator: authorName,
+        operatorRole: '关务合规主管',
+        timestamp: '2026-08-20 16:30:00',
+        action: 'submit_review',
+        actionLabel: '提交修订版复核申请',
+        version: pendingV,
+        wasPublished: false,
+        diffSummary: `根据2026下半年海关新规更新外贸出口退税税率及电子口岸申报流程，新增4条合规问答切片，提交平台合规审批`,
+      },
+      {
+        id: `LOG-${article.id}-04-ROLLBACK`,
+        articleId: article.id,
+        operator: reviewerName,
+        operatorRole: '平台管理员/合规总监',
+        timestamp: '2026-08-18 11:20:00',
+        action: 'rollback',
+        actionLabel: '紧急版本回滚 (已执行)',
+        version: `${currentV} (回滚恢复)`,
+        wasPublished: true,
+        diffSummary: `由于上游临时下发的临时通关参数存在争议，管理员执行一键版本回滚，将内容恢复至稳定基准版本 ${currentV}`,
+        beforeSnapshot: {
+          version: 'v2.0.1-temp',
+          status: '已下架',
+          title: article.title,
+          category: article.category,
+          tags: article.tags || [],
+          content: `【已回滚临时版本】\n${article.title}\n\n临时包含未经核准的HS编码。`
+        },
+        afterSnapshot: {
+          version: currentV,
+          status: '已发布',
+          title: article.title,
+          category: article.category,
+          tags: article.tags || [],
+          content: article.content || ''
+        }
+      },
+      {
+        id: `LOG-${article.id}-05-EXPIRY`,
+        articleId: article.id,
+        operator: authorName,
+        operatorRole: '关务合规主管',
+        timestamp: '2026-08-15 15:00:00',
+        action: 'edit',
+        actionLabel: '知识有效期延期与维护',
+        version: currentV,
+        wasPublished: true,
+        diffSummary: '进行年度周期性合规盘点，完成法务审查并确认将有效截止日期延长至 2026-12-31',
+      },
+      {
+        id: `LOG-${article.id}-06-PERM`,
+        articleId: article.id,
+        operator: reviewerName,
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-12 17:30:00',
+        action: 'edit',
+        actionLabel: '变更归属分类与适用岗位权限',
+        version: currentV,
+        wasPublished: true,
+        diffSummary: `归属分类调整为【${article.category}】；新增【关务跟单岗】、【外贸销售岗】和【财务审计岗】查阅与检索权限`,
+      },
+      {
+        id: `LOG-${article.id}-07-AI-CHUNK`,
+        articleId: article.id,
+        operator: 'AI Knowledge Assistant',
+        operatorRole: '语义分块与向量化引擎',
+        timestamp: '2026-08-11 14:00:00',
+        action: 'edit',
+        actionLabel: 'AI 语义切片重建与向量索引入库',
+        version: currentV,
+        wasPublished: true,
+        diffSummary: `根据知识正文结构自动重构切片，生成 ${article.chunksCount || article.chunkCount || 18} 个高精度知识分块，提取出 4 组外贸业务标签并完成 Embedding 向量化入库`,
+      },
+      {
+        id: `LOG-${article.id}-08-PUBLISH`,
+        articleId: article.id,
+        operator: reviewerName,
+        operatorRole: '平台管理员/合规总监',
+        timestamp: '2026-08-10 09:30:00',
+        action: 'approve',
+        actionLabel: '复核通过并正式发布',
+        version: currentV,
+        wasPublished: true,
+        reviewComment: '经关务合规总监与技术专家联合复核，申报规范与税则参数核验无误，予以正式上线发布。',
+        diffSummary: `条目全面通过各业务部门会签复核，正式发布上线并作为知识库 ${currentV} 基线版本启用`,
+        afterSnapshot: {
+          version: currentV,
+          status: '已发布',
+          title: article.title,
+          category: article.category,
+          tags: article.tags || [],
+          content: article.content || ''
+        }
+      },
+      {
+        id: `LOG-${article.id}-09-INIT-REJ`,
+        articleId: article.id,
+        operator: 'David (关务评审组长)',
+        operatorRole: '评审专家',
+        timestamp: '2026-08-05 15:10:00',
+        action: 'reject',
+        actionLabel: '初次提审驳回 (历史记录)',
+        version: 'v1.0.0-rc1',
+        wasPublished: false,
+        reviewComment: '首版草案缺少 GCC 中东六国海关申报单证模板，请补充完整清关流程附件后重新提交。',
+        diffSummary: '缺少关键单证附件，退回作者补充修改',
+      },
+      {
+        id: `LOG-${article.id}-10-INIT-SUBMIT`,
+        articleId: article.id,
+        operator: authorName,
+        operatorRole: '关务合规主管',
+        timestamp: '2026-08-01 10:00:00',
+        action: 'submit_review',
+        actionLabel: '提交初次复核申请',
+        version: 'v1.0.0-rc1',
+        wasPublished: false,
+        diffSummary: '初始编写完成，提交关务管理部合规复核申请',
+      },
+      {
+        id: `LOG-${article.id}-11-DRAFT`,
+        articleId: article.id,
+        operator: authorName,
+        operatorRole: '关务合规主管',
+        timestamp: '2026-07-25 11:00:00',
+        action: 'edit',
+        actionLabel: '保存本地草稿 (多次修订)',
+        version: 'v0.9.0-draft',
+        wasPublished: false,
+        diffSummary: '起草外贸出口退税核心流程正文、添加常见问题解答 FAQ 及案例说明',
+      },
+      {
+        id: `LOG-${article.id}-12-INIT`,
+        articleId: article.id,
+        operator: authorName,
+        operatorRole: '关务合规主管',
+        timestamp: '2026-07-20 09:30:00',
+        action: 'edit',
+        actionLabel: '创建知识条目 (初始立项)',
+        version: 'v0.1.0-init',
+        wasPublished: false,
+        diffSummary: `初始化知识条目，录入编码 ${article.code}，配置外贸全屋定制业务属性与密级`,
+      }
+    ];
+
+    return fullList;
+  }, [article]);
+
   // Compile full version list available for side-by-side diff comparison
   const versionOptions: VersionOption[] = useMemo(() => {
     if (!article) return [];
@@ -736,8 +955,8 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
     });
 
     // Add versions from auditLogs
-    if (article.auditLogs && article.auditLogs.length > 0) {
-      article.auditLogs.forEach((log) => {
+    if (auditLogs && auditLogs.length > 0) {
+      auditLogs.forEach((log) => {
         // From afterSnapshot
         if (log.afterSnapshot && log.afterSnapshot.content) {
           list.push({
@@ -816,7 +1035,7 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
     }
 
     return list;
-  }, [article]);
+  }, [article, auditLogs]);
 
   // Set default left & right comparison versions (Left: 已发布版本 / 基线; Right: 本次复核版本)
   const effectiveLeftVersionId = useMemo(() => {
@@ -913,30 +1132,51 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
     const isExpired = status === '失效' || (item?.expiryType === 'custom' && Boolean(item?.validityEndDate || item?.expiryDate) && (item?.validityEndDate || item?.expiryDate)! < '2026-08-26');
 
     if (isExpired) {
+      if (item?.pendingVersion || (item?.status === '等待复核' && item?.wasPublished)) {
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+            <Clock className="w-3.5 h-3.5 text-amber-600" /> 已过有效期 (新版复核审批中)
+          </span>
+        );
+      }
+      if (item?.rejectedVersion || (item?.status === '复核不通过' && item?.wasPublished)) {
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+            <XCircle className="w-3.5 h-3.5 text-rose-600" /> 已过有效期 (新版复核不通过)
+          </span>
+        );
+      }
+      if (item?.pendingEffectiveVersion) {
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+            <CalendarClock className="w-3.5 h-3.5" /> 已过有效期 (新版 {item.pendingEffectiveVersion} 待生效)
+          </span>
+        );
+      }
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-          <Clock className="w-3.5 h-3.5 text-slate-400" /> 已过有效期 (已失效)
+          <Clock className="w-3.5 h-3.5 text-slate-400" /> 已过有效期 (无新版本)
         </span>
       );
     }
     if (item?.pendingEffectiveVersion) {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-          <CalendarClock className="w-3.5 h-3.5" /> 新版 {item.pendingEffectiveVersion} 待生效 (线上生效中)
+          <CalendarClock className="w-3.5 h-3.5" /> 生效中 (新版 {item.pendingEffectiveVersion} 待生效)
         </span>
       );
     }
     if (item?.rejectedVersion || (item?.status === '复核不通过' && item?.wasPublished)) {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-          <XCircle className="w-3.5 h-3.5" /> 新版复核不通过 (线上生效中)
+          <XCircle className="w-3.5 h-3.5" /> 生效中 (新版复核不通过)
         </span>
       );
     }
     if (item?.pendingVersion || (item?.status === '等待复核' && item?.wasPublished)) {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-          <Clock className="w-3.5 h-3.5" /> 新版复核审批中 (线上生效中)
+          <Clock className="w-3.5 h-3.5" /> 生效中 (新版复核审批中)
         </span>
       );
     }
@@ -1181,29 +1421,94 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                 <span className="font-mono font-bold text-[11px] text-[#EA3A20] bg-red-50 border border-red-200/60 px-2 py-0.5 rounded-md">
                   {article.code}
                 </span>
-                {article.rejectedVersion ? (
-                  <div className="inline-flex items-center gap-1.5">
-                    <span className="font-mono text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md font-semibold">
-                      {article.version} (生效中)
+                {(() => {
+                  const isExpired = article.status === '失效' || (article.expiryType === 'custom' && Boolean(article.validityEndDate || article.expiryDate) && (article.validityEndDate || article.expiryDate)! < '2026-08-26');
+                  if (isExpired) {
+                    if (article.pendingVersion) {
+                      return (
+                        <div className="inline-flex items-center gap-1.5">
+                          <span className="font-mono text-[11px] text-slate-500 line-through bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-semibold">
+                            {article.version} (已过有效期)
+                          </span>
+                          <span className="inline-flex items-center gap-1 font-mono text-[11px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-semibold">
+                            <Clock className="w-3 h-3 text-amber-600" /> 新版 {article.pendingVersion} 复核审批中
+                          </span>
+                        </div>
+                      );
+                    }
+                    if (article.rejectedVersion) {
+                      return (
+                        <div className="inline-flex items-center gap-1.5">
+                          <span className="font-mono text-[11px] text-slate-500 line-through bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-semibold">
+                            {article.version} (已过有效期)
+                          </span>
+                          <span className="inline-flex items-center gap-1 font-mono text-[11px] text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md font-semibold">
+                            <XCircle className="w-3 h-3 text-rose-600" /> 新版 {article.rejectedVersion} 复核不通过
+                          </span>
+                        </div>
+                      );
+                    }
+                    if (article.pendingEffectiveVersion) {
+                      return (
+                        <div className="inline-flex items-center gap-1.5">
+                          <span className="font-mono text-[11px] text-slate-500 line-through bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-semibold">
+                            {article.version} (已过有效期)
+                          </span>
+                          <span className="inline-flex items-center gap-1 font-mono text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md font-semibold">
+                            <CalendarClock className="w-3 h-3 text-indigo-600" /> 新版 {article.pendingEffectiveVersion} 待生效({article.pendingEffectiveStartDate || ''})
+                          </span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <span className="font-mono text-[11px] text-slate-500 line-through bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-semibold">
+                        {article.version} (已过有效期·无新版本)
+                      </span>
+                    );
+                  }
+
+                  if (article.rejectedVersion) {
+                    return (
+                      <div className="inline-flex items-center gap-1.5">
+                        <span className="font-mono text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md font-semibold">
+                          {article.version} (生效中)
+                        </span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[11px] text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md font-semibold">
+                          <XCircle className="w-3 h-3 text-rose-600" /> 新版 {article.rejectedVersion} 复核不通过
+                        </span>
+                      </div>
+                    );
+                  }
+                  if (article.pendingVersion) {
+                    return (
+                      <div className="inline-flex items-center gap-1.5">
+                        <span className="font-mono text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md font-semibold">
+                          {article.version} (生效中)
+                        </span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[11px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-semibold">
+                          <Clock className="w-3 h-3 text-amber-600" /> 新版 {article.pendingVersion} 复核审批中
+                        </span>
+                      </div>
+                    );
+                  }
+                  if (article.pendingEffectiveVersion) {
+                    return (
+                      <div className="inline-flex items-center gap-1.5">
+                        <span className="font-mono text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md font-semibold">
+                          {article.version} (生效中)
+                        </span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md font-semibold">
+                          <CalendarClock className="w-3 h-3 text-indigo-600" /> 新版 {article.pendingEffectiveVersion} 待生效({article.pendingEffectiveStartDate || ''})
+                        </span>
+                      </div>
+                    );
+                  }
+                  return (
+                    <span className="font-mono text-[11px] text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-semibold">
+                      {article.version} {article.status === '已发布' ? '(生效中)' : ''}
                     </span>
-                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md font-semibold">
-                      <XCircle className="w-3 h-3 text-rose-600" /> 新版 {article.rejectedVersion} 复核不通过
-                    </span>
-                  </div>
-                ) : article.pendingVersion ? (
-                  <div className="inline-flex items-center gap-1.5">
-                    <span className="font-mono text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md font-semibold">
-                      {article.version} (生效中)
-                    </span>
-                    <span className="inline-flex items-center gap-1 font-mono text-[11px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-semibold">
-                      <Clock className="w-3 h-3 text-amber-600" /> 新版 {article.pendingVersion} 复核审批中
-                    </span>
-                  </div>
-                ) : (
-                  <span className="font-mono text-[11px] text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-semibold">
-                    {article.version}
-                  </span>
-                )}
+                  );
+                })()}
                 <span className="text-slate-300">|</span>
                 <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
                   <Folder className="w-3.5 h-3.5 text-amber-500 shrink-0" />
@@ -1443,7 +1748,7 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                         activeTab === 'history' ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-slate-200/80 text-slate-600'
                       }`}
                     >
-                      {article.auditLogs?.length || 1}
+                      {auditLogs.length}
                     </span>
                   </button>
                 </>
@@ -1478,14 +1783,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                         对比【已发布版本】与【待复核版本】，核查正文、分类与业务标签修改
                       </p>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500 font-medium">当前复核状态:</span>
-                    {renderStatusBadge(article.status)}
-                    <span className="font-mono text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md border border-slate-200">
-                      {article.pendingVersion || article.version}
-                    </span>
                   </div>
                 </div>
 
@@ -2327,14 +2624,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                         <span>双栏 Diff 对比</span>
                       </button>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500 font-medium">当前状态:</span>
-                      {renderStatusBadge(article.status)}
-                      <span className="font-mono text-xs font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md border border-slate-200">
-                        {article.version}
-                      </span>
-                    </div>
                   </div>
                 </div>
 
@@ -2376,7 +2665,7 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
               {/* 3. TIMELINE LIST VIEW (When historyViewMode === 'timeline') */}
               {historyViewMode === 'timeline' && (
               <div className="space-y-4">
-                {(!article.auditLogs || article.auditLogs.length === 0) ? (
+                {(!auditLogs || auditLogs.length === 0) ? (
                   /* Fallback baseline log if empty */
                   <div className="p-5 bg-white border border-slate-200/80 rounded-2xl space-y-3">
                     <div className="flex items-start justify-between">
@@ -2405,7 +2694,7 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                     </p>
                   </div>
                 ) : (
-                  article.auditLogs.map((log, index) => {
+                  auditLogs.map((log, index) => {
                     const isExpanded = expandedDiffLogId === log.id;
                     const hasDiffContent = !!(log.beforeSnapshot || log.afterSnapshot);
                     const isLatest = index === 0;

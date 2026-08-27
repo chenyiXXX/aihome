@@ -145,6 +145,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const [previewArticle, setPreviewArticle] = useState<KBArticle | null>(null);
   const [hoveredTitle, setHoveredTitle] = useState<{ id: string; title: string; rect: { top: number; left: number; width: number; height: number } } | null>(null);
 
+  // Rejection Reason Detail Modal State
+  const [rejectionDetailArticle, setRejectionDetailArticle] = useState<KBArticle | null>(null);
+
   // Create / Edit Article Modal
   const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<KBArticle | null>(null);
@@ -2509,7 +2512,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 <div className="flex items-center gap-4 shrink-0">
                   <span className="hidden md:inline-block w-28 text-left">归属分类</span>
                   <span className="hidden lg:inline-block w-24 text-left">切片 & 向量</span>
-                  <span className="hidden sm:inline-block w-36 text-left">版本/更新</span>
+                  <span className="hidden sm:inline-block w-44 xl:w-48 text-left">版本/更新</span>
                   <span className="w-32 text-right">操作</span>
                 </div>
               </div>
@@ -2655,52 +2658,144 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                           </div>
 
                           {/* Version & Date Column */}
-                          <div className="hidden sm:flex flex-col items-start justify-center w-36 min-w-0">
+                          <div className="hidden sm:flex flex-col items-start justify-center w-44 xl:w-48 min-w-0">
                             {isExpired ? (
-                              <div className="flex flex-col items-start gap-0.5 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[10px] font-mono text-slate-500 line-through font-medium">{item.version}</span>
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200" title="该条目历史复核通过并曾正式发布，现已过有效期">
-                                    <Clock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                    <span>已过有效期</span>
+                              hasPendingReview ? (
+                                // 情况 A: 已过有效期 + 新版复核审批中
+                                <div className="flex flex-col items-start gap-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-400 line-through font-mono text-[11px] font-medium shadow-2xs">
+                                      {item.version}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-medium shadow-2xs" title="原版本已过有效期">
+                                      已过有效期
+                                    </span>
+                                  </div>
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold shadow-2xs">
+                                    <Clock className="w-3 h-3 text-amber-600 shrink-0" />
+                                    <span className="whitespace-nowrap">新版 {item.pendingVersion || '审核中'}(审批中)</span>
                                   </span>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
                                 </div>
-                                <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
-                              </div>
+                              ) : hasRejectedReview ? (
+                                // 情况 B: 已过有效期 + 新版复核不通过 (符合用户截图样式)
+                                <div className="flex flex-col items-start gap-1 min-w-0">
+                                  {/* Row 1: Baseline Version Badge + Expired Badge */}
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-400 line-through font-mono text-[11px] font-medium shadow-2xs">
+                                      {item.version}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-medium shadow-2xs" title="原版本已过有效期">
+                                      已过有效期
+                                    </span>
+                                  </div>
+
+                                  {/* Row 2: Rejected Revision Red Pill */}
+                                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold shadow-2xs">
+                                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                    <span className="whitespace-nowrap">新版 {item.rejectedVersion || 'v1.1.0'} (复核不通过)</span>
+                                  </div>
+
+                                  {/* Row 3: Dedicated Clickable Action Line */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setRejectionDetailArticle(item);
+                                    }}
+                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-600 hover:text-rose-700 cursor-pointer transition-colors group/link mt-0.5 text-left"
+                                    title="点击查看管理员复核驳回原因与详细修改意见并重新提交"
+                                  >
+                                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                    <span className="group-hover/link:underline underline-offset-2">查看驳回意见并重新提交</span>
+                                  </button>
+                                </div>
+                              ) : hasPendingEffective ? (
+                                // 情况 C: 已过有效期 + 新版过审排期待生效
+                                <div className="flex flex-col items-start gap-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-400 line-through font-mono text-[11px] font-medium shadow-2xs">
+                                      {item.version}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-medium shadow-2xs" title="原版本已过有效期">
+                                      已过有效期
+                                    </span>
+                                  </div>
+                                  <span
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-bold shadow-2xs"
+                                    title={`新版本 ${item.pendingEffectiveVersion} 已复核通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 自动生效上线`}
+                                  >
+                                    <CalendarClock className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                    <span className="whitespace-nowrap">新版 {item.pendingEffectiveVersion}(待生效{item.pendingEffectiveStartDate ? `:${item.pendingEffectiveStartDate.slice(5)}` : ''})</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              ) : (
+                                // 情况 D: 已过有效期，无新版本
+                                <div className="flex flex-col items-start gap-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-400 line-through font-mono text-[11px] font-medium shadow-2xs">
+                                      {item.version}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-medium shadow-2xs" title="该条目历史复核通过并曾正式发布，现已过有效期且暂无新版">
+                                      已过有效期
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+                                </div>
+                              )
                             ) : !hasPublished ? (
                               // 没有发布过历史版本
                               isDraft ? (
-                                <div className="flex flex-col items-start gap-0.5">
+                                <div className="flex flex-col items-start gap-1 min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-mono text-slate-600 font-bold">{item.version}</span>
-                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                                      <FileText className="w-2.5 h-2.5 text-slate-500" />
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-mono text-[11px] font-bold shadow-2xs">{item.version}</span>
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                                      <FileText className="w-3 h-3 text-slate-500" />
                                       <span>草稿</span>
                                     </span>
                                   </div>
                                   <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
                                 </div>
                               ) : isReviewLock ? (
-                                <div className="flex flex-col items-start gap-0.5">
+                                <div className="flex flex-col items-start gap-1 min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-mono text-slate-600 font-bold">{item.version}</span>
-                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                                      <Clock className="w-2.5 h-2.5 text-blue-600" />
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-mono text-[11px] font-bold shadow-2xs">{item.version}</span>
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 shadow-2xs">
+                                      <Clock className="w-3 h-3 text-blue-600" />
                                       <span>复核审批中</span>
                                     </span>
                                   </div>
                                   <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
                                 </div>
                               ) : isRejectedNeverPub ? (
-                                <div className="flex flex-col items-start gap-0.5">
+                                <div className="flex flex-col items-start gap-1 min-w-0">
+                                  {/* Row 1: Initial Version Badge */}
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-mono text-slate-600 font-bold">{item.version}</span>
-                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
-                                      <XCircle className="w-2.5 h-2.5 text-rose-600" />
-                                      <span>复核不通过</span>
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-mono text-[11px] font-bold shadow-2xs">
+                                      {item.version}
                                     </span>
                                   </div>
-                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+
+                                  {/* Row 2: Rejected Red Pill */}
+                                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold shadow-2xs">
+                                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                    <span className="whitespace-nowrap">新版 {item.rejectedVersion || item.version} (复核不通过)</span>
+                                  </div>
+
+                                  {/* Row 3: Dedicated Clickable Action Line */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setRejectionDetailArticle(item);
+                                    }}
+                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-600 hover:text-rose-700 cursor-pointer transition-colors group/link mt-0.5 text-left"
+                                    title="点击查看管理员复核驳回原因与详细修改意见并重新提交"
+                                  >
+                                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                    <span className="group-hover/link:underline underline-offset-2">查看驳回意见并重新提交</span>
+                                  </button>
                                 </div>
                               ) : (
                                 <div className="flex flex-col items-start gap-0.5">
@@ -2712,58 +2807,76 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               // 已经有历史发布版本且处于有效期限内
                               hasPendingReview ? (
                                 // 情况 2: 已有发布的版本，新版本复核审批中
-                                <div className="flex flex-col items-start gap-0.5 min-w-0">
+                                <div className="flex flex-col items-start gap-1 min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-mono font-bold text-slate-700">{item.version}</span>
-                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-mono text-[11px] font-bold shadow-2xs">{item.version}</span>
+                                    <span className="px-2 py-0.5 rounded-md border border-emerald-200/80 bg-emerald-50 text-emerald-700 text-[10px] font-medium shadow-2xs">
                                       生效中
                                     </span>
                                   </div>
-                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/90 shadow-2xs">
-                                    <Clock className="w-2.5 h-2.5 text-amber-600 shrink-0" />
-                                    <span className="whitespace-nowrap">新版 {item.pendingVersion || '审核中'}(复核审批中)</span>
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold shadow-2xs">
+                                    <Clock className="w-3 h-3 text-amber-600 shrink-0" />
+                                    <span className="whitespace-nowrap">新版 {item.pendingVersion || '审核中'}(审批中)</span>
                                   </span>
                                   <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
                                 </div>
                               ) : hasRejectedReview ? (
-                                // 情况 1: 已有发布的版本，但是新的版本复核不通过
-                                <div className="flex flex-col items-start gap-0.5 min-w-0">
+                                // 情况 1: 已有发布的版本，但是新的版本复核不通过 (符合用户截图样式)
+                                <div className="flex flex-col items-start gap-1 min-w-0">
+                                  {/* Row 1: Baseline Version Badge + Active Badge */}
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-mono font-bold text-slate-700">{item.version}</span>
-                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-mono text-[11px] font-bold shadow-2xs">
+                                      {item.version}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md border border-emerald-200/80 bg-emerald-50 text-emerald-700 text-[10px] font-medium shadow-2xs">
                                       生效中
                                     </span>
                                   </div>
-                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200 shadow-2xs">
-                                    <XCircle className="w-2.5 h-2.5 text-rose-600 shrink-0" />
-                                    <span className="whitespace-nowrap">新版 {item.rejectedVersion || '修订版'}(复核不通过)</span>
-                                  </span>
-                                  <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
+
+                                  {/* Row 2: Rejected Revision Red Pill */}
+                                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold shadow-2xs">
+                                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                    <span className="whitespace-nowrap">新版 {item.rejectedVersion || 'v1.1.0'} (复核不通过)</span>
+                                  </div>
+
+                                  {/* Row 3: Dedicated Clickable Action Line */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setRejectionDetailArticle(item);
+                                    }}
+                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-600 hover:text-rose-700 cursor-pointer transition-colors group/link mt-0.5 text-left"
+                                    title="点击查看管理员复核驳回原因与详细修改意见并重新提交"
+                                  >
+                                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                                    <span className="group-hover/link:underline underline-offset-2">查看驳回意见并重新提交</span>
+                                  </button>
                                 </div>
                               ) : hasPendingEffective ? (
                                 // 情况 3: 已有发布的版本，新版本复核已通过，但新版本生效日期尚未到达 (待生效)
-                                <div className="flex flex-col items-start gap-0.5 min-w-0">
+                                <div className="flex flex-col items-start gap-1 min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-mono font-bold text-slate-700">{item.version}</span>
-                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-mono text-[11px] font-bold shadow-2xs">{item.version}</span>
+                                    <span className="px-2 py-0.5 rounded-md border border-emerald-200/80 bg-emerald-50 text-emerald-700 text-[10px] font-medium shadow-2xs">
                                       生效中
                                     </span>
                                   </div>
                                   <span
-                                    className="inline-flex items-center gap-1 text-[9px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200/90 shadow-2xs"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-bold shadow-2xs"
                                     title={`新版本 ${item.pendingEffectiveVersion} 已复核通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 自动生效上线`}
                                   >
-                                    <CalendarClock className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
+                                    <CalendarClock className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                                     <span className="whitespace-nowrap">新版 {item.pendingEffectiveVersion}(待生效{item.pendingEffectiveStartDate ? `:${item.pendingEffectiveStartDate.slice(5)}` : ''})</span>
                                   </span>
                                   <span className="text-[10px] text-slate-400 font-mono">{item.updatedAt}</span>
                                 </div>
                               ) : (
                                 // 常规生效中版本 (统一显示为 生效中)
-                                <div className="flex flex-col items-start gap-0.5">
+                                <div className="flex flex-col items-start gap-1 min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-mono font-bold text-slate-700">{item.version}</span>
-                                    <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-mono text-[11px] font-bold shadow-2xs">{item.version}</span>
+                                    <span className="px-2 py-0.5 rounded-md border border-emerald-200/80 bg-emerald-50 text-emerald-700 text-[10px] font-medium shadow-2xs">
                                       生效中
                                     </span>
                                   </div>
@@ -2803,9 +2916,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  showToast(`⚠️ 该条目已有新版本【${item.pendingVersion || ''}】在复核审批中，线上版本正常运行中。`);
+                                  showToast(isExpired ? `⚠️ 该条目原版本已过有效期，新版本【${item.pendingVersion || ''}】正在复核审批中。` : `⚠️ 该条目已有新版本【${item.pendingVersion || ''}】在复核审批中，线上版本正常运行中。`);
                                 }}
-                                title="已有新版本在复核审批中"
+                                title={isExpired ? '已过有效期，新版本正在复核审批中' : '已有新版本在复核审批中'}
                                 className="p-1 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 transition-colors cursor-pointer"
                               >
                                 <Clock className="w-3.5 h-3.5" />
@@ -2815,9 +2928,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  showToast(`ℹ️ 该条目新版本【${item.pendingEffectiveVersion || ''}】已复核通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 自动生效切换。`);
+                                  showToast(isExpired ? `ℹ️ 该条目原版本已过有效期，新版本【${item.pendingEffectiveVersion || ''}】已复核通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 自动生效。` : `ℹ️ 该条目新版本【${item.pendingEffectiveVersion || ''}】已复核通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 自动生效切换。`);
                                 }}
-                                title={`新版本 ${item.pendingEffectiveVersion} 已复核通过，排期待生效`}
+                                title={isExpired ? `已过有效期，新版本 ${item.pendingEffectiveVersion} 已复核通过，排期待生效` : `新版本 ${item.pendingEffectiveVersion} 已复核通过，排期待生效`}
                                 className="p-1 rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-200/80 transition-colors cursor-pointer"
                               >
                                 <CalendarClock className="w-3.5 h-3.5" />
@@ -2826,7 +2939,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               <button
                                 type="button"
                                 onClick={(e) => handleOpenEditArticle(item, e)}
-                                title="复核不通过，点击重新编辑并再次提交复核"
+                                title={isExpired ? '已过有效期，新版本复核未通过，点击修改后重新提审' : '复核不通过，点击重新编辑并再次提交复核'}
                                 className="p-1 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -2835,7 +2948,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               <button
                                 type="button"
                                 onClick={(e) => handleOpenEditArticle(item, e)}
-                                title={isDraft ? '编辑草稿并提交复核' : isExpired ? '已过有效期，点击编辑重新生效' : '编辑条目'}
+                                title={isDraft ? '编辑草稿并提交复核' : isExpired ? '已过有效期（无新版本），点击编辑重新生效或提交新版复核' : '编辑条目'}
                                 className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -3669,6 +3782,179 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
           setPreviewArticle(null);
         }}
       />
+
+      {/* ========================================================================= */}
+      {/* MODAL: REJECTION REASON DETAIL MODAL (复核不通过原因详情弹窗) */}
+      {/* ========================================================================= */}
+      {rejectionDetailArticle && (
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-fade-in"
+            onClick={() => setRejectionDetailArticle(null)}
+          />
+
+          {/* Modal Card */}
+          <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="px-6 py-4.5 bg-gradient-to-r from-rose-50 via-red-50/50 to-white border-b border-rose-100 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 shadow-2xs border border-rose-200/80">
+                  <ShieldAlert className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-900">复核未通过 · 驳回原因详情</h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                      退回修订
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    查看平台管理员针对该知识条目给出的合规审核意见与修订指引
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setRejectionDetailArticle(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Content Body */}
+            <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar text-xs">
+              {/* 1. Article Meta Overview */}
+              <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">知识条目标题</span>
+                    <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                      {rejectionDetailArticle.title}
+                    </h4>
+                  </div>
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    <span className="font-mono text-[11px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                      {rejectionDetailArticle.code}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2 border-t border-slate-200/60 text-[11px]">
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">被驳回版本</span>
+                    <span className="font-mono font-bold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200 inline-block mt-0.5">
+                      {rejectionDetailArticle.rejectedVersion || rejectionDetailArticle.pendingVersion || rejectionDetailArticle.version}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">复核审核人</span>
+                    <span className="font-medium text-slate-700 block mt-0.5">
+                      {rejectionDetailArticle.reviewer || '平台管理员'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">审核驳回时间</span>
+                    <span className="font-mono text-slate-600 block mt-0.5">
+                      {rejectionDetailArticle.reviewedAt || rejectionDetailArticle.updatedAt || '2026-08-20 15:40'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-1.5 flex items-center justify-between text-[10px] text-slate-500">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-slate-400">归属分类:</span>
+                    <span className="text-slate-700 font-medium">{rejectionDetailArticle.category}</span>
+                  </div>
+                  <div>
+                    {rejectionDetailArticle.wasPublished ? (
+                      <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-medium">
+                        线上正式版 {rejectionDetailArticle.version} 正常生效中
+                      </span>
+                    ) : (
+                      <span className="text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-medium">
+                        初次提审 (尚未正式发布上线)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Rejection Reason Box (Highlight) */}
+              <div className="p-4 bg-rose-50/70 border-2 border-rose-200/90 rounded-xl space-y-2">
+                <div className="flex items-center gap-2 text-rose-800 font-bold text-xs">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>管理员合规复核意见 / 驳回详细说明</span>
+                </div>
+                <div className="p-3.5 bg-white rounded-lg border border-rose-200 shadow-2xs text-rose-950 font-normal leading-relaxed text-xs whitespace-pre-wrap selection:bg-rose-100">
+                  {rejectionDetailArticle.reviewComment || '该知识条目修订草案经平台合规与技术专家审核，不符合对外发布标准。请结合公司合规政策与技术规范，修正正文内容后重新提交复核。'}
+                </div>
+              </div>
+
+              {/* 3. Actionable Next Steps / Advice */}
+              <div className="p-3.5 bg-amber-50/60 border border-amber-200/80 rounded-xl text-amber-900 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-[11px] text-amber-800">
+                  <Clock className="w-3.5 h-3.5 text-amber-600" />
+                  <span>后续修改与重新提交指引</span>
+                </div>
+                <ul className="list-disc list-inside text-[11px] text-amber-800/90 space-y-1 leading-relaxed pl-1">
+                  <li>
+                    点击下方【去修改正文并重提】按钮，即可直接打开编辑器修订知识正文与配置参数。
+                  </li>
+                  <li>
+                    修改完成后在编辑器中点击【重新提交复核】，条目将生成新修订草案并重新进入管理员复核流。
+                  </li>
+                  {rejectionDetailArticle.wasPublished && (
+                    <li>
+                      在重新提交并审核通过前，知识库的智能检索将继续以线上正式版本（{rejectionDetailArticle.version}）为准。
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const art = rejectionDetailArticle;
+                  setRejectionDetailArticle(null);
+                  setPreviewArticle(art);
+                }}
+                className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Eye className="w-3.5 h-3.5 text-slate-500" />
+                <span>查看条目完整详情与切片</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRejectionDetailArticle(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer"
+                >
+                  关闭
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const art = rejectionDetailArticle;
+                    setRejectionDetailArticle(null);
+                    handleOpenEditArticle(art);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>去修改正文并重提</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* MODAL 4: MOVE CATEGORY DRAWER (右侧抽屉式面板) */}

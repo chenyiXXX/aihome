@@ -274,7 +274,168 @@ export const initialPosts: MarketingPost[] = [
 
 // Mock 5.1 & 5.2 & 5.3 Knowledge Base (知识库管理)
 export const initialKBArticles: KBArticle[] = [
-  // 1. 基础知识库 / 品牌实力
+  // ============================================================================
+  // 【全生命周期版本状态对照完备测试数据】（置顶前11条，方便对需求与状态联调）
+  // ============================================================================
+
+  // 1. 全生命周期 01: 草稿（未提交复核）
+  {
+    id: 'KB-REVIEW-DRAFT-01',
+    title: '智能升降中岛台与意大利岩板热弯一体成型工艺生产标准（草稿初审稿）',
+    category: '基础知识库 / 产品与技术百科 / 产品百科 / 全卫',
+    code: 'KB-DRAFT-SMART-ISLAND',
+    version: 'v0.9.0-draft',
+    author: 'David (结构工程师)',
+    updatedAt: '2026-08-20 17:00',
+    content: `# 智能升降岛台与岩板热弯工艺拆单标准 (草稿未定稿)
+
+## 1. 结构骨架选材
+- 内部立柱采用 2.5mm 加厚航空级铝合金；
+- 双电机同步驱动，行程 650mm-1050mm，承重测试 ≥ 180kg。
+
+## 2. 待确认事项
+- [ ] 需与意大利岩板供应商确认 12mm 弯折 R 角最大弧度公差；
+- [ ] 需补充 220V/110V 宽电压电机防夹手传感器布线方案。`,
+    status: '草稿',
+    viewCount: 4,
+    contentType: 'document',
+    fileType: 'DOCX',
+    fileSize: '3.8 MB',
+    chunksCount: 8,
+    tags: ['空间: 中西岛台厨柜', '材质: 岩板一体台盆'],
+    auditLogs: [
+      {
+        id: 'LOG-KB-DRAFT-001',
+        articleId: 'KB-REVIEW-DRAFT-01',
+        operator: 'David (结构工程师)',
+        operatorRole: '工程师',
+        timestamp: '2026-08-20 17:00:00',
+        action: 'create',
+        actionLabel: '保存为本地草稿',
+        version: 'v0.9.0',
+        wasPublished: false,
+        diffSummary: '初始草稿录入，未提交复核'
+      }
+    ]
+  },
+
+  // 2. 全生命周期 02: 复核审批中（初次创建·无历史发布版本）
+  {
+    id: 'KB-REVIEW-PENDING-01',
+    title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）',
+    category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
+    code: 'KB-COMPLIANCE-AU-01',
+    version: 'v1.0.0-rc1',
+    wasPublished: false,
+    author: 'Alex (外贸业务员)',
+    updatedAt: '2026-08-20 14:15',
+    content: `# 澳洲与新西兰全屋定制 AS/NZS 3837 阻燃与环保检验规程
+
+## 1. 适用工程背景
+针对出口悉尼、墨尔本及奥克兰高层公寓与商业写字楼的全屋固定式柜体（Joinery）阻燃合规要求。
+
+## 2. 核心技术指标
+- **Group Number 等级**：公共区域走廊柜门必须达到 Group 1 或 Group 2 阻燃要求；
+- **烟雾释放指数（Smoke Growth Rate Index）**：SMOGRA 指数必须小于等于 100 m²/s²；
+- **环保甲醛释放量**：严格执行 AS/NZS 1859.1 规定的 Super E0（≤0.3mg/L）标准。
+
+## 3. 随柜报关必备附带资料
+1. 具备 NATA 认可资质的第三方实验室阻燃燃烧测试报告原件扫描件；
+2. 每一个包装箱外侧粘贴澳新合规二维码防伪溯源码。`,
+    status: '等待复核',
+    viewCount: 12,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '8.6 MB',
+    chunksCount: 24,
+    pendingAction: 'create',
+    reviewStatus: 'pending',
+    tags: ['合规风控: CARB P2认证', '环保等级: 欧洲F4星', '语言: 英语 (English)'],
+    applicableRoles: ['外贸销售岗', '方案设计师', '报关合规官'],
+    applicableRegions: ['大洋洲/澳洲新西兰', '欧美英美澳加'],
+    securityLevel: '内部',
+    expiryType: 'permanent',
+    auditLogs: [
+      {
+        id: 'LOG-KB-PENDING-001',
+        articleId: 'KB-REVIEW-PENDING-01',
+        operator: 'Alex (外贸业务员)',
+        operatorRole: '业务录入员',
+        timestamp: '2026-08-20 14:15:30',
+        action: 'submit_review',
+        actionLabel: '上传新建知识条目并提交复核',
+        version: 'v1.0.0',
+        wasPublished: false,
+        diffSummary: '新建【AS/NZS 3837 阻燃与环保检验规程】，提交平台管理员审核',
+        afterSnapshot: {
+          title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）',
+          category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
+          content: '澳洲与新西兰全屋定制 AS/NZS 3837 阻燃与环保检验规程...',
+          version: 'v1.0.0',
+          status: '等待复核'
+        }
+      }
+    ]
+  },
+
+  // 3. 全生命周期 03: 复核不通过（初次创建·无历史发布版本）
+  {
+    id: 'KB-REVIEW-REJECTED-01',
+    title: '中东GCC大客户私人折扣与佣金返点内部执行细则（未经审批版）',
+    category: '销售话术 / 销售实战、竞对与风险控制 / 算价公式、权限与合同法务',
+    code: 'KB-SALES-DISCOUNT-FORBIDDEN',
+    version: 'v1.0.0',
+    wasPublished: false,
+    author: 'Leo (新员工)',
+    updatedAt: '2026-08-19 11:20',
+    content: `# 中东区域大客户返佣与私人特批折扣参考标准
+
+## 1. 特批折扣档位
+- 针对 50 万美金以上整单，业务员可自主在 PI 形式发票上给予 8% 现金折让；
+- 允许通过海外离岸账户向中介商支付 3% 居间咨询费。
+
+（注：本条款需经合规审核）`,
+    status: '复核不通过',
+    viewCount: 8,
+    contentType: 'markdown',
+    fileType: 'MD',
+    fileSize: '3.1 KB',
+    chunksCount: 10,
+    reviewStatus: 'rejected',
+    reviewComment: '严重违反公司外贸合规与财务反洗钱准则：业务员严禁擅自承诺现金折让与离岸佣金，所有返点必须通过法务特批合同并出具合法 BOQ 佣金协议。已驳回，请重新修改。',
+    reviewer: 'Sophia (主管/平台管理员)',
+    reviewedAt: '2026-08-19 11:45:00',
+    tags: ['合规风控: 敏感词拦截', '销售阶段: 逼单与谈判'],
+    auditLogs: [
+      {
+        id: 'LOG-KB-REJ-002',
+        articleId: 'KB-REVIEW-REJECTED-01',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-19 11:45:00',
+        action: 'reject',
+        actionLabel: '平台管理员复核驳回',
+        version: 'v1.0.0',
+        wasPublished: false,
+        reviewComment: '严重违反公司外贸合规与财务反洗钱准则：业务员严禁擅自承诺现金折让与离岸佣金，所有返点必须通过法务特批合同并出具合法 BOQ 佣金协议。已驳回，请重新修改。',
+        diffSummary: '复核不通过，状态变更为【复核不通过】，退回作者修订'
+      },
+      {
+        id: 'LOG-KB-REJ-001',
+        articleId: 'KB-REVIEW-REJECTED-01',
+        operator: 'Leo (新员工)',
+        operatorRole: '业务员',
+        timestamp: '2026-08-19 11:20:00',
+        action: 'submit_review',
+        actionLabel: '提交新规复核申请',
+        version: 'v1.0.0',
+        wasPublished: false,
+        diffSummary: '首次提交中东大客户返点条款'
+      }
+    ]
+  },
+
+  // 4. 全生命周期 04: 生效中（标准已发布生效版本）
   {
     id: 'KB-BRAND-01',
     title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络',
@@ -337,7 +498,7 @@ export const initialKBArticles: KBArticle[] = [
           status: '已发布',
           category: '基础知识库 / 品牌实力',
           tags: ['外贸交付: 全球交付网络'],
-          content: '品爱家居成立于2008年，拥有8万平方米标准制造生产车间，引进数控开料机与封边机。业务辐射中东、北美、东南亚等全球80多个国家，服务超过30,000+海内外业主，具备ISO9001认证。'
+          content: '品爱家居成立于2008年，拥有8万平方米标准制造生产车间，引进数控开料机与封边机。业务辐射中东、北美、东南亚等客户，具备ISO9001认证。'
         },
         afterSnapshot: {
           title: '品爱家居 2008-2026 发展历程与全球 100+ 国家外贸交付网络',
@@ -370,6 +531,444 @@ export const initialKBArticles: KBArticle[] = [
       }
     ]
   },
+
+  // 5. 全生命周期 05: 生效中 + 新版复核审批中 (线上运行 v2.0.0，新版 v2.1.0 提审中)
+  {
+    id: 'KB-REVIEW-PENDING-02',
+    title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版',
+    category: '基础知识库 / 品牌实力',
+    code: 'KB-FIN-CBM-02',
+    version: 'v2.0.0',
+    wasPublished: true,
+    pendingVersion: 'v2.1.0',
+    author: 'Emma (报价核算员)',
+    updatedAt: '2026-08-20 16:30',
+    content: `# 出口北美工程定制单 CBM 与托盘免税配比算法 (2026修订)
+
+## 1. 箱规与打托优化系数
+- 标准 40HQ 高柜理论装载 68 CBM，经过三层瓦楞护角与熏蒸木托加固后，实际有效排柜系数设定为 **88.5% (即 60.2 CBM)**；
+- 针对异形台面与超长门板（>2700mm），强制采用实木免熏蒸胶合板箱，按毛体积增加 12% 预留防震缓冲裕度。
+
+## 2. 关税加征豁免分类与 HS Code 申报指引
+- 厨房橱柜 HS 编码：9403.40.0000；
+- 卧室衣柜 HS 编码：9403.50.0000；
+- 所有 BOQ 报价单必须分拆五金件与木制品品类税率。`,
+    status: '等待复核',
+    viewCount: 45,
+    contentType: 'document',
+    fileType: 'XLSX',
+    fileSize: '4.2 MB',
+    chunksCount: 18,
+    pendingAction: 'update',
+    reviewStatus: 'pending',
+    tags: ['外贸交付: FOB条款', '外贸交付: CIF到港', '合规风控: 原产地证'],
+    applicableRoles: ['外贸销售岗', '财务核算岗'],
+    applicableRegions: ['北美美加地区'],
+    securityLevel: '机密',
+    expiryType: 'permanent',
+    auditLogs: [
+      {
+        id: 'LOG-KB-PENDING-002',
+        articleId: 'KB-REVIEW-PENDING-02',
+        operator: 'Emma (报价核算员)',
+        operatorRole: '财务核算员',
+        timestamp: '2026-08-20 16:30:12',
+        action: 'edit',
+        actionLabel: '编辑正文与HS编码申报规则并提交复核',
+        version: 'v2.1.0',
+        wasPublished: false,
+        diffSummary: '修正 40HQ 实际排柜安全系数从 85% 上调为 88.5%，更新 HS Code 关税申报分拆细则',
+        beforeSnapshot: {
+          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)计算规则',
+          version: 'v2.0.0',
+          status: '已发布',
+          content: '标准 40HQ 高柜实际排柜系数为 85%...'
+        },
+        afterSnapshot: {
+          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版',
+          version: 'v2.1.0',
+          status: '等待复核',
+          content: '标准 40HQ 高柜有效排柜系数设定为 88.5% (即 60.2 CBM)...'
+        }
+      }
+    ]
+  },
+
+  // 6. 全生命周期 06: 生效中 + 新版复核不通过 (线上运行 v1.8.0，新版 v1.9.0 驳回)
+  {
+    id: 'KB-REVIEW-REJECTED-02',
+    title: '中东沙特及阿联酋高端别墅阻燃防腐木饰面板施工工艺标准与验收规范（2026修订案）',
+    category: '基础知识库 / 产品与技术百科 / 工艺百科 / 全屋五金与工艺标准',
+    code: 'KB-ENG-GCC-FIRE-03',
+    version: 'v1.8.0',
+    wasPublished: true,
+    rejectedVersion: 'v1.9.0',
+    author: 'David (工程技术员)',
+    updatedAt: '2026-08-20 15:40',
+    content: `# 中东沙特与阿联酋高端别墅阻燃防腐木饰面工程规范 (v1.8.0 正式生效版)
+
+## 1. 适用工程范围
+针对中东海湾国家（沙特利雅得、吉达，阿联酋迪拜、阿布扎比）高温、高湿、高盐雾气候环境的高定木饰面、隐形门及护墙板工程。
+
+## 2. 阻燃与环保强制标准
+- **阻燃等级**：依据沙特民防总局（SCDI）规范，木饰面板芯材必须达到 **ASTM E84 Class A (或 EN 13501-1 Class A1)** 级阻燃；
+- **防腐防潮处理**：背板与侧边必须采用三道环氧树脂封边，喷涂抗霉菌隔离涂层；
+- **甲醛释放量**：执行欧洲 F4 星 / E0 级超低释放环保要求。
+
+## 3. 验收与交工报告
+每批次随柜必须附带国际认可第三方实验室（如 SGS / Intertek）出具的 Class A 防火耐燃检测报告原件。`,
+    status: '已发布',
+    viewCount: 168,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '6.8 MB',
+    chunksCount: 22,
+    reviewStatus: 'rejected',
+    reviewer: 'Sophia (主管/平台管理员)',
+    reviewedAt: '2026-08-20 15:40:00',
+    reviewComment: '经法务与工程部审核：修订草案第3条擅自将中东阻燃等级从 Class A-1 降级为商业级 B-2，不符合沙特民防总局(SCDI)强制标准，存在重大索赔违约风险。新版 v1.9.0 复核不通过，请维持线上 v1.8.0 规范并重新修正后提交！',
+    tags: ['环保等级: 欧洲F4星', '合规风控: 敏感词拦截', '外贸交付: CIF到港'],
+    applicableRoles: ['外贸销售岗', '方案设计师', '报关合规官'],
+    applicableRegions: ['GCC中东六国', '沙特阿拉伯', '阿联酋迪拜'],
+    securityLevel: '内部',
+    expiryType: 'permanent',
+    auditLogs: [
+      {
+        id: 'LOG-KB-REJ-PUB-002',
+        articleId: 'KB-REVIEW-REJECTED-02',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-20 15:40:00',
+        action: 'reject',
+        actionLabel: '平台管理员复核驳回',
+        version: 'v1.9.0',
+        wasPublished: true,
+        reviewComment: '经法务与工程部审核：修订草案第3条擅自将中东阻燃等级从 Class A-1 降级为商业级 B-2，不符合沙特民防总局(SCDI)强制标准，存在重大索赔违约风险。新版 v1.9.0 复核不通过，请维持线上 v1.8.0 规范并重新修正后提交！',
+        diffSummary: '新版 v1.9.0 复核不通过，驳回修改；线上继续保留生效 v1.8.0 版本',
+        beforeSnapshot: {
+          title: '中东沙特及阿联酋高端别墅阻燃防腐木饰面板施工工艺标准与验收规范',
+          version: 'v1.8.0',
+          status: '已发布',
+          content: '依据沙特民防总局（SCDI）规范，木饰面板芯材必须达到 ASTM E84 Class A 级阻燃...'
+        },
+        afterSnapshot: {
+          title: '中东沙特及阿联酋高端别墅阻燃防腐木饰面板施工工艺标准与验收规范（2026修订案）',
+          version: 'v1.9.0',
+          status: '复核不通过',
+          content: '依据沙特民防总局（SCDI）规范，木饰面板芯材调整为 Class B-2 商业级阻燃...'
+        }
+      },
+      {
+        id: 'LOG-KB-REJ-PUB-001',
+        articleId: 'KB-REVIEW-REJECTED-02',
+        operator: 'David (工程技术员)',
+        operatorRole: '工程技术员',
+        timestamp: '2026-08-20 14:50:00',
+        action: 'edit',
+        actionLabel: '提交工程标准修订版 v1.9.0',
+        version: 'v1.9.0',
+        wasPublished: true,
+        diffSummary: '提交修改中东工程阻燃分级与背板涂层工艺'
+      }
+    ]
+  },
+
+  // 7. 全生命周期 07: 生效中 + 新版过审排期待生效 (线上运行 v2.0.0，新版 v2.1.0 已过审待 09-01 生效)
+  {
+    id: 'KB-REVIEW-PENDING-EFFECTIVE-01',
+    title: '2026年Q4全屋定制外贸出口退税结汇与海关申报合规指引（新版过审待生效）',
+    category: '报关认证 / 外贸合规与退税清关 / 欧美及中东清关申报与海关编码',
+    code: 'KB-CUSTOMS-TAX-2026Q4',
+    version: 'v2.0.0',
+    wasPublished: true,
+    pendingEffectiveVersion: 'v2.1.0',
+    pendingEffectiveStartDate: '2026-09-01',
+    author: 'Emily (关务合规主管)',
+    updatedAt: '2026-08-22 10:15',
+    content: `# 2026年Q4全屋定制出口退税结汇规范 (v2.0.0 正式生效版)
+
+## 1. 现行结汇与退税税率
+- 实木及板式家具综合退税率维持 13%；
+- 单证备案需在报关单结关后 15 个工作日内完成系统核销。
+
+## 2. 报关单证要求
+- 报关单、提单、增值税专用发票“三单一致”；
+- 境外汇款水单对应客户名称需与备案合同保持一致。`,
+    status: '已发布',
+    viewCount: 342,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '4.2 MB',
+    chunksCount: 18,
+    reviewStatus: 'approved',
+    reviewer: 'Sophia (主管/平台管理员)',
+    reviewedAt: '2026-08-22 10:15:00',
+    reviewComment: '新版本 v2.1.0 经关务总监与财务部联合复核通过！由于涉及海关2026年9月1日新关税税则调整，系统已锁定并将于 2026-09-01 零点准时自动切换为线上正式生效版本。',
+    tags: ['外贸合规: 退税申报', '外贸合规: 报关单证'],
+    applicableRoles: ['关务跟单岗', '外贸销售岗', '财务审计岗'],
+    applicableRegions: ['欧美市场', 'GCC中东六国'],
+    securityLevel: '内部',
+    expiryType: 'permanent',
+    auditLogs: [
+      {
+        id: 'LOG-KB-PEFF-002',
+        articleId: 'KB-REVIEW-PENDING-EFFECTIVE-01',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-22 10:15:00',
+        action: 'approve',
+        actionLabel: '复核通过（排期自动生效）',
+        version: 'v2.1.0',
+        wasPublished: true,
+        reviewComment: '新版本 v2.1.0 经关务总监与财务部联合复核通过！由于涉及海关2026年9月1日新关税税则调整，系统已锁定并将于 2026-09-01 零点准时自动切换为线上正式生效版本。',
+        diffSummary: '新版本 v2.1.0 审批通过，设定于 2026-09-01 自动生效上线；当前保留运行 v2.0.0'
+      },
+      {
+        id: 'LOG-KB-PEFF-001',
+        articleId: 'KB-REVIEW-PENDING-EFFECTIVE-01',
+        operator: 'Emily (关务合规主管)',
+        operatorRole: '关务合规主管',
+        timestamp: '2026-08-21 16:30:00',
+        action: 'edit',
+        actionLabel: '提交关税新规修订版 v2.1.0',
+        version: 'v2.1.0',
+        wasPublished: true,
+        diffSummary: '根据海关总署最新公告预先更新Q4结汇税率'
+      }
+    ]
+  },
+
+  // 8. 全生命周期 08: 已过有效期 + 新版复核审批中 (原版 v1.0.0 已过期，新版 v2.0.0 提审中)
+  {
+    id: 'KB-EXP-REVIEWING-01',
+    title: '2025欧洲环保涂装检测认证与CE合规检测报告（原版已过期·新版复核审批中）',
+    category: '报关认证 / 欧盟CE与美标CARB认证标准 / 欧盟CE建材与板材EN717-1甲醛测试',
+    code: 'KB-CERT-EU-CE-2025',
+    version: 'v1.0.0',
+    pendingVersion: 'v2.0.0',
+    wasPublished: true,
+    author: 'Lucas (认证工程师)',
+    updatedAt: '2026-08-25 14:20',
+    content: `# 欧洲环保涂装与CE合规检测规范 (原版已过期)
+
+## 1. 2025历史检测指标 (已失效)
+- EN717-1 舱室法甲醛释放量 ≤ 0.05 mg/m³；
+- 原认证证书已于 2025-12-31 到期。
+
+## 2. 2026新版升级提报 (新版 v2.0.0 复核审批中)
+- 增加全系列水性UV漆VOC检测与欧盟REACH 235项SVHC高度关注物质合规清单；
+- 当前新版本正处于合规部门复核审批中。`,
+    status: '失效',
+    viewCount: 412,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '3.6 MB',
+    chunksCount: 14,
+    reviewStatus: 'pending',
+    reviewer: 'Sophia (主管/平台管理员)',
+    tags: ['报关认证: 欧盟CE认证', '外贸合规: 报关单证'],
+    expiryType: 'custom',
+    validityStartDate: '2025-01-01',
+    validityEndDate: '2025-12-31',
+    auditLogs: [
+      {
+        id: 'LOG-EXP-REV-002',
+        articleId: 'KB-EXP-REVIEWING-01',
+        operator: 'Lucas (认证工程师)',
+        operatorRole: '认证工程师',
+        timestamp: '2026-08-25 14:20:00',
+        action: 'submit_review',
+        actionLabel: '提交延期及标准升级版 v2.0.0 复核',
+        version: 'v2.0.0',
+        wasPublished: true,
+        diffSummary: '基于已过期的 v1.0.0 提交新版检测报告，申请重新复核上线'
+      },
+      {
+        id: 'LOG-EXP-REV-001',
+        articleId: 'KB-EXP-REVIEWING-01',
+        operator: '系统自动时效调度器',
+        operatorRole: '系统服务',
+        timestamp: '2026-01-01 00:00:00',
+        action: 'expire',
+        actionLabel: '有效期届满自动失效',
+        version: 'v1.0.0',
+        wasPublished: true,
+        diffSummary: '证书有效期到期，系统置为已失效状态'
+      }
+    ]
+  },
+
+  // 9. 全生命周期 09: 已过有效期 + 新版复核不通过 (原版 v1.5.0 已过期，新版 v2.0.0 驳回)
+  {
+    id: 'KB-EXP-REJECTED-01',
+    title: '2025广交会海外买家离岸结算与跨境退税申报指南（原版已过期·新版复核未通过）',
+    category: '报关认证 / 外贸合规与退税清关 / 欧美及中东清关申报与海关编码',
+    code: 'KB-TAX-OFFSHORE-2025',
+    version: 'v1.5.0',
+    rejectedVersion: 'v2.0.0',
+    wasPublished: true,
+    author: 'Leo (新员工)',
+    updatedAt: '2026-08-24 16:45',
+    content: `# 2025离岸结算与退税申报指南 (已过有效期)
+
+## 1. 历史执行条款 (2026-05-31到期失效)
+- 原结算账户单证流已封存；
+
+## 2. 提交的新版本修订 (复核不通过)
+- 尝试修订为离岸自结账模式，因缺少税务局最新电子回单签章被复核驳回。`,
+    status: '失效',
+    viewCount: 156,
+    contentType: 'markdown',
+    fileType: 'MD',
+    fileSize: '2.8 KB',
+    chunksCount: 10,
+    reviewStatus: 'rejected',
+    reviewer: 'Sophia (主管/平台管理员)',
+    reviewedAt: '2026-08-24 17:00:00',
+    reviewComment: '该知识条目原版本已过期。新提交的 v2.0.0 修订版缺少税务部门最新加盖电子签章的完税凭证，请补齐财务资料后重新发起复核。',
+    tags: ['外贸合规: 退税申报', '合规风控: 敏感词拦截'],
+    expiryType: 'custom',
+    validityStartDate: '2025-06-01',
+    validityEndDate: '2026-05-31',
+    auditLogs: [
+      {
+        id: 'LOG-EXP-REJ-002',
+        articleId: 'KB-EXP-REJECTED-01',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-24 17:00:00',
+        action: 'reject',
+        actionLabel: '新版复核驳回',
+        version: 'v2.0.0',
+        wasPublished: true,
+        reviewComment: '原版本已过期。新版缺少税务局加盖电子签章的完税凭证，驳回修订。',
+        diffSummary: '新版 v2.0.0 复核不通过，退回作者修改'
+      },
+      {
+        id: 'LOG-EXP-REJ-001',
+        articleId: 'KB-EXP-REJECTED-01',
+        operator: '系统自动时效调度器',
+        operatorRole: '系统服务',
+        timestamp: '2026-06-01 00:00:00',
+        action: 'expire',
+        actionLabel: '有效期届满自动失效',
+        version: 'v1.5.0',
+        wasPublished: true,
+        diffSummary: '原版本到期失效'
+      }
+    ]
+  },
+
+  // 10. 全生命周期 10: 已过有效期 + 新版过审排期待生效 (原版 v1.1.0 已过期，新版 v2.0.0 已过审待 09-01 生效)
+  {
+    id: 'KB-EXP-PENDING-EFFECTIVE-01',
+    title: '2025年中东GCC工程五金配件耐腐蚀耐磨检测指引（原版已过期·新版过审待生效）',
+    category: '报关认证 / 欧盟CE与美标CARB认证标准 / 美国CARB P2与EPA木制品环保认证',
+    code: 'KB-CERT-GCC-HARDWARE',
+    version: 'v1.1.0',
+    pendingEffectiveVersion: 'v2.0.0',
+    pendingEffectiveStartDate: '2026-09-01',
+    wasPublished: true,
+    author: 'Emily (关务合规主管)',
+    updatedAt: '2026-08-23 09:30',
+    content: `# GCC工程五金防腐蚀检测指引 (原版已过期)
+
+## 1. 2025标准 (已于 2026-06-30 到期失效)
+- 96小时中性盐雾测试（NSS）达 8 级；
+
+## 2. 2026新规 (新版本 v2.0.0 已复核通过，排期 2026-09-01 生效上线)
+- 升级至 240小时酸性盐雾测试（AASS）及沙尘磨损耐候测试；
+- 审批已通过，系统将于 2026-09-01 零点准时激活上线。`,
+    status: '失效',
+    viewCount: 280,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '4.5 MB',
+    chunksCount: 16,
+    reviewStatus: 'approved',
+    reviewer: 'Sophia (主管/平台管理员)',
+    reviewedAt: '2026-08-23 09:30:00',
+    reviewComment: '新版本 v2.0.0 已复核通过！由于中东沙特海关联合SABER新规于9月1日正式执行，系统设定于 2026-09-01 自动生效上线。',
+    tags: ['报关认证: 沙特SABER/GCC认证', '外贸合规: 报关单证'],
+    expiryType: 'custom',
+    validityStartDate: '2025-01-01',
+    validityEndDate: '2026-06-30',
+    auditLogs: [
+      {
+        id: 'LOG-EXP-PEFF-002',
+        articleId: 'KB-EXP-PENDING-EFFECTIVE-01',
+        operator: 'Sophia (主管/平台管理员)',
+        operatorRole: '平台管理员',
+        timestamp: '2026-08-23 09:30:00',
+        action: 'approve',
+        actionLabel: '复核通过（排期自动生效）',
+        version: 'v2.0.0',
+        wasPublished: true,
+        reviewComment: '新版本 v2.0.0 已复核通过，排期于 2026-09-01 自动生效上线。',
+        diffSummary: '原版本已过期，新版本审批通过并排期待生效'
+      },
+      {
+        id: 'LOG-EXP-PEFF-001',
+        articleId: 'KB-EXP-PENDING-EFFECTIVE-01',
+        operator: '系统自动时效调度器',
+        operatorRole: '系统服务',
+        timestamp: '2026-07-01 00:00:00',
+        action: 'expire',
+        actionLabel: '有效期届满自动失效',
+        version: 'v1.1.0',
+        wasPublished: true,
+        diffSummary: '原版本到期失效'
+      }
+    ]
+  },
+
+  // 11. 全生命周期 11: 已过有效期，无新版本 (原版 v1.2.0 已过期)
+  {
+    id: 'KB-REVIEW-EXPIRED-01',
+    title: '2025年度春季广交会客商现场签约全屋柜体定金双倍膨胀优惠细则（已过期·无新版本）',
+    category: '营销活动 / 限时促销与商务返点政策 / 全屋柜体首单定金膨胀方案',
+    code: 'KB-MKT-EXPIRED-2025',
+    version: 'v1.2.0',
+    author: 'Alex (外贸业务员)',
+    updatedAt: '2025-05-30',
+    content: `# 2025春季广交会展位现场签约限时优惠补贴政策
+
+## 1. 活动有效期
+- 2025年4月15日 - 2025年5月5日止（现已全面失效）。
+
+## 2. 优惠条款
+- 现场交付 $2,000 定金抵扣 $5,000 货款；
+- 免费赠送 1 套德国海蒂诗抽屉滑轨展架。`,
+    status: '失效',
+    viewCount: 890,
+    contentType: 'document',
+    fileType: 'PDF',
+    fileSize: '5.1 MB',
+    chunksCount: 16,
+    reviewStatus: 'expired',
+    tags: ['营销活动: 订舱限时直降', '营销活动: 展会专案'],
+    expiryType: 'custom',
+    validityStartDate: '2025-04-15',
+    validityEndDate: '2025-05-05',
+    auditLogs: [
+      {
+        id: 'LOG-KB-EXP-001',
+        articleId: 'KB-REVIEW-EXPIRED-01',
+        operator: '系统自动时效调度器',
+        operatorRole: '系统服务',
+        timestamp: '2025-05-06 00:00:00',
+        action: 'expire',
+        actionLabel: '有效期届满自动失效',
+        version: 'v1.2.0',
+        wasPublished: true,
+        diffSummary: '活动截止日期到达，系统自动将知识条目置为【已失效】状态'
+      }
+    ]
+  },
+
+  // ============================================================================
+  // 【常规业务知识条目列表】
+  // ============================================================================
   {
     id: 'KB-BRAND-02',
     title: '品爱工业4.0智能制造基地与德国豪迈HOMAG柔性生产线白皮书',
@@ -1605,413 +2204,6 @@ export const initialKBArticles: KBArticle[] = [
     chunksCount: 32,
     expiryType: 'permanent',
     tags: ['培训阶段: 销冠谈判攻防', '培训阶段: 跨文化沟通', '销售阶段: 逼单与谈判', '语言: 英语 (English)']
-  },
-
-  // 43. 待复核条目 1: 新建知识待复核 (未发布过版本)
-  {
-    id: 'KB-REVIEW-PENDING-01',
-    title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）',
-    category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
-    code: 'KB-COMPLIANCE-AU-01',
-    version: 'v1.0.0-rc1',
-    wasPublished: false,
-    author: 'Alex (外贸业务员)',
-    updatedAt: '2026-08-20 14:15',
-    content: `# 澳洲与新西兰全屋定制 AS/NZS 3837 阻燃与环保检验规程
-
-## 1. 适用工程背景
-针对出口悉尼、墨尔本及奥克兰高层公寓与商业写字楼的全屋固定式柜体（Joinery）阻燃合规要求。
-
-## 2. 核心技术指标
-- **Group Number 等级**：公共区域走廊柜门必须达到 Group 1 或 Group 2 阻燃要求；
-- **烟雾释放指数（Smoke Growth Rate Index）**：SMOGRA 指数必须小于等于 100 m²/s²；
-- **环保甲醛释放量**：严格执行 AS/NZS 1859.1 规定的 Super E0（≤0.3mg/L）标准。
-
-## 3. 随柜报关必备附带资料
-1. 具备 NATA 认可资质的第三方实验室阻燃燃烧测试报告原件扫描件；
-2. 每一个包装箱外侧粘贴澳新合规二维码防伪溯源码。`,
-    status: '等待复核',
-    viewCount: 12,
-    contentType: 'document',
-    fileType: 'PDF',
-    fileSize: '8.6 MB',
-    chunksCount: 24,
-    pendingAction: 'create',
-    reviewStatus: 'pending',
-    tags: ['合规风控: CARB P2认证', '环保等级: 欧洲F4星', '语言: 英语 (English)'],
-    applicableRoles: ['外贸销售岗', '方案设计师', '报关合规官'],
-    applicableRegions: ['大洋洲/澳洲新西兰', '欧美英美澳加'],
-    securityLevel: '内部',
-    expiryType: 'permanent',
-    auditLogs: [
-      {
-        id: 'LOG-KB-PENDING-001',
-        articleId: 'KB-REVIEW-PENDING-01',
-        operator: 'Alex (外贸业务员)',
-        operatorRole: '业务录入员',
-        timestamp: '2026-08-20 14:15:30',
-        action: 'submit_review',
-        actionLabel: '上传新建知识条目并提交复核',
-        version: 'v1.0.0',
-        wasPublished: false,
-        diffSummary: '新建【AS/NZS 3837 阻燃与环保检验规程】，提交平台管理员审核',
-        afterSnapshot: {
-          title: '2026澳洲及新西兰阻燃与高定板材技术合规认证标准（AS/NZS 3837）',
-          category: '基础知识库 / 产品与技术百科 / 产品百科 / 柜类',
-          content: '澳洲与新西兰全屋定制 AS/NZS 3837 阻燃与环保检验规程...',
-          version: 'v1.0.0',
-          status: '等待复核'
-        }
-      }
-    ]
-  },
-
-  // 44. 待复核条目 2: 已有历史发布版本，正在复核新版本
-  {
-    id: 'KB-REVIEW-PENDING-02',
-    title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版',
-    category: '基础知识库 / 品牌实力',
-    code: 'KB-FIN-CBM-02',
-    version: 'v2.0.0',
-    wasPublished: true,
-    pendingVersion: 'v2.1.0',
-    author: 'Emma (报价核算员)',
-    updatedAt: '2026-08-20 16:30',
-    content: `# 出口北美工程定制单 CBM 与托盘免税配比算法 (2026修订)
-
-## 1. 箱规与打托优化系数
-- 标准 40HQ 高柜理论装载 68 CBM，经过三层瓦楞护角与熏蒸木托加固后，实际有效排柜系数设定为 **88.5% (即 60.2 CBM)**；
-- 针对异形台面与超长门板（>2700mm），强制采用实木免熏蒸胶合板箱，按毛体积增加 12% 预留防震缓冲裕度。
-
-## 2. 关税加征豁免分类与 HS Code 申报指引
-- 厨房橱柜 HS 编码：9403.40.0000；
-- 卧室衣柜 HS 编码：9403.50.0000；
-- 所有 BOQ 报价单必须分拆五金件与木制品品类税率。`,
-    status: '等待复核',
-    viewCount: 45,
-    contentType: 'document',
-    fileType: 'XLSX',
-    fileSize: '4.2 MB',
-    chunksCount: 18,
-    pendingAction: 'update',
-    reviewStatus: 'pending',
-    tags: ['外贸交付: FOB条款', '外贸交付: CIF到港', '合规风控: 原产地证'],
-    applicableRoles: ['外贸销售岗', '财务核算岗'],
-    applicableRegions: ['北美美加地区'],
-    securityLevel: '机密',
-    expiryType: 'permanent',
-    auditLogs: [
-      {
-        id: 'LOG-KB-PENDING-002',
-        articleId: 'KB-REVIEW-PENDING-02',
-        operator: 'Emma (报价核算员)',
-        operatorRole: '财务核算员',
-        timestamp: '2026-08-20 16:30:12',
-        action: 'edit',
-        actionLabel: '编辑正文与HS编码申报规则并提交复核',
-        version: 'v2.1.0',
-        wasPublished: false,
-        diffSummary: '修正 40HQ 实际排柜安全系数从 85% 上调为 88.5%，更新 HS Code 关税申报分拆细则',
-        beforeSnapshot: {
-          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)计算规则',
-          version: 'v2.0.0',
-          status: '已发布',
-          content: '标准 40HQ 高柜实际排柜系数为 85%...'
-        },
-        afterSnapshot: {
-          title: '出口北美工程单BOQ与海运拼柜装箱体积(CBM)免税计算规则修订版',
-          version: 'v2.1.0',
-          status: '等待复核',
-          content: '标准 40HQ 高柜有效排柜系数设定为 88.5% (即 60.2 CBM)...'
-        }
-      }
-    ]
-  },
-
-  // 44-B. 已有发布版本，但新版本复核不通过 (生效中 v1.8.0, 新版 v1.9.0 驳回)
-  {
-    id: 'KB-REVIEW-REJECTED-02',
-    title: '中东沙特及阿联酋高端别墅阻燃防腐木饰面板施工工艺标准与验收规范（2026修订案）',
-    category: '基础知识库 / 产品与技术百科 / 工艺百科 / 全屋五金与工艺标准',
-    code: 'KB-ENG-GCC-FIRE-03',
-    version: 'v1.8.0',
-    wasPublished: true,
-    rejectedVersion: 'v1.9.0',
-    author: 'David (工程技术员)',
-    updatedAt: '2026-08-20 15:40',
-    content: `# 中东沙特与阿联酋高端别墅阻燃防腐木饰面工程规范 (v1.8.0 正式生效版)
-
-## 1. 适用工程范围
-针对中东海湾国家（沙特利雅得、吉达，阿联酋迪拜、阿布扎比）高温、高湿、高盐雾气候环境的高定木饰面、隐形门及护墙板工程。
-
-## 2. 阻燃与环保强制标准
-- **阻燃等级**：依据沙特民防总局（SCDI）规范，木饰面板芯材必须达到 **ASTM E84 Class A (或 EN 13501-1 Class A1)** 级阻燃；
-- **防腐防潮处理**：背板与侧边必须采用三道环氧树脂封边，喷涂抗霉菌隔离涂层；
-- **甲醛释放量**：执行欧洲 F4 星 / E0 级超低释放环保要求。
-
-## 3. 验收与交工报告
-每批次随柜必须附带国际认可第三方实验室（如 SGS / Intertek）出具的 Class A 防火耐燃检测报告原件。`,
-    status: '已发布',
-    viewCount: 168,
-    contentType: 'document',
-    fileType: 'PDF',
-    fileSize: '6.8 MB',
-    chunksCount: 22,
-    reviewStatus: 'rejected',
-    reviewer: 'Sophia (主管/平台管理员)',
-    reviewedAt: '2026-08-20 15:40:00',
-    reviewComment: '经法务与工程部审核：修订草案第3条擅自将中东阻燃等级从 Class A-1 降级为商业级 B-2，不符合沙特民防总局(SCDI)强制标准，存在重大索赔违约风险。新版 v1.9.0 复核不通过，请维持线上 v1.8.0 规范并重新修正后提交！',
-    tags: ['环保等级: 欧洲F4星', '合规风控: 敏感词拦截', '外贸交付: CIF到港'],
-    applicableRoles: ['外贸销售岗', '方案设计师', '报关合规官'],
-    applicableRegions: ['GCC中东六国', '沙特阿拉伯', '阿联酋迪拜'],
-    securityLevel: '内部',
-    expiryType: 'permanent',
-    auditLogs: [
-      {
-        id: 'LOG-KB-REJ-PUB-002',
-        articleId: 'KB-REVIEW-REJECTED-02',
-        operator: 'Sophia (主管/平台管理员)',
-        operatorRole: '平台管理员',
-        timestamp: '2026-08-20 15:40:00',
-        action: 'reject',
-        actionLabel: '平台管理员复核驳回',
-        version: 'v1.9.0',
-        wasPublished: true,
-        reviewComment: '经法务与工程部审核：修订草案第3条擅自将中东阻燃等级从 Class A-1 降级为商业级 B-2，不符合沙特民防总局(SCDI)强制标准，存在重大索赔违约风险。新版 v1.9.0 复核不通过，请维持线上 v1.8.0 规范并重新修正后提交！',
-        diffSummary: '新版 v1.9.0 复核不通过，驳回修改；线上继续保留生效 v1.8.0 版本',
-        beforeSnapshot: {
-          title: '中东沙特及阿联酋高端别墅阻燃防腐木饰面板施工工艺标准与验收规范',
-          version: 'v1.8.0',
-          status: '已发布',
-          content: '依据沙特民防总局（SCDI）规范，木饰面板芯材必须达到 ASTM E84 Class A 级阻燃...'
-        },
-        afterSnapshot: {
-          title: '中东沙特及阿联酋高端别墅阻燃防腐木饰面板施工工艺标准与验收规范（2026修订案）',
-          version: 'v1.9.0',
-          status: '复核不通过',
-          content: '依据沙特民防总局（SCDI）规范，木饰面板芯材调整为 Class B-2 商业级阻燃...'
-        }
-      },
-      {
-        id: 'LOG-KB-REJ-PUB-001',
-        articleId: 'KB-REVIEW-REJECTED-02',
-        operator: 'David (工程技术员)',
-        operatorRole: '工程技术员',
-        timestamp: '2026-08-20 14:50:00',
-        action: 'edit',
-        actionLabel: '提交工程标准修订版 v1.9.0',
-        version: 'v1.9.0',
-        wasPublished: true,
-        diffSummary: '提交修改中东工程阻燃分级与背板涂层工艺'
-      }
-    ]
-  },
-
-  // 44-C. 已有发布版本，新版本复核已通过，但有效期未到 (待生效)
-  {
-    id: 'KB-REVIEW-PENDING-EFFECTIVE-01',
-    title: '2026年Q4全屋定制外贸出口退税结汇与海关申报合规指引（新版过审待生效）',
-    category: '报关认证 / 外贸合规与退税清关 / 欧美及中东清关申报与海关编码',
-    code: 'KB-CUSTOMS-TAX-2026Q4',
-    version: 'v2.0.0',
-    wasPublished: true,
-    pendingEffectiveVersion: 'v2.1.0',
-    pendingEffectiveStartDate: '2026-09-01',
-    author: 'Emily (关务合规主管)',
-    updatedAt: '2026-08-22 10:15',
-    content: `# 2026年Q4全屋定制出口退税结汇规范 (v2.0.0 正式生效版)
-
-## 1. 现行结汇与退税税率
-- 实木及板式家具综合退税率维持 13%；
-- 单证备案需在报关单结关后 15 个工作日内完成系统核销。
-
-## 2. 报关单证要求
-- 报关单、提单、增值税专用发票“三单一致”；
-- 境外汇款水单对应客户名称需与备案合同保持一致。`,
-    status: '已发布',
-    viewCount: 342,
-    contentType: 'document',
-    fileType: 'PDF',
-    fileSize: '4.2 MB',
-    chunksCount: 18,
-    reviewStatus: 'approved',
-    reviewer: 'Sophia (主管/平台管理员)',
-    reviewedAt: '2026-08-22 10:15:00',
-    reviewComment: '新版本 v2.1.0 经关务总监与财务部联合复核通过！由于涉及海关2026年9月1日新关税税则调整，系统已锁定并将于 2026-09-01 零点准时自动切换为线上正式生效版本。',
-    tags: ['外贸合规: 退税申报', '外贸合规: 报关单证'],
-    applicableRoles: ['关务跟单岗', '外贸销售岗', '财务审计岗'],
-    applicableRegions: ['欧美市场', 'GCC中东六国'],
-    securityLevel: '内部',
-    expiryType: 'permanent',
-    auditLogs: [
-      {
-        id: 'LOG-KB-PEFF-002',
-        articleId: 'KB-REVIEW-PENDING-EFFECTIVE-01',
-        operator: 'Sophia (主管/平台管理员)',
-        operatorRole: '平台管理员',
-        timestamp: '2026-08-22 10:15:00',
-        action: 'approve',
-        actionLabel: '复核通过（排期自动生效）',
-        version: 'v2.1.0',
-        wasPublished: true,
-        reviewComment: '新版本 v2.1.0 经关务总监与财务部联合复核通过！由于涉及海关2026年9月1日新关税税则调整，系统已锁定并将于 2026-09-01 零点准时自动切换为线上正式生效版本。',
-        diffSummary: '新版本 v2.1.0 审批通过，设定于 2026-09-01 自动生效上线；当前保留运行 v2.0.0'
-      },
-      {
-        id: 'LOG-KB-PEFF-001',
-        articleId: 'KB-REVIEW-PENDING-EFFECTIVE-01',
-        operator: 'Emily (关务合规主管)',
-        operatorRole: '关务合规主管',
-        timestamp: '2026-08-21 16:30:00',
-        action: 'edit',
-        actionLabel: '提交关税新规修订版 v2.1.0',
-        version: 'v2.1.0',
-        wasPublished: true,
-        diffSummary: '根据海关总署最新公告预先更新Q4结汇税率'
-      }
-    ]
-  },
-
-  // 45. 复核不通过条目: 驳回条目 (未发布过版本)
-  {
-    id: 'KB-REVIEW-REJECTED-01',
-    title: '中东GCC大客户私人折扣与佣金返点内部执行细则（未经审批版）',
-    category: '销售话术 / 销售实战、竞对与风险控制 / 算价公式、权限与合同法务',
-    code: 'KB-SALES-DISCOUNT-FORBIDDEN',
-    version: 'v1.0.0',
-    wasPublished: false,
-    author: 'Leo (新员工)',
-    updatedAt: '2026-08-19 11:20',
-    content: `# 中东区域大客户返佣与私人特批折扣参考标准
-
-## 1. 特批折扣档位
-- 针对 50 万美金以上整单，业务员可自主在 PI 形式发票上给予 8% 现金折让；
-- 允许通过海外离岸账户向中介商支付 3% 居间咨询费。
-
-（注：本条款需经合规审核）`,
-    status: '复核不通过',
-    viewCount: 8,
-    contentType: 'markdown',
-    fileType: 'MD',
-    fileSize: '3.1 KB',
-    chunksCount: 10,
-    reviewStatus: 'rejected',
-    reviewComment: '严重违反公司外贸合规与财务反洗钱准则：业务员严禁擅自承诺现金折让与离岸佣金，所有返点必须通过法务特批合同并出具合法 BOQ 佣金协议。已驳回，请重新修改。',
-    reviewer: 'Sophia (主管/平台管理员)',
-    reviewedAt: '2026-08-19 11:45:00',
-    tags: ['合规风控: 敏感词拦截', '销售阶段: 逼单与谈判'],
-    auditLogs: [
-      {
-        id: 'LOG-KB-REJ-002',
-        articleId: 'KB-REVIEW-REJECTED-01',
-        operator: 'Sophia (主管/平台管理员)',
-        operatorRole: '平台管理员',
-        timestamp: '2026-08-19 11:45:00',
-        action: 'reject',
-        actionLabel: '平台管理员复核驳回',
-        version: 'v1.0.0',
-        wasPublished: false,
-        reviewComment: '严重违反公司外贸合规与财务反洗钱准则：业务员严禁擅自承诺现金折让与离岸佣金，所有返点必须通过法务特批合同并出具合法 BOQ 佣金协议。已驳回，请重新修改。',
-        diffSummary: '复核不通过，状态变更为【复核不通过】，退回作者修订'
-      },
-      {
-        id: 'LOG-KB-REJ-001',
-        articleId: 'KB-REVIEW-REJECTED-01',
-        operator: 'Leo (新员工)',
-        operatorRole: '业务员',
-        timestamp: '2026-08-19 11:20:00',
-        action: 'submit_review',
-        actionLabel: '提交新规复核申请',
-        version: 'v1.0.0',
-        wasPublished: false,
-        diffSummary: '首次提交中东大客户返点条款'
-      }
-    ]
-  },
-
-  // 46. 已失效条目
-  {
-    id: 'KB-REVIEW-EXPIRED-01',
-    title: '2025年度春季广交会客商现场签约全屋柜体定金双倍膨胀优惠细则（已过期作废）',
-    category: '营销活动 / 限时促销与商务返点政策 / 全屋柜体首单定金膨胀方案',
-    code: 'KB-MKT-EXPIRED-2025',
-    version: 'v1.2.0',
-    author: 'Alex (外贸业务员)',
-    updatedAt: '2025-05-30',
-    content: `# 2025春季广交会展位现场签约限时优惠补贴政策
-
-## 1. 活动有效期
-- 2025年4月15日 - 2025年5月5日止（现已全面失效）。
-
-## 2. 优惠条款
-- 现场交付 $2,000 定金抵扣 $5,000 货款；
-- 免费赠送 1 套德国海蒂诗抽屉滑轨展架。`,
-    status: '失效',
-    viewCount: 890,
-    contentType: 'document',
-    fileType: 'PDF',
-    fileSize: '5.1 MB',
-    chunksCount: 16,
-    reviewStatus: 'expired',
-    tags: ['营销活动: 订舱限时直降', '营销活动: 展会专案'],
-    expiryType: 'custom',
-    validityStartDate: '2025-04-15',
-    validityEndDate: '2025-05-05',
-    auditLogs: [
-      {
-        id: 'LOG-KB-EXP-001',
-        articleId: 'KB-REVIEW-EXPIRED-01',
-        operator: '系统自动时效调度器',
-        operatorRole: '系统服务',
-        timestamp: '2025-05-06 00:00:00',
-        action: 'expire',
-        actionLabel: '有效期届满自动失效',
-        version: 'v1.2.0',
-        wasPublished: true,
-        diffSummary: '活动截止日期到达，系统自动将知识条目置为【已失效】状态'
-      }
-    ]
-  },
-
-  // 47. 草稿条目
-  {
-    id: 'KB-REVIEW-DRAFT-01',
-    title: '智能升降中岛台与意大利岩板热弯一体成型工艺生产标准（草稿初审稿）',
-    category: '基础知识库 / 产品与技术百科 / 产品百科 / 全卫',
-    code: 'KB-DRAFT-SMART-ISLAND',
-    version: 'v0.9.0-draft',
-    author: 'David (结构工程师)',
-    updatedAt: '2026-08-20 17:00',
-    content: `# 智能升降岛台与岩板热弯工艺拆单标准 (草稿未定稿)
-
-## 1. 结构骨架选材
-- 内部立柱采用 2.5mm 加厚航空级铝合金；
-- 双电机同步驱动，行程 650mm-1050mm，承重测试 ≥ 180kg。
-
-## 2. 待确认事项
-- [ ] 需与意大利岩板供应商确认 12mm 弯折 R 角最大弧度公差；
-- [ ] 需补充 220V/110V 宽电压电机防夹手传感器布线方案。`,
-    status: '草稿',
-    viewCount: 4,
-    contentType: 'document',
-    fileType: 'DOCX',
-    fileSize: '3.8 MB',
-    chunksCount: 8,
-    tags: ['空间: 中西岛台厨柜', '材质: 岩板一体台盆'],
-    auditLogs: [
-      {
-        id: 'LOG-KB-DRAFT-001',
-        articleId: 'KB-REVIEW-DRAFT-01',
-        operator: 'David (结构工程师)',
-        operatorRole: '工程师',
-        timestamp: '2026-08-20 17:00:00',
-        action: 'create',
-        actionLabel: '保存为本地草稿',
-        version: 'v0.9.0',
-        wasPublished: false,
-        diffSummary: '初始草稿录入，未提交复核'
-      }
-    ]
   }
 ];
 
