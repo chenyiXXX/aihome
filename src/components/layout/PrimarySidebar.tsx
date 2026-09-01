@@ -137,24 +137,24 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
     },
     {
       id: 'in_sales' as ModuleType,
-      label: '售中助手',
+      label: '销售助手',
       icon: Users,
       defaultSubView: '会话列表',
       subViews: []
     },
     {
       id: 'marketing' as ModuleType,
-      label: '推广助手',
+      label: '运营助手',
       icon: Sparkles,
       defaultSubView: '视频剪辑',
-      subViews: ['视频剪辑', '图文内容生成', '审核', '发布计划']
+      subViews: ['视频剪辑', '图文生成', '发布审核', '发布计划', '账号管理']
     },
     {
       id: 'knowledge_base' as ModuleType,
       label: '知识库管理',
       icon: RotateCw,
       defaultSubView: '内容上传',
-      subViews: ['内容上传', '知识复核', '分类管理', '标签管理', '知识库版本']
+      subViews: ['内容上传', '知识复核', '分类管理', '标签管理']
     },
     {
       id: 'analytics' as ModuleType,

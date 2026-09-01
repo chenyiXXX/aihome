@@ -39,9 +39,9 @@ const getModuleTitleById = (mod: ModuleType): string => {
     case 'pre_sales':
       return '售前客服';
     case 'in_sales':
-      return '售中助手';
+      return '销售助手';
     case 'marketing':
-      return '推广助手';
+      return '运营助手';
     case 'knowledge_base':
       return '知识库管理';
     case 'analytics':

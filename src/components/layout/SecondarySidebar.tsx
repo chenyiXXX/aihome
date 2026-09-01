@@ -259,20 +259,20 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
               视频剪辑
             </button>
             <button
-              onClick={() => onSelectSubView('图文内容生成')}
+              onClick={() => onSelectSubView('图文生成')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '图文内容生成' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+                subView === '图文生成' || subView === '图文内容生成' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              图文内容生成
+              图文生成
             </button>
             <button
-              onClick={() => onSelectSubView('内容审核')}
+              onClick={() => onSelectSubView('发布审核')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '内容审核' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+                subView === '发布审核' || subView === '内容审核' || subView === '审核' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              内容审核
+              发布审核
             </button>
             <button
               onClick={() => onSelectSubView('发布计划')}
@@ -282,6 +282,14 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
             >
               发布计划
             </button>
+            <button
+              onClick={() => onSelectSubView('账号管理')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
+                subView === '账号管理' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              账号管理
+            </button>
           </div>
         );
 
@@ -289,12 +297,12 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
         return (
           <div className="space-y-1">
             <button
-              onClick={() => onSelectSubView('知识库内容编辑')}
+              onClick={() => onSelectSubView('内容上传')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '知识库内容编辑' || subView === '内容上传' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+                subView === '内容上传' || subView === '知识库内容编辑' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              知识库内容编辑
+              内容上传
             </button>
             <button
               onClick={() => onSelectSubView('知识复核')}
@@ -306,20 +314,20 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
             </button>
             <button
-              onClick={() => onSelectSubView('知识库分类管理')}
+              onClick={() => onSelectSubView('分类管理')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '知识库分类管理' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+                subView === '分类管理' || subView === '知识库分类管理' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              知识库分类管理
+              分类管理
             </button>
             <button
-              onClick={() => onSelectSubView('知识库版本')}
+              onClick={() => onSelectSubView('标签管理')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '知识库版本' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+                subView === '标签管理' || subView === '知识库标签管理' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              知识库版本
+              标签管理
             </button>
           </div>
         );

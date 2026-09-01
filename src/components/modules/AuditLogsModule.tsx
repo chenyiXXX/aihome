@@ -9,6 +9,7 @@ interface AuditLogsModuleProps {
 
 export const AuditLogsModule: React.FC<AuditLogsModuleProps> = ({ logs }) => {
   const [activeFilter, setActiveFilter] = useState<'全部日志' | '系统操作' | 'AI 问答' | '推广生成'>('全部日志');
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
@@ -35,7 +36,7 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = ({ logs }) => {
         </div>
 
         <button className="h-9 px-4.5 rounded-full bg-[#FFEFEA] text-[#EA3A20] hover:bg-[#ffe3dc] text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs">
-          <span>Export Logs</span>
+          <span>导出日志</span>
           <ChevronDown className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -82,20 +83,46 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = ({ logs }) => {
         {/* Pagination Footer */}
         <div className="flex items-center justify-between pt-6 pb-2 shrink-0">
           <span className="text-xs font-semibold text-slate-500">
-            Showing {logs.length} of 120 Logs
+            共 120 条日志，当前显示 {logs.length} 条
           </span>
           <div className="flex items-center gap-2">
-            <button className="px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 bg-[#FFF5F2] text-[#EA3A20] text-xs font-bold cursor-pointer">
-              Prev
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className={`px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
+                currentPage === 1
+                  ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                  : 'bg-[#FFF5F2] hover:bg-[#ffece6] text-[#EA3A20]'
+              }`}
+            >
+              上一页
             </button>
-            <button className="w-8 h-8 rounded-full bg-[#EA3A20] text-white font-bold text-xs shadow-xs">
-              1
-            </button>
-            <button className="w-8 h-8 rounded-full text-slate-600 font-bold text-xs hover:bg-white">
-              2
-            </button>
-            <button className="px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 bg-[#FFF5F2] text-[#EA3A20] text-xs font-bold cursor-pointer">
-              Next
+            {[1, 2].map((page) => {
+              const isActive = currentPage === page;
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-full text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
+                    isActive
+                      ? 'bg-[#EA3A20] text-white shadow-xs scale-105'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(2, p + 1))}
+              disabled={currentPage === 2}
+              className={`px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
+                currentPage === 2
+                  ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                  : 'bg-[#FFF5F2] hover:bg-[#ffece6] text-[#EA3A20]'
+              }`}
+            >
+              下一页
             </button>
           </div>
         </div>

@@ -67,7 +67,7 @@ export interface SessionItem {
   lastTime: string;
   tags: string[];
   assignedStaff: string;
-  status: '跟进中' | '已报价' | '已成交' | '已流失' | '不是客户';
+  status: '沟通中' | '等待客户确认' | '图纸锁定' | '生产排单中' | '发货中';
 }
 
 export interface ChatMessage {

@@ -213,7 +213,7 @@ export const initialSessions: SessionItem[] = [
     lastTime: '09:30',
     tags: ['线下对接', '展会结识', '工程总包', '打样确认中', '预算充足'],
     assignedStaff: 'Franklin Jr',
-    status: '已流失'
+    status: '等待客户确认'
   },
   {
     id: 'SESS-108',

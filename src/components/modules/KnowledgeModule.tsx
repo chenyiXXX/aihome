@@ -298,15 +298,13 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   };
 
   // Determine active view mode
-  const currentView: '内容上传' | '知识复核' | '分类管理' | '标签管理' | '版本记录' =
+  const currentView: '内容上传' | '知识复核' | '分类管理' | '标签管理' =
     subView.includes('复核')
       ? '知识复核'
       : subView.includes('分类')
       ? '分类管理'
       : subView.includes('标签')
       ? '标签管理'
-      : subView.includes('版本')
-      ? '版本记录'
       : '内容上传';
 
   // Helper to parse key-value paired tags, e.g. "风格: 地中海" -> { key: "风格", value: "地中海", isPair: true }
@@ -2116,8 +2114,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               ? '知识库标签管理'
               : currentView === '知识复核'
               ? '知识复核中心'
-              : currentView === '版本记录'
-              ? '知识库版本记录'
               : '知识库内容管理'}
           </h1>
           {currentView === '知识复核' ? (
@@ -2133,18 +2129,13 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
             <span className="text-[11px] font-medium text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md shrink-0">
               共 {tagList.length} 个成对标签体系
             </span>
-          ) : currentView === '内容上传' ? (
+          ) : (
             <span className="text-[11px] font-medium text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md flex items-center gap-1.5 shrink-0">
               <span>共 {contentList.length} 篇知识条目</span>
               <span className="text-emerald-600 font-bold flex items-center gap-0.5">
                 <Check className="w-3 h-3" /> 向量库同步在线
               </span>
             </span>
-          ) : (
-            <>
-              <span className="text-xs text-slate-400">/</span>
-              <span className="text-xs text-slate-500 shrink-0">版本发布日志与索引审计</span>
-            </>
           )}
         </div>
 
@@ -3084,47 +3075,31 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
                 <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
 
-                {/* Category Groups Pills */}
-                <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar max-w-full">
-                  <button
-                    onClick={() => setSelectedTagGroup('全部')}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer shrink-0 ${
-                      selectedTagGroup === '全部'
-                        ? 'bg-slate-900 text-white font-bold'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
-                    }`}
-                  >
-                    全部业务大类
-                  </button>
-                  {allTagGroupOptions.map((grp) => (
-                    <button
-                      key={grp}
-                      onClick={() => setSelectedTagGroup(grp)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer shrink-0 ${
-                        selectedTagGroup === grp
-                          ? 'bg-slate-900 text-white font-bold'
-                          : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/80'
-                      }`}
+                {/* Category Groups Dropdown */}
+                <div className="flex items-center gap-1.5 text-xs shrink-0">
+                  <span className="text-slate-400 text-[11px]">业务大类:</span>
+                  <div className="relative">
+                    <select
+                      value={selectedTagGroup}
+                      onChange={(e) => setSelectedTagGroup(e.target.value)}
+                      className="pl-3 pr-8 py-1.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20] text-xs cursor-pointer appearance-none transition-colors shadow-2xs"
                     >
-                      {grp}
-                    </button>
-                  ))}
+                      <option value="全部">全部业务大类 ({tagList.length})</option>
+                      {allTagGroupOptions.map((grp) => {
+                        const count = tagList.filter((t) => t.categoryGroup === grp).length;
+                        return (
+                          <option key={grp} value={grp}>
+                            {grp} {count > 0 ? `(${count})` : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
-              {/* Right: Sort By */}
-              <div className="flex items-center gap-2 text-xs shrink-0">
-                <span className="text-slate-400 text-[11px]">排序:</span>
-                <select
-                  value={tagSortBy}
-                  onChange={(e) => setTagSortBy(e.target.value as any)}
-                  className="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20] text-xs cursor-pointer"
-                >
-                  <option value="usage">按知识关联热度</option>
-                  <option value="name">按名称首字母</option>
-                  <option value="time">按创建时间</option>
-                </select>
-              </div>
+
             </div>
 
             {/* Tag Cards Grid */}
@@ -3316,39 +3291,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <span>输入框内按回车可极速添加新标签值</span>
                 </div>
               )}
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* TAB 4: 版本记录 (Version Release Log) */}
-        {/* ========================================================================= */}
-        {currentView === '版本记录' && (
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] space-y-4">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
-                <GitBranch className="w-4 h-4 text-[#EA3A20]" /> 知识库大版本迭代与安全审计
-              </h2>
-
-              <div className="space-y-4">
-                {versions.map((ver, idx) => (
-                  <div key={idx} className="p-4.5 bg-slate-50 border border-slate-100 rounded-2xl space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-sm text-[#EA3A20]">{ver.version}</span>
-                      <span className="text-slate-400">{ver.releaseDate} by {ver.author}</span>
-                    </div>
-                    <p className="text-slate-700 leading-relaxed bg-white p-3.5 rounded-xl border border-slate-100 font-medium">
-                      {ver.changeLog}
-                    </p>
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                      <span>已同步覆盖 {ver.articleCount} 条业务条款与问答索引</span>
-                      <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span> 线上生效中
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         )}

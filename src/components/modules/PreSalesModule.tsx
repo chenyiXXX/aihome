@@ -424,23 +424,28 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({ inquiries, subVi
             </div>
           </div>
 
-          {/* 3. Pagination Footer matching 03_ApplicationPage.png */}
+          {/* 3. Pagination Footer matching unified design */}
           <div className="flex items-center justify-between pt-6 pb-2 shrink-0">
             <span className="text-xs font-semibold text-slate-500">
-              Showing 5 of 102 Data
+              共 102 条数据，当前显示第 {(currentPage - 1) * 5 + 1} - {Math.min(102, currentPage * 5)} 条
             </span>
 
             {/* Pagination Controls */}
             <div className="flex items-center gap-2">
-              {/* Prev Button */}
+              {/* 上一页 按钮 */}
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                className="px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 bg-[#FFF5F2] hover:bg-[#ffece6] text-[#EA3A20] text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                disabled={currentPage === 1}
+                className={`px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
+                  currentPage === 1
+                    ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                    : 'bg-[#FFF5F2] hover:bg-[#ffece6] text-[#EA3A20]'
+                }`}
               >
-                Prev
+                上一页
               </button>
 
-              {/* Number Buttons */}
+              {/* 页码按钮 */}
               {[1, 2, 3, 4].map((page) => {
                 const isActive = currentPage === page;
                 return (
@@ -458,12 +463,17 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({ inquiries, subVi
                 );
               })}
 
-              {/* Next Button */}
+              {/* 下一页 按钮 */}
               <button
                 onClick={() => setCurrentPage(Math.min(4, currentPage + 1))}
-                className="px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 bg-[#FFF5F2] hover:bg-[#ffece6] text-[#EA3A20] text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                disabled={currentPage === 4}
+                className={`px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
+                  currentPage === 4
+                    ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                    : 'bg-[#FFF5F2] hover:bg-[#ffece6] text-[#EA3A20]'
+                }`}
               >
-                Next
+                下一页
               </button>
             </div>
           </div>

@@ -1,11 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   Send,
-  BookOpen,
   Calculator,
   Languages,
   Sparkles,
-  ChevronDown
+  Zap,
+  UserPlus,
+  Search,
+  Building2,
+  Phone,
+  Tag,
+  X,
+  RefreshCw,
+  MessageSquare,
+  ChevronRight,
+  ChevronDown,
+  ShieldCheck,
+  Globe,
+  UploadCloud,
+  Mic,
+  FileText,
+  FileAudio,
+  CheckCircle2,
+  Play,
+  Pause,
+  Volume2,
+  Wand2,
+  ArrowRight,
+  HelpCircle,
+  FileCheck,
+  Loader2,
+  Image as ImageIcon,
+  PlayCircle,
+  BookOpen
 } from 'lucide-react';
 import { SessionItem, ChatMessage, ScriptItem } from '../../types';
 
@@ -18,16 +47,167 @@ interface InSalesModuleProps {
 }
 
 export const InSalesModule: React.FC<InSalesModuleProps> = ({
-  sessions,
+  sessions: initialSessionsList,
   chatMessages,
   scripts,
   onOpenAddScriptDrawer
 }) => {
+  const [sessionList, setSessionList] = useState<SessionItem[]>(initialSessionsList);
   const [activeSession, setActiveSession] = useState<SessionItem | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>(chatMessages);
+  
+  // Replace the direct customer chat with an AI Copilot chat
+  const initialAiMessages: ChatMessage[] = [
+    {
+      id: 'msg-ai-1',
+      sessionId: 'all',
+      sender: 'ai_copilot',
+      content: '你好，我是你的销售AI助手。你可以向我发送客户的疑问、痛点、户型图或者当前沟通的难点，我会为你深度分析并提供高转化的话术推荐与成单策略。',
+      timestamp: '09:00',
+      messageType: 'text'
+    },
+    {
+      id: 'msg-sales-1',
+      sessionId: 'all',
+      sender: 'sales',
+      content: '客户问我们的实木柜体和爱格板柜体的防水性能对比，有相关的测试视频和测试报告发给客户看吗？',
+      timestamp: '09:05'
+    },
+    {
+      id: 'msg-ai-2',
+      sessionId: 'all',
+      sender: 'ai_copilot',
+      content: '为你找到相关的防水性能测试资料。\n\n**总结**：实木柜体（多层实木）采用封边工艺和表面漆面处理，具备极好的生活防水性能；爱格板则使用PUR封边，遇水不易膨胀。两者均能完美应对厨房和浴室的高湿环境。\n\n建议将以下**测试视频**和**第三方检测报告**发送给客户打消疑虑：',
+      timestamp: '09:06',
+      messageType: 'text_video',
+      attachments: [
+        {
+          id: 'att-1',
+          type: 'video',
+          url: 'https://cdn.example.com/water-test.mp4',
+          name: '水浸泡对比测试实验.mp4',
+          duration: '01:15',
+          thumbnail: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400'
+        },
+        {
+          id: 'att-2',
+          type: 'file',
+          url: 'https://cdn.example.com/report.pdf',
+          name: 'SGS_防水浸泡性能检测报告.pdf',
+          size: '1.2 MB'
+        }
+      ],
+      citations: [
+        { id: 'kb-01', title: '《柜体板材防潮防水性能对比白皮书》', version: 'v2.1' },
+        { id: 'kb-02', title: '《工厂实验室测试数据标准手册》', version: 'v1.4' }
+      ]
+    },
+    {
+      id: 'msg-sales-2',
+      sessionId: 'all',
+      sender: 'sales',
+      content: '好，那我们有一款新的意式极简风格的岛台吗？发几张高清图给我看看，要带大理石纹理的。',
+      timestamp: '09:08'
+    },
+    {
+      id: 'msg-ai-3',
+      sessionId: 'all',
+      sender: 'ai_copilot',
+      content: '有的，这是最新研发的「米兰之光」系列意式极简岛台，采用进口岩板（卡拉拉白大理石纹理），无拉手设计。',
+      timestamp: '09:08',
+      messageType: 'text_image',
+      attachments: [
+        {
+          id: 'att-3',
+          type: 'image',
+          url: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=600',
+          name: 'island_design_1.jpg'
+        },
+        {
+          id: 'att-4',
+          type: 'image',
+          url: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=600',
+          name: 'island_design_2.jpg'
+        }
+      ]
+    }
+  ];
+  const [messages, setMessages] = useState<ChatMessage[]>(initialAiMessages);
+  const [expandedCitations, setExpandedCitations] = useState<string[]>([]);
   const [inputMessage, setInputMessage] = useState('');
-  const [scriptTab, setScriptTab] = useState<'public' | 'private'>('public');
-  const [activeTab, setActiveTab] = useState<string>('活跃会话');
+
+  const toggleCitations = (msgId: string) => {
+    setExpandedCitations(prev => prev.includes(msgId) ? prev.filter(id => id !== msgId) : [...prev, msgId]);
+  };
+  const [profileTab, setProfileTab] = useState<'history' | 'tags' | 'assets' | 'knowledge'>('history');
+  const [activeTab, setActiveTab] = useState<'企微' | 'WhatsApp' | '线下对接'>('企微');
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'api_sync' | 'manual'>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('跟进中');
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const handleStatusChange = (id: string, newStatus: string) => {
+    setSessionList(prev => prev.map(s => s.id === id ? { ...s, status: newStatus as any } : s));
+    if (activeSession && activeSession.id === id) {
+      setActiveSession({ ...activeSession, status: newStatus as any });
+    }
+  };
+
+  // Create Session Modal State
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newChannel, setNewChannel] = useState<'企微' | 'WhatsApp' | '线下对接'>('企微');
+  const [newCustomerName, setNewCustomerName] = useState('');
+  const [newCompanyName, setNewCompanyName] = useState('');
+  const [newContactInfo, setNewContactInfo] = useState('');
+  const [newAssignedStaff, setNewAssignedStaff] = useState('Franklin Jr');
+  const [selectedTags, setSelectedTags] = useState<string[]>(['销售自建', '待跟进']);
+  const [initialNote, setInitialNote] = useState('');
+
+  // AI & Upload State for Session Creation
+  const [recordInputMode, setRecordInputMode] = useState<'manual' | 'chat_upload' | 'audio_upload'>('manual');
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [uploadedFileSize, setUploadedFileSize] = useState<string | null>(null);
+  const [rawRecordText, setRawRecordText] = useState('');
+  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+  const [aiAnalysisCompleted, setAiAnalysisCompleted] = useState(false);
+  const [aiExtractedSummary, setAiExtractedSummary] = useState<{
+    customerName?: string;
+    companyName?: string;
+    contactInfo?: string;
+    tags: string[];
+    structuredDemand: string;
+    urgencyLevel?: '高' | '中' | '一般';
+    estimatedBudget?: string;
+  } | null>(null);
+
+  // Audio Playback simulation
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
+  const quickTagOptions = [
+    '销售自建',
+    '全案高定',
+    '展会获客',
+    '私宅别墅',
+    '酒店工程',
+    '爱格板定制',
+    '碳晶护墙板',
+    '隐形门系统',
+    '外贸大单',
+    '待打样',
+    '打样确认中',
+    '预算充足',
+    '工期紧急'
+  ];
+
+  const toggleTag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
 
   // CBM Calculator Modal
   const [showCbmCalc, setShowCbmCalc] = useState(false);
@@ -44,7 +224,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     const text = textToSend || inputMessage;
     if (!text.trim() || !activeSession) return;
 
-    const newMsg: ChatMessage = {
+    const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       sessionId: activeSession.id,
       sender: 'sales',
@@ -52,18 +232,233 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setMessages((prev) => [...prev, newMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) setInputMessage('');
+
+    // Mock AI Generating State
+    const aiMsgId = `msg-ai-${Date.now()}`;
+    const aiGeneratingMsg: ChatMessage = {
+      id: aiMsgId,
+      sessionId: activeSession.id,
+      sender: 'ai_copilot',
+      content: '',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isGenerating: true,
+      generationTimeMs: 0
+    };
+
+    setMessages((prev) => [...prev, aiGeneratingMsg]);
+
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      setMessages((prev) => 
+        prev.map(m => m.id === aiMsgId ? { ...m, generationTimeMs: Date.now() - startTime } : m)
+      );
+    }, 100);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      setMessages((prev) => 
+        prev.map(m => {
+          if (m.id === aiMsgId) {
+            return {
+              ...m,
+              isGenerating: false,
+              content: '已为您生成相关的话术与报价。建议向客户强调我们在工期和品质上的双重保障。',
+              messageType: 'text_file',
+              attachments: [
+                {
+                  id: `att-ai-${Date.now()}`,
+                  type: 'file',
+                  url: '#',
+                  name: 'Quotation_Villa_Updated.pdf',
+                  size: '1.5 MB'
+                }
+              ],
+              citations: [
+                { id: 'kb-03', title: '《外贸报价单生成规范》', version: 'v1.1' }
+              ]
+            };
+          }
+          return m;
+        })
+      );
+    }, 2500);
   };
 
   const handleInsertScript = (script: ScriptItem) => {
     setInputMessage((prev) => (prev ? `${prev}\n\n${script.content}` : script.content));
   };
 
-  const filteredScripts = scripts.filter((s) => (scriptTab === 'public' ? !s.isPrivate : s.isPrivate));
+  const handleCreateSession = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCustomerName.trim()) return;
+
+    const avatarText = newCustomerName.trim().slice(0, 2).toUpperCase();
+    const newSess: SessionItem = {
+      id: `SESS-${Math.floor(200 + Math.random() * 800)}`,
+      customerName: newCustomerName.trim(),
+      avatar: avatarText,
+      channel: newChannel,
+      sourceType: 'manual',
+      companyName: newCompanyName.trim() || undefined,
+      contactInfo: newContactInfo.trim() || undefined,
+      unreadCount: 0,
+      lastMessage: initialNote.trim() || '销售手动发起建联，等待沟通...',
+      lastTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      tags: selectedTags.length > 0 ? selectedTags : ['销售自建', newChannel],
+      assignedStaff: newAssignedStaff,
+      status: '跟进中'
+    };
+
+    setSessionList([newSess, ...sessionList]);
+    setActiveTab(newChannel);
+    setShowCreateModal(false);
+
+    // Reset form
+    setNewCustomerName('');
+    setNewCompanyName('');
+    setNewContactInfo('');
+    setInitialNote('');
+    setSelectedTags(['销售自建', '待跟进']);
+    setRecordInputMode('manual');
+    setUploadedFileName(null);
+    setUploadedFileSize(null);
+    setRawRecordText('');
+    setAiAnalysisCompleted(false);
+    setAiExtractedSummary(null);
+
+    // Directly enter the newly created session
+    setActiveSession(newSess);
+  };
+
+  // Mock Upload Handler
+  const handleFileUpload = (file: File, type: 'chat' | 'audio') => {
+    setUploadedFileName(file.name);
+    setUploadedFileSize(`${(file.size / (1024 * 1024)).toFixed(2)} MB`);
+    
+    if (type === 'chat') {
+      setRawRecordText(`[导入聊天文件: ${file.name}]\n客户：“你好，我们在广州珠江新城有一套360平米的顶复豪宅，需要全案定制。主卧需要爱格W1000板材的步入式衣帽间，客厅整面要做碳晶护墙板和磁吸隐藏门。预算大概50万以内，要求下个月15号前打样确认并排期进场。”\n销售：“收到！我们有德国百隆五金和爱格官方授权，可提供1:1节点图与色板包邮送样。”`);
+    } else {
+      setRawRecordText(`[语音识别音频文件: ${file.name} | 时长: 03分42秒]\n【客户发言】：我们是杭州极简美学设计院的李工，负责千岛湖高端度假独栋项目。对墙板防潮和柜体环保等级要求极高（必须达到ENF级或日本F4星）。你们实木贴皮和碳晶板的阻燃报告（BS5852 / B1级）能否下周附在报价单里？\n【销售回应】：没问题李工，我们所有工程板材均具备国家阻燃及环保双重认证，随时可安排打样专函寄送。`);
+    }
+  };
+
+  // Preset Sample Loader for quick demo testing
+  const loadPresetDemo = (preset: 'chat_villa' | 'audio_hotel' | 'whatsapp_export') => {
+    setIsAiAnalyzing(false);
+    setAiAnalysisCompleted(false);
+    
+    if (preset === 'chat_villa') {
+      setRecordInputMode('chat_upload');
+      setUploadedFileName('微信聊天记录_深圳湾一号业主张先生_202608.txt');
+      setUploadedFileSize('128 KB');
+      setRawRecordText(`【微信聊天记录导录】
+张先生(14:22): 你好，朋友推荐你们家做高定很专业。我深圳湾一号280平大平层准备开工，全屋需要做隐形门系统和爱格板衣帽间。
+销售(14:25): 张总您好！非常荣幸，深圳湾一号我们刚做完两套同户型全案，对承重墙及中央空调隐藏式回风口收口非常熟练。
+张先生(14:30): 太好了，我预算在35-45万左右，希望能尽快看到碳晶护墙板实物小样和爱格板色卡，下周三能否安排上门量尺？
+销售(14:32): 没问题张总，已为您锁定资深深化设计师，周三上午10点准时携带色板箱前往现场量尺！`);
+    } else if (preset === 'audio_hotel') {
+      setRecordInputMode('audio_upload');
+      setUploadedFileName('展会面谈录音_迪拜精品酒店定制采购总监_2026.mp3');
+      setUploadedFileSize('8.6 MB');
+      setRawRecordText(`【面谈现场录音转写】
+客户代表(Tariq): We are sourcing customized joinery and fire-rated wall panels for a 45-villa resort in Palm Jumeirah. All woodwork must meet BS5852 standard with PVD titanium brass trims. Total volume estimated around 12x 40HQ containers.
+销售业务员(Sophia): Excellent, Tariq. We have full ISO and British Standard test reports for all our fire-resistant core panels, and our in-house PVD coating line ensures exact color consistency. We can dispatch master sample boxes to your Dubai office within 4 business days.`);
+    } else {
+      setRecordInputMode('chat_upload');
+      setUploadedFileName('WhatsApp_Chat_Apex_Architecture_US.txt');
+      setUploadedFileSize('64 KB');
+      setRawRecordText(`David Miller (Apex Arch US): Can you supply customized oak veneer fluted panels for our Miami penthouse project? Total ceiling height 3.2m, need seamless joint detailing. Budget is around $80,000 USD for the wood package.`);
+    }
+  };
+
+  // Run AI Analysis
+  const handleTriggerAiAnalysis = () => {
+    if (!rawRecordText && !uploadedFileName) return;
+    setIsAiAnalyzing(true);
+
+    setTimeout(() => {
+      setIsAiAnalyzing(false);
+      setAiAnalysisCompleted(true);
+
+      // AI Extracted Data depending on channel / context
+      let extracted: typeof aiExtractedSummary = null;
+
+      if (uploadedFileName?.includes('深圳湾') || rawRecordText.includes('深圳湾')) {
+        extracted = {
+          customerName: '张明远 先生',
+          companyName: '深圳湾一号私宅大平层 (280㎡)',
+          contactInfo: '139-2841-8899',
+          tags: ['全案高定', '私宅别墅', '爱格板定制', '碳晶护墙板', '隐形门系统', '待打样', '预算充足'],
+          urgencyLevel: '高',
+          estimatedBudget: '35万 - 45万 RMB',
+          structuredDemand: `【项目类型】深圳湾一号 280㎡ 大平层全案高定\n【核心材质需求】爱格板 (W1000/U708)、整墙碳晶护墙板、极简隐形门系统\n【关键节点要求】下周三量尺，急需寄送碳晶护墙板小样与色卡\n【预算范围】约 35万~45万元\n【销售跟进建议】已安排资深深化设计师带样箱上门，重点突出同小区实操案例与节点收口细节`
+        };
+      } else if (uploadedFileName?.includes('迪拜') || rawRecordText.includes('Dubai') || rawRecordText.includes('Palm Jumeirah')) {
+        extracted = {
+          customerName: 'Tariq Al-Mansoor',
+          companyName: 'Royal Oasis Hospitality (Dubai)',
+          contactInfo: '+971 50 123 4567',
+          tags: ['外贸大单', '酒店工程', '待打样', '工期紧急', '预算充足'],
+          urgencyLevel: '高',
+          estimatedBudget: '$320,000+ USD (12x 40HQ)',
+          structuredDemand: `【项目类型】迪拜朱美拉棕榈岛 45 栋度假别墅定制固装木作\n【核心工艺要求】BS5852 英国阻燃标准木作、PVD 钛金黄铜金属收边条、防潮耐高温处理\n【装柜估算】预计 12 个 40HQ 高柜\n【后续动作】4 个工作日内向客户迪拜代表处快递 Master Sample 打样箱及阻燃检测报告`
+        };
+      } else {
+        extracted = {
+          customerName: '李工 / 李工设计院',
+          companyName: '千岛湖高端独栋度假项目',
+          contactInfo: '138-0571-6622',
+          tags: ['全案高定', '酒店工程', '爱格板定制', '碳晶护墙板', '待打样'],
+          urgencyLevel: '中',
+          estimatedBudget: '50万+ RMB',
+          structuredDemand: `【客户意向】千岛湖高端度假项目固装与护墙板定制\n【环保/安全等级】明确要求 ENF 级 / 日本 F4 星环保标准，护墙板需 B1 级阻燃认证\n【跟进任务】下周初连同报价单附上官方检测报告与实木贴皮/碳晶板打样`
+        };
+      }
+
+      setAiExtractedSummary(extracted);
+
+      // Auto-populate form fields if empty or update
+      if (extracted.customerName && !newCustomerName) {
+        setNewCustomerName(extracted.customerName);
+      }
+      if (extracted.companyName && !newCompanyName) {
+        setNewCompanyName(extracted.companyName);
+      }
+      if (extracted.contactInfo && !newContactInfo) {
+        setNewContactInfo(extracted.contactInfo);
+      }
+
+      // Auto Merge & Select extracted tags into Tag List
+      const newTagSet = Array.from(new Set([...selectedTags, ...extracted.tags]));
+      setSelectedTags(newTagSet);
+
+      // Set Structured Demand into Note Textarea
+      setInitialNote(extracted.structuredDemand);
+    }, 1200);
+  };
+
+  
+  const filteredSessions不易 = sessionList.filter((s) => {
+    if (s.channel !== activeTab && !(activeTab === '企微' && s.channel === '企业微信')) return false;
+    if (sourceFilter === 'api_sync' && s.sourceType !== 'api_sync') return false;
+    if (sourceFilter === 'manual' && s.sourceType !== 'manual') return false;
+    if (statusFilter !== 'all' && s.status !== statusFilter) return false;
+    if (searchKeyword.trim()) {
+      const q = searchKeyword.toLowerCase();
+      const matchName不易 = s.customerName.toLowerCase().includes(q);
+      const matchCompany = s.companyName?.toLowerCase().includes(q);
+      const matchStaff = s.assignedStaff.toLowerCase().includes(q);
+      const matchId = s.id.toLowerCase().includes(q);
+      const matchMsg = s.lastMessage.toLowerCase().includes(q);
+      if (!matchName不易 && !matchCompany && !matchStaff && !matchId && !matchMsg) return false;
+    }
+    return true;
+  });
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
+    <div className={`flex-1 flex flex-col h-full px-8 pb-8 ${activeSession ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'}`}>
       
       {activeSession ? (
         /* Detailed Active Chat View */
@@ -75,21 +470,32 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
             {/* Active Customer Top Bar */}
             <div className="px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                  {activeSession.avatar}
-                </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">{activeSession.customerName}</h2>
-                  <div className="text-[11px] text-slate-400 flex items-center gap-3">
-                    <span>渠道: <strong className="text-slate-700">{activeSession.channel}</strong></span>
-                    <span>责任人: <strong className="text-slate-700">{activeSession.assignedStaff}</strong></span>
+                  <div className="flex items-center gap-2.5">
+                    <h2 className="text-sm font-bold text-slate-900">{activeSession.customerName}</h2>
+                    {/* Source Indicator Tag */}
+                    {activeSession.sourceType === 'api_sync' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-md border border-indigo-100">
+                        <Zap className="w-3 h-3 text-indigo-500 fill-indigo-400" />
+                        接口对接
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-md border border-amber-200/60">
+                        <UserPlus className="w-3 h-3 text-amber-600" />
+                        销售自建
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-slate-400 flex items-center gap-3 mt-0.5">
+                    <span>渠道: <strong className="text-slate-700">{activeSession.channel === '企业微信' ? '企微' : activeSession.channel}</strong></span>
+                    {activeSession.contactInfo && (
+                      <span>账号: <strong className="text-slate-700 font-mono">{activeSession.contactInfo}</strong></span>
+                    )}
+                    <span>销售员: <strong className="text-slate-700">{activeSession.assignedStaff}</strong></span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="px-3.5 py-1 text-xs font-bold bg-[#DDECE8] text-[#2D6A5D] rounded-full uppercase">
-                  {activeSession.status}
-                </span>
                 <button
                   onClick={() => setActiveSession(null)}
                   className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold cursor-pointer transition-colors"
@@ -104,30 +510,114 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
               {messages.map((m) => (
                 <div
                   key={m.id}
-                  className={`flex gap-3 max-w-xl ${m.sender === 'sales' ? 'ml-auto flex-row-reverse' : ''}`}
+                  className={`flex gap-3 ${m.sender === 'sales' ? 'ml-auto flex-row-reverse max-w-xl' : 'max-w-3xl'}`}
                 >
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-2xs ${
-                    m.sender === 'sales' ? 'bg-[#EA3A20]' : 'bg-slate-800'
+                    m.sender === 'sales' ? 'bg-[#EA3A20]' : 'bg-gradient-to-br from-indigo-600 to-indigo-800'
                   }`}>
-                    {m.sender === 'sales' ? 'ME' : 'CU'}
+                    {m.sender === 'sales' ? 'ME' : (m.isGenerating ? <Loader2 className="w-4 h-4 text-indigo-100 animate-spin" /> : <Sparkles className="w-4 h-4 text-indigo-100" />)}
                   </div>
 
                   <div className="space-y-1">
-                    <div className={`p-4 rounded-2xl text-xs leading-relaxed ${
+                    <div className={`p-4 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
                       m.sender === 'sales'
                         ? 'bg-[#EA3A20] text-white rounded-tr-xs shadow-xs'
                         : 'bg-white text-slate-800 border border-slate-100 rounded-tl-xs shadow-2xs'
                     }`}>
-                      <div>{m.content}</div>
+                      {m.isGenerating ? (
+                        <div className="flex items-center gap-2 text-indigo-600 font-bold">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          正在分析客户信息并生成专业话术... {(m.generationTimeMs! / 1000).toFixed(1)}s
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {m.content && (
+                            <div className="text-xs leading-relaxed [&>p]:mb-2 last:[&>p]:mb-0 [&>ul]:list-disc [&>ul]:ml-4 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:ml-4 [&>ol]:mb-2 [&>strong]:font-bold [&>a]:text-indigo-600 [&>a]:underline">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                            </div>
+                          )}
 
-                      {m.translatedContent && (
+                          {m.attachments && m.attachments.length > 0 && (
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              {m.attachments.map(att => (
+                                <div key={att.id} className="border border-slate-200 rounded-lg overflow-hidden flex flex-col group cursor-pointer hover:border-indigo-400 transition-colors">
+                                  {att.type === 'image' && (
+                                    <div className="relative h-24 bg-slate-100">
+                                      <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  {att.type === 'video' && (
+                                    <div className="relative h-24 bg-slate-800 flex items-center justify-center group-hover:bg-slate-900 transition-colors">
+                                      {att.thumbnail ? (
+                                        <img src={att.thumbnail} alt={att.name} className="absolute inset-0 w-full h-full object-cover opacity-50" />
+                                      ) : (
+                                        <div className="absolute inset-0 bg-slate-800 opacity-50" />
+                                      )}
+                                      <PlayCircle className="w-8 h-8 text-white z-10 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" />
+                                      {att.duration && <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded">{att.duration}</span>}
+                                    </div>
+                                  )}
+                                  {att.type === 'file' && (
+                                    <div className="h-12 bg-slate-50 flex items-center px-3 gap-2">
+                                      <FileText className="w-5 h-5 text-indigo-500 shrink-0" />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-[10px] font-bold text-slate-700 truncate">{att.name}</div>
+                                        {att.size && <div className="text-[9px] text-slate-400">{att.size}</div>}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {att.type !== 'file' && (
+                                    <div className="p-2 bg-white flex items-center gap-1.5">
+                                      {att.type === 'image' ? <ImageIcon className="w-3 h-3 text-slate-400" /> : <PlayCircle className="w-3 h-3 text-slate-400" />}
+                                      <span className="text-[10px] text-slate-600 truncate">{att.name}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {m.citations && m.citations.length > 0 && (
+                            <div className="mt-3 pt-2 border-t border-slate-100">
+                              <button 
+                                onClick={() => toggleCitations(m.id)}
+                                className="text-[10px] text-slate-500 hover:text-indigo-600 flex items-center gap-1 font-bold cursor-pointer transition-colors"
+                              >
+                                <BookOpen className="w-3 h-3" /> 查看知识库引用 ({m.citations.length})
+                                <ChevronDown className={`w-3 h-3 transition-transform ${expandedCitations.includes(m.id) ? 'rotate-180' : ''}`} />
+                              </button>
+                              
+                              {expandedCitations.includes(m.id) && (
+                                <div className="flex flex-col gap-1.5 mt-2">
+                                  {m.citations.map(cit => (
+                                    <div key={cit.id} className="flex items-center justify-between px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-md hover:bg-indigo-50 hover:border-indigo-200 cursor-pointer transition-colors group">
+                                      <div className="flex items-center gap-2">
+                                        <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                                        <span className="text-[11px] text-slate-700 font-bold group-hover:text-indigo-700">{cit.title}</span>
+                                      </div>
+                                      <span className="text-[10px] text-slate-400 font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200 group-hover:border-indigo-200">{cit.version}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {m.translatedContent && !m.isGenerating && (
                         <div className="mt-2 pt-2 border-t border-white/20 text-white/80 text-[11px] flex items-start gap-1">
                           <Languages className="w-3 h-3 text-white shrink-0 mt-0.5" />
                           <span>AI 同传：{m.translatedContent}</span>
                         </div>
                       )}
                     </div>
-                    <div className="text-[10px] text-slate-400 px-1 font-mono">{m.timestamp}</div>
+                    <div className="text-[10px] text-slate-400 px-1 font-mono flex items-center gap-2">
+                      {m.timestamp}
+                      {m.sender === 'ai_copilot' && !m.isGenerating && m.generationTimeMs !== undefined && (
+                        <span className="text-slate-300">· 生成耗时 {(m.generationTimeMs / 1000).toFixed(1)}s</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -140,7 +630,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   onClick={() => setShowCbmCalc(true)}
                   className="flex items-center gap-1 hover:text-[#EA3A20] cursor-pointer font-bold transition-colors"
                 >
-                  <Calculator className="w-3.5 h-3.5 text-amber-500" /> CBM 海运试算工具
+                  <Calculator className="w-3.5 h-3.5 text-amber-500" /> 生成报价单
                 </button>
               </div>
 
@@ -149,8 +639,8 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   rows={2}
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="输入沟通回复，或选择右侧 AI 推荐话术..."
-                  className="flex-1 p-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20]"
+                  placeholder="向 AI 助手提问，如：分析客户痛点、撰写降价话术..."
+                  className="flex-1 p-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20] resize-none"
                 />
                 <button
                   onClick={() => handleSendMessage()}
@@ -163,98 +653,242 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
 
           </div>
 
-          {/* Right Sidebar: AI Copilot & Knowledge Scripts */}
-          <div className="w-80 bg-white border-l border-slate-100 flex flex-col h-full">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+          {/* Right Sidebar: Customer Profile & Assets */}
+          <div className="w-[360px] bg-slate-50/50 border-l border-slate-200 flex flex-col h-full shrink-0">
+            <div className="p-4 border-b border-slate-200 bg-white flex items-center justify-between">
               <div className="flex items-center gap-2 font-bold text-xs text-slate-800">
-                <Sparkles className="w-4 h-4 text-[#EA3A20]" /> AI 辅助话术推荐
+                <FileCheck className="w-4 h-4 text-slate-600" /> 客户资料与背景信息
               </div>
-              <button
-                onClick={onOpenAddScriptDrawer}
-                className="text-[11px] text-[#EA3A20] hover:underline font-bold cursor-pointer"
-              >
-                + 自定义话术
-              </button>
             </div>
 
-            <div className="flex border-b border-slate-100 text-xs">
-              <button
-                onClick={() => setScriptTab('public')}
-                className={`flex-1 py-2.5 text-center font-bold transition-colors cursor-pointer ${
-                  scriptTab === 'public'
-                    ? 'text-[#EA3A20] border-b-2 border-[#EA3A20]'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                企业公共库 ({scripts.filter((s) => !s.isPrivate).length})
-              </button>
-              <button
-                onClick={() => setScriptTab('private')}
-                className={`flex-1 py-2.5 text-center font-bold transition-colors cursor-pointer ${
-                  scriptTab === 'private'
-                    ? 'text-[#EA3A20] border-b-2 border-[#EA3A20]'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                个人常用 ({scripts.filter((s) => s.isPrivate).length})
-              </button>
+            <div className="flex border-b border-slate-200 text-xs bg-white">
+              {(['history', 'tags', 'assets', 'knowledge'] as const).map((tab) => {
+                const labels: Record<typeof tab, string> = {
+                  history: '聊天记录',
+                  tags: '客户标签',
+                  assets: '户型与报价',
+                  knowledge: '关联知识'
+                };
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setProfileTab(tab)}
+                    className={`flex-1 py-3 text-center font-bold transition-colors cursor-pointer border-b-2 ${
+                      profileTab === tab
+                        ? 'text-[#EA3A20] border-[#EA3A20]'
+                        : 'text-slate-500 border-transparent hover:text-slate-800 hover:bg-slate-50'
+                    }`}
+                  >
+                    {labels[tab]}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-              {filteredScripts.map((sc) => (
-                <div
-                  key={sc.id}
-                  onClick={() => handleInsertScript(sc)}
-                  className="p-3 bg-slate-50 hover:bg-[#FFF4F2] border border-slate-100 hover:border-[#EA3A20]/30 rounded-2xl cursor-pointer transition-all space-y-1.5"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-800">{sc.title}</span>
-                    <span className="text-[10px] px-2 py-0.5 bg-white text-slate-500 rounded-full font-bold border border-slate-100">
-                      {sc.category}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
-                    {sc.content}
-                  </p>
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-slate-50/50">
+              
+              {/* Profile Tab Content: 聊天记录 */}
+              {profileTab === 'history' && (
+                <div className="space-y-4">
+                  <div className="text-xs text-slate-500 text-center mb-4">— 上次跟进: 昨天 19:48 —</div>
+                  {chatMessages.map((msg, i) => (
+                    <div key={i} className="flex gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center shrink-0 text-[10px] font-bold text-slate-600">
+                        {msg.sender === 'sales' ? 'ME' : 'CU'}
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-[10px] font-bold text-slate-500">{msg.sender === 'sales' ? '我 (Franklin)' : activeSession.customerName} <span className="font-normal text-slate-400 ml-1">{msg.timestamp}</span></div>
+                        <div className={`p-2.5 rounded-xl text-xs text-slate-700 leading-relaxed ${msg.sender === 'sales' ? 'bg-indigo-50/50 border border-indigo-100' : 'bg-white border border-slate-200'}`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {/* Profile Tab Content: 客户标签 */}
+              {profileTab === 'tags' && (
+                <div className="space-y-4">
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 className="text-xs font-bold text-slate-800 mb-3 flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-indigo-500" /> 已分配标签</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {activeSession.tags.map((tag, i) => (
+                        <span key={i} className="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-100">
+                          {tag}
+                        </span>
+                      ))}
+                      <button className="px-2.5 py-1 border border-dashed border-slate-300 text-slate-400 rounded-lg text-xs font-bold hover:text-indigo-600 hover:border-indigo-300 transition-colors cursor-pointer">
+                        + 添加标签
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 className="text-xs font-bold text-slate-800 mb-3">AI 意向评估</h3>
+                    <div className="space-y-3 text-xs">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-50">
+                        <span className="text-slate-500">转化概率</span>
+                        <span className="font-bold text-emerald-600">High (85%)</span>
+                      </div>
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-50">
+                        <span className="text-slate-500">预算评估</span>
+                        <span className="font-bold text-slate-800">$75,000 - $80,000</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">需求偏好</span>
+                        <span className="font-bold text-slate-800">现代极简, 原木色</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Profile Tab Content: 户型与报价 */}
+              {profileTab === 'assets' && (
+                <div className="space-y-3">
+                  <div className="p-3 bg-white border border-slate-200 rounded-xl hover:border-indigo-300 cursor-pointer transition-colors group flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-red-50 text-red-500 flex items-center justify-center shrink-0">
+                      <FileCheck className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs font-bold text-slate-800 group-hover:text-indigo-700 mb-0.5">Quotation_Villa_A_v2.pdf</div>
+                      <div className="text-[10px] text-slate-400">昨天 18:30 • 2.4 MB</div>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-white border border-slate-200 rounded-xl hover:border-indigo-300 cursor-pointer transition-colors group flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
+                      <FileCheck className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs font-bold text-slate-800 group-hover:text-indigo-700 mb-0.5">FloorPlan_CAD_Export.dwg</div>
+                      <div className="text-[10px] text-slate-400">周一 14:15 • 15.1 MB</div>
+                    </div>
+                  </div>
+                  <button className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                    <UploadCloud className="w-4 h-4" /> 上传新文件
+                  </button>
+                </div>
+              )}
+
+              {/* Profile Tab Content: 相关知识库 */}
+              {profileTab === 'knowledge' && (
+                <div className="space-y-3">
+                  {scripts.slice(0, 3).map((sc) => (
+                    <div
+                      key={sc.id}
+                      onClick={() => handleInsertScript(sc)}
+                      className="p-3 bg-white hover:bg-[#FFF4F2] border border-slate-200 hover:border-[#EA3A20]/30 rounded-xl cursor-pointer transition-all space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-800">{sc.title}</span>
+                        <span className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-500 rounded-full font-bold border border-slate-100">
+                          {sc.category}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">
+                        {sc.content}
+                      </p>
+                    </div>
+                  ))}
+                  <div className="text-center pt-2">
+                    <button className="text-[11px] font-bold text-indigo-600 hover:underline cursor-pointer">
+                      在知识库中搜索更多 →
+                    </button>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
-
         </div>
       ) : (
         /* Sessions Table View matching Jobick Design */
-        <div className="flex-1 flex flex-col justify-between">
+        <div className="flex-1 flex flex-col gap-4">
           
           {/* Top Filter Bar */}
-          <div className="flex items-center justify-between py-4 mb-2 shrink-0">
-            <div className="bg-white rounded-full p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 flex items-center gap-1">
-              {['活跃会话', '历史会话', '已结束会话', '未分配', '机器人'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === tab
-                      ? 'bg-[#EA3A20] text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                  }`}
+          <div className="flex flex-wrap items-center justify-between gap-3 py-2 shrink-0">
+            
+            {/* Left Channel Tabs & Source Filters */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="bg-white rounded-full p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 flex items-center gap-1">
+                {(['企微', 'WhatsApp', '线下对接'] as const).map((tab) => {
+                  const count = sessionList.filter((s) => s.channel === tab || (tab === '企微' && s.channel === '企业微信')).length;
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        activeTab === tab
+                          ? 'bg-[#EA3A20] text-white shadow-xs'
+                          : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>{tab}</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                        activeTab === tab ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Source Filter Dropdown */}
+              <div className="relative">
+                <select
+                  value={sourceFilter}
+                  onChange={(e) => setSourceFilter(e.target.value as 'all' | 'api_sync' | 'manual')}
+                  className="appearance-none h-9 pl-4 pr-8 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] focus:border-[#EA3A20] shadow-[0_2px_12px_rgba(0,0,0,0.04)] cursor-pointer"
                 >
-                  {tab}
-                </button>
-              ))}
+                  <option value="all">全部来源</option>
+                  <option value="api_sync">接口对接</option>
+                  <option value="manual">销售自建</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+              
+              {/* Status Filter Dropdown */}
+              <div className="relative">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="appearance-none h-9 pl-4 pr-8 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] focus:border-[#EA3A20] shadow-[0_2px_12px_rgba(0,0,0,0.04)] cursor-pointer"
+                >
+                  <option value="all">全部状态</option>
+                  <option value="跟进中">跟进中</option>
+                  <option value="已报价">已报价</option>
+                  <option value="已成交">已成交</option>
+                  <option value="已流失">已流失</option>
+                  <option value="不是客户">不是客户</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
 
+            {/* Right Actions: Search & New Session Button */}
             <div className="flex items-center gap-3">
-              <button
-                onClick={onOpenAddScriptDrawer}
-                className="h-9 px-4.5 rounded-full bg-[#0F4A47] text-white hover:bg-[#0b3836] text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
-              >
-                <span>+ 新建话术</span>
-              </button>
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  placeholder="搜索客户姓名 / 企业 / 账号..."
+                  className="h-9 pl-9 pr-3 w-56 rounded-full bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] focus:border-[#EA3A20]"
+                />
+              </div>
 
-              <button className="h-9 px-4.5 rounded-full bg-[#FFEFEA] text-[#EA3A20] hover:bg-[#ffe3dc] text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs">
-                <span>Newest</span>
-                <ChevronDown className="w-3.5 h-3.5" />
+              <button
+                onClick={() => {
+                  setNewChannel(activeTab);
+                  setShowCreateModal(true);
+                }}
+                className="h-9 px-4.5 rounded-full bg-[#0F4A47] text-white hover:bg-[#0b3836] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>+ 新建会话</span>
               </button>
             </div>
           </div>
@@ -263,91 +897,165 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
           <div className="bg-white rounded-3xl shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100/90 overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 text-slate-900 text-xs font-bold">
+                <tr className="border-b border-slate-100 text-slate-900 text-xs font-bold bg-slate-50/40">
                   <th className="py-4.5 pl-6 pr-3 w-12 text-center">
                     <input type="checkbox" className="rounded-md border-slate-300 w-4 h-4" />
                   </th>
-                  <th className="py-4.5 px-4 font-bold text-slate-900">联系人</th>
-                  <th className="py-4.5 px-4 font-bold text-slate-900">会话ID</th>
-                  <th className="py-4.5 px-4 font-bold text-slate-900">接待成员</th>
-                  <th className="py-4.5 px-4 font-bold text-slate-900">社媒渠道</th>
-                  <th className="py-4.5 px-4 font-bold text-slate-900">最新留言</th>
-                  <th className="py-4.5 px-4 font-bold text-slate-900">访客标签</th>
+                  <th className="py-4.5 px-4 font-bold text-slate-900">会话名称</th>
+                  <th className="py-4.5 px-4 font-bold text-slate-900">客户状态</th>
+                  <th className="py-4.5 px-4 font-bold text-slate-900">会话来源</th>
+                  <th className="py-4.5 px-4 font-bold text-slate-900">销售员</th>
+                  <th className="py-4.5 px-4 font-bold text-slate-900">客户渠道</th>
+                  <th className="py-4.5 px-4 font-bold text-slate-900">客户标签</th>
                   <th className="py-4.5 pr-6 pl-2 text-right">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100/80 text-xs">
-                {sessions.map((sess) => (
-                  <tr
-                    key={sess.id}
-                    onClick={() => setActiveSession(sess)}
-                    className="hover:bg-slate-50/70 cursor-pointer transition-colors h-16"
-                  >
-                    <td className="py-4 pl-6 pr-3 text-center" onClick={(e) => e.stopPropagation()}>
-                      <input type="checkbox" className="rounded-md border-slate-300 w-4 h-4" />
-                    </td>
-                    <td className="py-4 px-4 font-bold text-slate-800">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-slate-800 text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
-                          {sess.avatar}
-                        </div>
+                {filteredSessions不易.length > 0 ? (
+                  filteredSessions不易.map((sess) => (
+                    <tr
+                      key={sess.id}
+                      onClick={() => setActiveSession(sess)}
+                      className="hover:bg-slate-50/70 cursor-pointer transition-colors h-16"
+                    >
+                      <td className="py-4 pl-6 pr-3 text-center" onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" className="rounded-md border-slate-300 w-4 h-4" />
+                      </td>
+                      <td className="py-4 px-4 font-bold text-slate-800">
                         <div>
                           <div className="font-bold text-slate-900 text-xs">{sess.customerName}</div>
-                          <div className="text-[10px] text-slate-400 font-medium">{sess.lastTime}</div>
+                          <div className="text-[10px] text-slate-400 font-medium flex items-center gap-2 mt-0.5">
+                            <span>ID: {sess.id}</span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 font-mono text-slate-500">{sess.id}</td>
-                    <td className="py-4 px-4 font-bold text-slate-800">{sess.assignedStaff}</td>
-                    <td className="py-4 px-4">
-                      <span className="px-3 py-1 bg-red-50 text-[#EA3A20] font-bold rounded-full text-[11px] border border-red-100">
-                        {sess.channel}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-slate-600 truncate max-w-xs font-medium">{sess.lastMessage}</td>
-                    <td className="py-4 px-4">
-                      <div className="flex flex-wrap gap-1.5">
-                        {sess.tags.map((t, i) => (
-                          <span key={i} className="px-2.5 py-0.5 text-[10px] bg-slate-100 text-slate-600 rounded-full font-bold">
-                            {t}
+                      </td>
+                      
+                      {/* 客户状态 */}
+                      <td className="py-4 px-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative inline-block">
+                          <select
+                            value={sess.status}
+                            onChange={(e) => handleStatusChange(sess.id, e.target.value)}
+                            className={`appearance-none h-7 pl-3 pr-7 rounded-full border text-[11px] font-bold focus:outline-none focus:ring-1 cursor-pointer transition-colors ${
+                              sess.status === '跟进中' ? 'bg-blue-50 text-blue-700 border-blue-200 focus:ring-blue-500' :
+                              sess.status === '已报价' ? 'bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500' :
+                              sess.status === '已成交' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 focus:ring-emerald-500' :
+                              sess.status === '已流失' ? 'bg-slate-100 text-slate-600 border-slate-200 focus:ring-slate-500' :
+                              'bg-rose-50 text-rose-700 border-rose-200 focus:ring-rose-500'
+                            }`}
+                          >
+                            <option value="跟进中">跟进中</option>
+                            <option value="已报价">已报价</option>
+                            <option value="已成交">已成交</option>
+                            <option value="已流失">已流失</option>
+                            <option value="不是客户">不是客户</option>
+                          </select>
+                          <ChevronDown className={`w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${
+                              sess.status === '跟进中' ? 'text-blue-500' :
+                              sess.status === '已报价' ? 'text-amber-500' :
+                              sess.status === '已成交' ? 'text-emerald-500' :
+                              sess.status === '已流失' ? 'text-slate-400' :
+                              'text-rose-500'
+                          }`} />
+                        </div>
+                      </td>
+
+                      {/* 会话来源 */}
+                      <td className="py-4 px-4">
+                        {sess.sourceType === 'api_sync' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50/80 text-indigo-700 text-[11px] font-bold rounded-lg border border-indigo-100/80">
+                            <Zap className="w-3 h-3 text-indigo-500 fill-indigo-400" />
+                            接口对接
                           </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="py-4 pr-6 pl-2 text-right">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveSession(sess);
-                        }}
-                        className="px-4 py-1.5 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs"
-                      >
-                        进入会话
-                      </button>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50/80 text-amber-700 text-[11px] font-bold rounded-lg border border-amber-200/60">
+                            <UserPlus className="w-3 h-3 text-amber-600" />
+                            销售自建
+                          </span>
+                        )}
+                      </td>
+
+                      {/* 销售员 */}
+                      <td className="py-4 px-4 font-bold text-slate-800">{sess.assignedStaff}</td>
+                      
+                      {/* 客户渠道 */}
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 font-bold rounded-full text-[11px] border ${
+                          sess.channel === '企微' || sess.channel === '企业微信'
+                            ? 'bg-blue-50 text-blue-600 border-blue-100'
+                            : sess.channel === 'WhatsApp'
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                            : 'bg-purple-50 text-purple-700 border-purple-100'
+                        }`}>
+                          {sess.channel === '企业微信' ? '企微' : sess.channel}
+                        </span>
+                      </td>
+
+                      {/* 客户标签 */}
+                      <td className="py-4 px-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {sess.tags.map((t, i) => (
+                            <span key={i} className="px-2.5 py-0.5 text-[10px] bg-slate-100 text-slate-600 rounded-full font-bold">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      
+                      {/* 操作 */}
+                      <td className="py-4 pr-6 pl-2 text-right">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveSession(sess);
+                          }}
+                          className="px-4 py-1.5 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                        >
+                          进入会话
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-slate-400 text-xs">
+                      暂无符合条件的会话记录，点击右上角「+ 新建会话」手动录入或等待平台接口推送。
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
 
           {/* Pagination Footer */}
-          <div className="flex items-center justify-between pt-6 pb-2 shrink-0">
+          <div className="flex items-center justify-between pt-4 pb-2 shrink-0">
             <span className="text-xs font-semibold text-slate-500">
-              Showing 4 of 48 Sessions
+              共 {sessionList.length} 条会话，当前显示 {filteredSessions不易.length} 条（已筛选【{activeTab}】渠道）
             </span>
             <div className="flex items-center gap-2">
-              <button className="px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 bg-[#FFF5F2] text-[#EA3A20] text-xs font-bold cursor-pointer">
-                Prev
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className={`px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
+                  currentPage === 1
+                    ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                    : 'bg-[#FFF5F2] hover:bg-[#ffece6] text-[#EA3A20]'
+                }`}
+              >
+                上一页
               </button>
-              <button className="w-8 h-8 rounded-full bg-[#EA3A20] text-white font-bold text-xs shadow-xs">
+              <button
+                onClick={() => setCurrentPage(1)}
+                className="w-8 h-8 rounded-full bg-[#EA3A20] text-white font-bold text-xs shadow-xs"
+              >
                 1
               </button>
-              <button className="w-8 h-8 rounded-full text-slate-600 font-bold text-xs hover:bg-white">
-                2
-              </button>
-              <button className="px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 bg-[#FFF5F2] text-[#EA3A20] text-xs font-bold cursor-pointer">
-                Next
+              <button
+                onClick={() => setCurrentPage((p) => p + 1)}
+                disabled={true}
+                className="px-4.5 py-1.5 rounded-full border border-slate-200 bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed shadow-2xs"
+              >
+                下一页
               </button>
             </div>
           </div>
@@ -355,73 +1063,602 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
         </div>
       )}
 
-      {/* CBM Container Load Calculator Modal */}
-      {showCbmCalc && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 border border-slate-100">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-                <Calculator className="w-5 h-5 text-amber-500" /> 1*40HQ 海运 CBM 装载率自动试算器
-              </h3>
-              <button onClick={() => setShowCbmCalc(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer font-bold">✕</button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="text-xs text-slate-600 font-medium block mb-1">长 (cm)</label>
-                <input
-                  type="number"
-                  value={cbmLength}
-                  onChange={(e) => setCbmLength(Number(e.target.value))}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-xs"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-slate-600 font-medium block mb-1">宽 (cm)</label>
-                <input
-                  type="number"
-                  value={cbmWidth}
-                  onChange={(e) => setCbmWidth(Number(e.target.value))}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-xs"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-slate-600 font-medium block mb-1">高 (cm)</label>
-                <input
-                  type="number"
-                  value={cbmHeight}
-                  onChange={(e) => setCbmHeight(Number(e.target.value))}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-xs"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs text-slate-600 font-medium block mb-1">拟采购套数</label>
-              <input
-                type="number"
-                value={cbmQty}
-                onChange={(e) => setCbmQty(Number(e.target.value))}
-                className="w-full p-2.5 border border-slate-200 rounded-xl text-xs"
-              />
-            </div>
-
-            <div className="p-4 bg-amber-50 border border-amber-200/80 rounded-2xl space-y-2 text-xs">
-              <div className="flex justify-between text-amber-900 font-medium">
-                <span>单件打包体积:</span>
-                <span className="font-mono font-bold">{singleCbm.toFixed(3)} CBM</span>
-              </div>
-              <div className="flex justify-between text-amber-900 font-medium">
-                <span>订单总核算体积:</span>
-                <span className="font-mono font-bold text-amber-700">{totalCbm.toFixed(2)} CBM</span>
-              </div>
-              <div className="space-y-1 pt-1">
-                <div className="flex justify-between text-amber-900 text-[11px]">
-                  <span>40HQ (68 CBM) 填充率:</span>
-                  <span className="font-mono font-bold">{fillRate}%</span>
+      {/* Modal: 新建会话 (销售手动创建 & AI 智能解析沟通记录/录音) */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold shadow-2xs">
+                  <UserPlus className="w-5 h-5" />
                 </div>
-                <div className="w-full h-2 bg-amber-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-600 rounded-full transition-all duration-300" style={{ width: `${fillRate}%` }} />
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    新建销售跟进会话
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#0F4A47]/10 text-[#0F4A47] font-semibold flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-[#EA3A20]" /> 支持 AI 沟通解析
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-400">销售人员手动建联客户，支持上传聊天文本或面谈录音由 AI 提取需求与标签</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleCreateSession} className="p-6 space-y-4 text-xs max-h-[82vh] overflow-y-auto custom-scrollbar">
+              
+              {/* 渠道选择 */}
+              <div>
+                <label className="block text-slate-700 font-bold mb-1.5">接入渠道</label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setNewChannel('企微')}
+                    className={`py-2.5 px-3 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
+                      newChannel === '企微' || newChannel === ('企业微信' as any)
+                        ? 'border-blue-500 bg-blue-50/70 text-blue-700 ring-2 ring-blue-500/20 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                    }`}
+                  >
+                    <span>企微</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewChannel('WhatsApp')}
+                    className={`py-2.5 px-3 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
+                      newChannel === 'WhatsApp'
+                        ? 'border-emerald-500 bg-emerald-50/70 text-emerald-700 ring-2 ring-emerald-500/20 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                    }`}
+                  >
+                    <span>WhatsApp</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewChannel('线下对接')}
+                    className={`py-2.5 px-3 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
+                      newChannel === '线下对接'
+                        ? 'border-purple-500 bg-purple-50/70 text-purple-700 ring-2 ring-purple-500/20 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                    }`}
+                  >
+                    <span>线下对接</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 客户姓名 & 负责销售人员 */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">
+                    客户姓名 / 称呼 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newCustomerName}
+                    onChange={(e) => setNewCustomerName(e.target.value)}
+                    placeholder="如：张明远 先生 / Alex"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">负责销售人员</label>
+                  <select
+                    value={newAssignedStaff}
+                    onChange={(e) => setNewAssignedStaff(e.target.value)}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20] font-medium"
+                  >
+                    <option value="Franklin Jr">Franklin Jr (当前账号)</option>
+                    <option value="Sophia">Sophia (外贸主管)</option>
+                    <option value="Alex">Alex (销售业务员)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 1. 客户标签（已按要求更名，并支持AI自动识别添加） */}
+              <div className="bg-slate-50/60 p-3.5 rounded-2xl border border-slate-100">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-slate-800 font-bold flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-[#EA3A20]" />
+                    客户标签
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-medium">已选 {selectedTags.length} 个标签（支持 AI 自动推荐）</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {quickTagOptions.map((tag) => {
+                    const isSelected = selectedTags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => toggleTag(tag)}
+                        className={`px-3 py-1 rounded-xl text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                          isSelected
+                            ? 'bg-[#EA3A20] text-white shadow-2xs'
+                            : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/80'
+                        }`}
+                      >
+                        {isSelected && <CheckCircle2 className="w-3 h-3" />}
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. 初始需求 / 建联记录 (支持手动输入 / 上传聊天记录 / 上传面谈录音 + AI解析) */}
+              <div className="space-y-2.5 pt-1">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="text-slate-800 font-bold flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-[#0F4A47]" />
+                    初始需求 / 建联记录
+                  </label>
+
+                  {/* 录入模式切换 Tab */}
+                  <div className="bg-slate-100 p-0.5 rounded-xl flex items-center gap-1 text-[11px] font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setRecordInputMode('manual')}
+                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                        recordInputMode === 'manual'
+                          ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      <span>手动录入</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRecordInputMode('chat_upload')}
+                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                        recordInputMode === 'chat_upload'
+                          ? 'bg-white text-indigo-700 shadow-2xs font-bold'
+                          : 'text-slate-500 hover:text-indigo-600'
+                      }`}
+                    >
+                      <MessageSquare className="w-3 h-3" />
+                      <span>上传聊天记录</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRecordInputMode('audio_upload')}
+                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                        recordInputMode === 'audio_upload'
+                          ? 'bg-white text-emerald-700 shadow-2xs font-bold'
+                          : 'text-slate-500 hover:text-emerald-600'
+                      }`}
+                    >
+                      <Mic className="w-3 h-3" />
+                      <span>上传面谈录音</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 上传聊天记录视图 */}
+                {recordInputMode === 'chat_upload' && (
+                  <div className="bg-indigo-50/40 border border-indigo-100 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                          <MessageSquare className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-slate-800">上传客户聊天沟通内容</div>
+                          <div className="text-[10px] text-slate-400">支持微信/企微/WhatsApp 聊天截图、.txt 导录、文本或 PDF</div>
+                        </div>
+                      </div>
+
+                      {/* 快速演示样本 */}
+                      <div className="flex items-center gap-1.5 text-[10px]">
+                        <span className="text-slate-400">测试示例:</span>
+                        <button
+                          type="button"
+                          onClick={() => loadPresetDemo('chat_villa')}
+                          className="px-2 py-0.5 bg-white hover:bg-indigo-100 text-indigo-600 rounded-md font-bold border border-indigo-200 cursor-pointer"
+                        >
+                          豪宅私宅沟通
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => loadPresetDemo('whatsapp_export')}
+                          className="px-2 py-0.5 bg-white hover:bg-indigo-100 text-indigo-600 rounded-md font-bold border border-indigo-200 cursor-pointer"
+                        >
+                          WhatsApp 外贸
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Hidden input */}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept=".txt,.doc,.docx,.pdf,.png,.jpg,.jpeg"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'chat');
+                      }}
+                    />
+
+                    {/* Upload Drop Zone */}
+                    {!uploadedFileName ? (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-white/70 hover:bg-white rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5"
+                      >
+                        <UploadCloud className="w-6 h-6 text-indigo-500" />
+                        <span className="text-xs font-bold text-slate-700">点击或拖拽聊天记录文件至此</span>
+                        <span className="text-[10px] text-slate-400">支持 .txt / .doc / .pdf / 微信截图</span>
+                      </div>
+                    ) : (
+                      <div className="bg-white border border-indigo-200 rounded-xl p-2.5 flex items-center justify-between shadow-2xs">
+                        <div className="flex items-center gap-2.5 truncate">
+                          <FileCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                          <div className="truncate">
+                            <div className="text-xs font-bold text-slate-800 truncate">{uploadedFileName}</div>
+                            <div className="text-[10px] text-slate-400">{uploadedFileSize} · 聊天文本已就绪</div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUploadedFileName(null);
+                            setUploadedFileSize(null);
+                            setRawRecordText('');
+                            setAiAnalysisCompleted(false);
+                          }}
+                          className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Raw Text Box */}
+                    <div>
+                      <textarea
+                        rows={3}
+                        value={rawRecordText}
+                        onChange={(e) => setRawRecordText(e.target.value)}
+                        placeholder="或直接在此处粘贴与客户的聊天文字对话记录..."
+                        className="w-full p-2.5 bg-white border border-indigo-100 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* AI Parse Button */}
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[11px] text-slate-500">
+                        {rawRecordText ? `已读取 ${(rawRecordText.length)} 字记录` : '请上传文件或粘贴聊天记录'}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={(!rawRecordText && !uploadedFileName) || isAiAnalyzing}
+                        onClick={handleTriggerAiAnalysis}
+                        className={`px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
+                          isAiAnalyzing
+                            ? 'bg-indigo-400 text-white cursor-wait'
+                            : rawRecordText || uploadedFileName
+                            ? 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white active:scale-95'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {isAiAnalyzing ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>AI 深度解析中...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>✨ AI 解析聊天记录</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 上传面谈录音视图 */}
+                {recordInputMode === 'audio_upload' && (
+                  <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                          <Mic className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-slate-800">上传面谈录音音频内容</div>
+                          <div className="text-[10px] text-slate-400">支持展会面谈、展厅验厂、电话会议音频（MP3 / M4A / WAV）</div>
+                        </div>
+                      </div>
+
+                      {/* 快速演示样本 */}
+                      <div className="flex items-center gap-1.5 text-[10px]">
+                        <span className="text-slate-400">测试示例:</span>
+                        <button
+                          type="button"
+                          onClick={() => loadPresetDemo('audio_hotel')}
+                          className="px-2 py-0.5 bg-white hover:bg-emerald-100 text-emerald-700 rounded-md font-bold border border-emerald-200 cursor-pointer"
+                        >
+                          展会面谈录音(迪拜)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Hidden input */}
+                    <input
+                      type="file"
+                      ref={audioInputRef}
+                      className="hidden"
+                      accept=".mp3,.wav,.m4a,.aac,.ogg"
+                      onChange={(e) => {
+                        const file不易 = e.target.files?.[0];
+                        if (file不易) handleFileUpload(file不易, 'audio');
+                      }}
+                    />
+
+                    {/* Audio Drop Zone */}
+                    {!uploadedFileName ? (
+                      <div
+                        onClick={() => audioInputRef.current?.click()}
+                        className="border-2 border-dashed border-emerald-200 hover:border-emerald-400 bg-white/70 hover:bg-white rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5"
+                      >
+                        <Mic className="w-6 h-6 text-emerald-600" />
+                        <span className="text-xs font-bold text-slate-700">点击或拖拽录音文件至此</span>
+                        <span className="text-[10px] text-slate-400">支持 MP3, M4A, WAV, AAC (最大 50MB)</span>
+                      </div>
+                    ) : (
+                      <div className="bg-white border border-emerald-200 rounded-xl p-3 space-y-2 shadow-2xs">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5 truncate">
+                            <FileAudio className="w-5 h-5 text-emerald-600 shrink-0" />
+                            <div className="truncate">
+                              <div className="text-xs font-bold text-slate-800 truncate">{uploadedFileName}</div>
+                              <div className="text-[10px] text-slate-400">{uploadedFileSize} · 录音音频文件</div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUploadedFileName(null);
+                              setUploadedFileSize(null);
+                              setRawRecordText('');
+                              setAiAnalysisCompleted(false);
+                            }}
+                            className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Simulated Audio Wave & Player */}
+                        <div className="bg-slate-50 p-2 rounded-lg flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setIsPlayingAudio(!isPlayingAudio)}
+                            className="w-7 h-7 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center cursor-pointer shadow-xs shrink-0"
+                          >
+                            {isPlayingAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
+                          </button>
+                          
+                          {/* Visual Audio Wave */}
+                          <div className="flex-1 flex items-center gap-0.5 h-5">
+                            {[30, 60, 45, 80, 95, 40, 70, 85, 30, 65, 90, 50, 75, 40, 85, 60, 35, 70, 90, 45, 60, 30].map((h, i) => (
+                              <div
+                                key={i}
+                                className={`flex-1 rounded-full transition-all duration-300 ${
+                                  isPlayingAudio ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'
+                                }`}
+                                style={{ height: `${h}%` }}
+                              />
+                            ))}
+                          </div>
+
+                          <span className="text-[10px] font-mono text-slate-500 font-bold shrink-0">03:45</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Audio Transcript / Raw Text */}
+                    {rawRecordText && (
+                      <div>
+                        <textarea
+                          rows={3}
+                          value={rawRecordText}
+                          onChange={(e) => setRawRecordText(e.target.value)}
+                          placeholder="录音自动识别文字（可手动校对）..."
+                          className="w-full p-2.5 bg-white border border-emerald-100 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                    )}
+
+                    {/* AI Parse Audio Button */}
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[11px] text-slate-500">
+                        {uploadedFileName ? '语音就绪，支持 ASR 转文字与需求提取' : '请选择或上传录音文件'}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={(!rawRecordText && !uploadedFileName) || isAiAnalyzing}
+                        onClick={handleTriggerAiAnalysis}
+                        className={`px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
+                          isAiAnalyzing
+                            ? 'bg-emerald-400 text-white cursor-wait'
+                            : rawRecordText || uploadedFileName
+                            ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white active:scale-95'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {isAiAnalyzing ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>AI 语音转写与意向提取中...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Wand2 className="w-3.5 h-3.5" />
+                            <span>✨ AI 解析面谈录音</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI 解析完成提示面板 */}
+                {aiAnalysisCompleted && aiExtractedSummary && (
+                  <div className="p-3 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-indigo-500/10 border border-amber-200/80 rounded-2xl space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-900">
+                      <div className="flex items-center gap-1.5 text-amber-800">
+                        <Sparkles className="w-4 h-4 text-[#EA3A20]" />
+                        <span>AI 智能解析成功！已提取客户标签并整理结构化需求</span>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                        意向度: {aiExtractedSummary.urgencyLevel}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-1 text-[11px] text-slate-600 pt-1">
+                      <span className="font-bold text-slate-700">AI 推荐并已自动勾选标签：</span>
+                      {aiExtractedSummary.tags.map((t) => (
+                        <span key={t} className="px-2 py-0.5 bg-white text-[#EA3A20] rounded-md font-bold border border-rose-200 text-[10px]">
+                          +{t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 初始需求/建联记录 最终整理结果输入区 */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      结构化客户需求摘要（保存后将作为初始沟通备忘录）：
+                    </span>
+                    {initialNote && (
+                      <button
+                        type="button"
+                        onClick={() => setInitialNote('')}
+                        className="text-[10px] text-slate-400 hover:text-red-500 cursor-pointer"
+                      >
+                        清空文本
+                      </button>
+                    )}
+                  </div>
+                  <textarea
+                    rows={3}
+                    value={initialNote}
+                    onChange={(e) => setInitialNote(e.target.value)}
+                    placeholder="如：客户在展会了解碳晶板与实木定制，约定今日提供色板与CAD报价清单...（可直接输入，也可使用上方 AI 自动解析生成）"
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20] leading-relaxed"
+                  />
+                </div>
+
+              </div>
+
+              {/* Modal Actions */}
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold cursor-pointer transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white font-bold cursor-pointer transition-colors shadow-xs active:scale-95 flex items-center gap-1.5"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>创建并进入会话</span>
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* CBM Calculator Modal */}
+      {showCbmCalc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-slate-100 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Calculator className="w-5 h-5 text-amber-500" />
+                <h3 className="font-bold text-sm text-slate-900">CBM 海运材积自动测算</h3>
+              </div>
+              <button
+                onClick={() => setShowCbmCalc(false)}
+                className="w-7 h-7 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="text-[11px] text-slate-500 font-bold">长 (cm)</label>
+                  <input
+                    type="number"
+                    value={cbmLength}
+                    onChange={(e) => setCbmLength(Number(e.target.value))}
+                    className="w-full mt-1 p-2 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-slate-500 font-bold">宽 (cm)</label>
+                  <input
+                    type="number"
+                    value={cbmWidth}
+                    onChange={(e) => setCbmWidth(Number(e.target.value))}
+                    className="w-full mt-1 p-2 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-slate-500 font-bold">高 (cm)</label>
+                  <input
+                    type="number"
+                    value={cbmHeight}
+                    onChange={(e) => setCbmHeight(Number(e.target.value))}
+                    className="w-full mt-1 p-2 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] text-slate-500 font-bold">打包件数 (Qty)</label>
+                <input
+                  type="number"
+                  value={cbmQty}
+                  onChange={(e) => setCbmQty(Number(e.target.value))}
+                  className="w-full mt-1 p-2 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                />
+              </div>
+
+              <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-100 space-y-2">
+                <div className="flex justify-between text-slate-700 font-medium">
+                  <span>单件体积：</span>
+                  <span className="font-mono font-bold">{singleCbm.toFixed(3)} m³ (CBM)</span>
+                </div>
+                <div className="flex justify-between text-slate-900 font-bold">
+                  <span>总装柜体积：</span>
+                  <span className="font-mono text-[#EA3A20] text-sm">{totalCbm.toFixed(2)} m³</span>
+                </div>
+                <div className="flex justify-between text-slate-600 text-[11px]">
+                  <span>40HQ (68 m³) 装载率：</span>
+                  <span className="font-bold">{fillRate}%</span>
                 </div>
               </div>
             </div>
@@ -429,12 +1666,16 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => {
-                  handleSendMessage(`[CBM 海运核算结果]\n单件体积: ${singleCbm.toFixed(3)} CBM\n${cbmQty}套总体积: ${totalCbm.toFixed(2)} CBM (1*40HQ 充填率: ${fillRate}%)`);
+                  setInputMessage((prev) =>
+                    prev
+                      ? `${prev}\n[海运核算] 单件: ${singleCbm.toFixed(3)} CBM, ${cbmQty}件总计: ${totalCbm.toFixed(2)} CBM (40HQ装柜率约 ${fillRate}%)`
+                      : `[海运核算] 单件: ${singleCbm.toFixed(3)} CBM, ${cbmQty}件总计: ${totalCbm.toFixed(2)} CBM (40HQ装柜率约 ${fillRate}%)`
+                  );
                   setShowCbmCalc(false);
                 }}
-                className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-xs font-bold cursor-pointer transition-all shadow-xs"
+                className="w-full py-2.5 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
-                插入聊天发送给买家
+                插入核算结果至对话框
               </button>
             </div>
           </div>
