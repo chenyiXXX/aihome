@@ -8,6 +8,7 @@ import { PreSalesModule } from './components/modules/PreSalesModule';
 import { InSalesModule } from './components/modules/InSalesModule';
 import { MarketingModule } from './components/modules/MarketingModule';
 import { KnowledgeModule } from './components/modules/KnowledgeModule';
+import { PricingMaintenanceModule } from './components/modules/PricingMaintenanceModule';
 import { AnalyticsModule } from './components/modules/AnalyticsModule';
 import { StaffModule } from './components/modules/StaffModule';
 import { SystemConfigModule } from './components/modules/SystemConfigModule';
@@ -44,6 +45,8 @@ const getModuleTitleById = (mod: ModuleType): string => {
       return '运营助手';
     case 'knowledge_base':
       return '知识库管理';
+    case 'pricing_maintenance':
+      return '产品价格维护';
     case 'analytics':
       return '数据统计';
     case 'employee':
@@ -69,6 +72,8 @@ const getDefaultSubViewByModule = (mod: ModuleType): string => {
       return '视频剪辑';
     case 'knowledge_base':
       return '内容上传';
+    case 'pricing_maintenance':
+      return '单价库';
     case 'analytics':
       return '销售智能体统计';
     case 'employee':
@@ -217,6 +222,13 @@ export function App() {
             tags={initialKBTags}
             versions={initialKBVersions}
             subView={subView}
+          />
+        );
+      case 'pricing_maintenance':
+        return (
+          <PricingMaintenanceModule
+            subView={subView}
+            onSelectSubView={handleSelectSubView}
           />
         );
       case 'analytics':

@@ -145,7 +145,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({ employees, roles, subV
                   {role.permissions.map((perm, pIdx) => (
                     <div key={pIdx} className="p-3 bg-slate-50 rounded-2xl text-xs flex items-center gap-2 text-slate-700">
                       <div className="w-2 h-2 rounded-full bg-[#EA3A20]" />
-                      <span className="truncate font-semibold">{perm}</span>
+                      <span className="truncate font-semibold">{typeof perm === 'string' ? perm : (perm as any).module}</span>
                     </div>
                   ))}
                 </div>

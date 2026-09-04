@@ -317,7 +317,7 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
                   type="button"
                   onClick={() => {
                     const aiDraft = `\n\n### 🤖 AI智能扩写标准工艺规范\n1. **外观检验标准**：表面无划痕、气泡与压痕，对角线公差控制在 ±0.5mm 以内。\n2. **包装海运防护**：采用珍珠棉+加厚蜂窝纸箱+打木架，内置干燥剂满足海运防潮防霉要求。\n3. **质保条款**：主体结构提供 5 年质保，五金件 3 年免费以旧换新。`;
-                    setArticleFormContent((prev) => prev + aiDraft);
+                    setArticleFormContent(articleFormContent + aiDraft);
                     showToast('AI 已自动生成标准外贸工艺与包装条款！');
                   }}
                   className="px-2 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"

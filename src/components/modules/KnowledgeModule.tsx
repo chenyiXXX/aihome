@@ -152,7 +152,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<KBArticle | null>(null);
   const [articleContentType, setArticleContentType] = useState<'markdown' | 'document' | 'video'>('markdown');
-  const [articleMarkdownView, setArticleMarkdownView] = useState<'edit' | 'preview'>('edit');
+  const [articleMarkdownView, setArticleMarkdownView] = useState<'edit' | 'preview' | 'split'>('edit');
   const [articleFormTitle, setArticleFormTitle] = useState('');
   const [articleFormCategory, setArticleFormCategory] = useState('');
   const [articleFormTags, setArticleFormTags] = useState('');
@@ -1807,7 +1807,11 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setEditCatName(node.name);
     setEditCatCode(node.code);
     setEditCatRequireReview(Boolean(node.requireReview));
-    setEditCatReviewTriggers(node.reviewTriggers || { onUpload: true, onEdit: true, onDelete: true });
+    setEditCatReviewTriggers({
+      onUpload: node.reviewTriggers?.onUpload ?? true,
+      onEdit: node.reviewTriggers?.onEdit ?? true,
+      onDelete: node.reviewTriggers?.onDelete ?? true,
+    });
     setIsEditCatModalOpen(true);
   };
 
@@ -3567,8 +3571,12 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   articleFormDocFile={articleFormDocFile}
                   setArticleFormDocFile={setArticleFormDocFile}
                   articleFormVideoUrl={articleFormVideoUrl}
+                  setArticleFormVideoUrl={setArticleFormVideoUrl}
+                  articleFormVideoDuration={articleFormVideoDuration}
                   setArticleFormVideoDuration={setArticleFormVideoDuration}
                   articleFormVideoCover={articleFormVideoCover}
+                  setArticleFormVideoCover={setArticleFormVideoCover}
+                  articleFormVideoSourceName={articleFormVideoSourceName}
                   setArticleFormVideoSourceName={setArticleFormVideoSourceName}
                   articleFormVideoTranscript={articleFormVideoTranscript}
                   setArticleFormVideoTranscript={setArticleFormVideoTranscript}

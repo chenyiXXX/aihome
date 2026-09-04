@@ -1,15 +1,16 @@
 // Global Types for HomeCraft Custom Furniture Foreign Trade AI Platform
 
 export type ModuleType =
-  | 'home'             // 一、首页 (1.1 通用知识库问答)
-  | 'pre_sales'        // 二、售前客服 (2.1 询盘列表, 2.2 询盘内容详情)
-  | 'in_sales'         // 三、销售助手 (3.1 会话列表, 3.2 会话详情 & 话术/素材)
-  | 'marketing'        // 四、运营助手 (4.1 视频剪辑, 4.2 图文生成, 4.3 发布审核, 4.4 发布计划, 4.5 账号管理)
-  | 'knowledge_base'   // 五、知识库管理 (5.1 内容上传, 5.2 知识复核, 5.3 分类管理, 5.4 标签管理)
-  | 'analytics'        // 六、数据统计 (智能体使用情况)
-  | 'employee'         // 七、员工权限 (7.1 员工列表, 7.2 角色配置)
-  | 'sys_config'       // 八、系统配置 (8.1 智能体基础配置)
-  | 'audit_logs';      // 九、日志与审计 (9.1 操作日志, 9.2 问答记录, 9.3 内容生成记录)
+  | 'home'                 // 一、首页 (1.1 通用知识库问答)
+  | 'pre_sales'            // 二、售前客服 (2.1 询盘列表, 2.2 询盘内容详情)
+  | 'in_sales'             // 三、销售助手 (3.1 会话列表, 3.2 会话详情 & 话术/素材)
+  | 'marketing'            // 四、运营助手 (4.1 视频剪辑, 4.2 图文生成, 4.3 发布审核, 4.4 发布计划, 4.5 账号管理)
+  | 'knowledge_base'       // 五、知识库管理 (5.1 内容上传, 5.2 知识复核, 5.3 分类管理, 5.4 标签管理)
+  | 'pricing_maintenance'  // 六、产品价格维护 (6.1 单价库, 6.2 算价规则配置, 6.3 BOQ报价试算)
+  | 'analytics'            // 七、数据统计 (智能体使用情况)
+  | 'employee'             // 八、员工权限 (7.1 员工列表, 7.2 角色配置)
+  | 'sys_config'           // 九、系统配置 (8.1 智能体基础配置)
+  | 'audit_logs';          // 十、日志与审计 (9.1 操作日志, 9.2 问答记录, 9.3 内容生成记录)
 
 // Drawer State for slide-over side drawer (as seen in user screenshot 1: "添加话术")
 export interface DrawerConfig {
@@ -51,6 +52,18 @@ export interface InquiryItem {
   attachments: { name: string; url: string; size: string; type: 'image' | 'pdf' | 'cad' }[];
   aiReplyDraft?: string;
   aiScore: number;
+  platform?: string;
+  title?: string;
+  receivedAt?: string;
+  email?: string;
+  targetDelivery?: string;
+  rawContent?: string;
+  aiAnalysis?: {
+    intentLevel?: string;
+    confidenceScore?: number;
+    summary?: string;
+    suggestedReply?: string;
+  };
 }
 
 // 3. In-sales Chat & Scripts Types (销售助手)
@@ -198,6 +211,7 @@ export interface KBArticle {
   fileType?: 'PDF' | 'DOCX' | 'PPTX' | 'XLSX' | 'VIDEO' | 'MD' | 'MANUAL';
   fileSize?: string;
   chunksCount?: number;
+  chunkCount?: number;
   tags?: string[];
   // 复核流转信息
   wasPublished?: boolean; // 是否曾有正式发布版本
@@ -312,6 +326,8 @@ export interface SystemAgentConfig {
   enableCbmCalculator: boolean;
   enableWatermark: boolean;
   fobDefaultPort: string;
+  defaultModel?: string;
+  systemPrompt?: string;
 }
 
 // 9. Logs & Audit Types (日志与审计)
@@ -347,3 +363,48 @@ export interface ContentGenLog {
   timestamp: string;
   status: '完成' | '生成中';
 }
+
+// 6. Product Price Maintenance & BOQ (产品价格维护与BOQ清单计算)
+export interface BOQPriceItem {
+  id: string;
+  code: string;               // 部件编号 e.g. MAT-CAB-001
+  name: string;               // 部件名称 e.g. 爱格E0级柜体实木颗粒板
+  category: '柜体板材' | '定制门板' | '台面石材' | '基础五金' | '功能配件' | '出口包装' | '人工安装';
+  spec: string;               // 规格/材质说明 e.g. 18mm/双饰面/E0级/环保认证
+  unit: '投影㎡' | '展开㎡' | '延米' | '个' | '套' | '米';
+  currency: 'USD' | 'CNY';
+  basePriceUSD: number;       // 外贸出口基准单价(USD)
+  basePriceRMB: number;       // 内销折算价(RMB)
+  wasteRatePercent: number;   // 损耗率(%) e.g. 8%
+  formulaDesc: string;        // 算价公式逻辑说明 e.g. 展开面积 × 单价 × (1 + 损耗率)
+  status: '已生效' | '待生效' | '已停用';
+  updatedAt: string;
+  tags?: string[];
+}
+
+export interface BOQPricingRule {
+  id: string;
+  name: string;
+  category: '面积算法' | '损耗率' | '非标系数' | '出口包装' | '外币汇率';
+  formulaDesc: string;
+  factor: number | string;
+  unit?: string;
+  isEnabled: boolean;
+  remarks: string;
+}
+
+export interface BOQLineItem {
+  id: string;
+  itemNo: number;
+  partName: string;
+  category: string;
+  spec: string;
+  calcLogic: string;
+  quantity: number;
+  unit: string;
+  unitPriceUSD: number;
+  amountUSD: number;
+  wastePercent: number;
+  totalUSD: number;
+}
+

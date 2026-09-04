@@ -5,6 +5,7 @@ import {
   Users,
   Sparkles,
   RotateCw,
+  Calculator,
   PieChart,
   Users2,
   Settings,
@@ -155,6 +156,13 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       icon: RotateCw,
       defaultSubView: '内容上传',
       subViews: ['内容上传', '知识复核', '分类管理', '标签管理']
+    },
+    {
+      id: 'pricing_maintenance' as ModuleType,
+      label: '产品价格维护',
+      icon: Calculator,
+      defaultSubView: '单价库',
+      subViews: ['单价库']
     },
     {
       id: 'analytics' as ModuleType,
