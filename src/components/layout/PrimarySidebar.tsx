@@ -124,16 +124,9 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
   const navItems = [
     {
       id: 'home' as ModuleType,
-      label: '首页',
+      label: '通用知识问答',
       icon: LayoutDashboard,
       defaultSubView: '通用知识问答',
-      subViews: []
-    },
-    {
-      id: 'pre_sales' as ModuleType,
-      label: '售前客服',
-      icon: Send,
-      defaultSubView: '售前询盘列表',
       subViews: []
     },
     {
@@ -151,6 +144,13 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       subViews: ['视频剪辑', '图文生成', '发布审核', '发布计划', '账号管理']
     },
     {
+      id: 'pre_sales' as ModuleType,
+      label: '售前询盘',
+      icon: Send,
+      defaultSubView: '售前询盘列表',
+      subViews: []
+    },
+    {
       id: 'knowledge_base' as ModuleType,
       label: '知识库管理',
       icon: RotateCw,
@@ -162,14 +162,14 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       label: '产品价格维护',
       icon: Calculator,
       defaultSubView: '单价库',
-      subViews: ['单价库']
+      subViews: ['单价库', '汇率管理']
     },
     {
       id: 'analytics' as ModuleType,
       label: '数据统计',
       icon: PieChart,
       defaultSubView: '销售智能体统计',
-      subViews: ['销售智能体统计', '推广智能体统计']
+      subViews: ['销售智能体统计', '推广智能体统计', '员工培训统计', '通用知识库问答统计']
     },
     {
       id: 'employee' as ModuleType,

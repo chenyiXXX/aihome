@@ -36,9 +36,9 @@ import {
 const getModuleTitleById = (mod: ModuleType): string => {
   switch (mod) {
     case 'home':
-      return '首页';
+      return '通用知识问答';
     case 'pre_sales':
-      return '售前客服';
+      return '售前询盘';
     case 'in_sales':
       return '销售助手';
     case 'marketing':
@@ -56,7 +56,7 @@ const getModuleTitleById = (mod: ModuleType): string => {
     case 'audit_logs':
       return '日志与审计';
     default:
-      return '售前客服';
+      return '售前询盘';
   }
 };
 
@@ -100,9 +100,9 @@ export function App() {
     {
       id: 'pre_sales__售前询盘列表',
       moduleId: 'pre_sales',
-      moduleTitle: '售前客服',
+      moduleTitle: '售前询盘',
       subView: '售前询盘列表',
-      title: '售前客服',
+      title: '售前询盘',
       closable: true
     }
   ]);
@@ -257,7 +257,7 @@ export function App() {
       />
 
       {/* 2. Main Workspace Layout */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F8F9FA]">
+      <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#F8F9FA]">
         
         {/* Top Header Bar with Integrated Multi-Tab Windows */}
         <TopHeader
@@ -273,7 +273,7 @@ export function App() {
         />
 
         {/* Dynamic Module Workspace */}
-        <main className="flex-1 overflow-hidden flex flex-col pt-1">
+        <main className="flex-1 min-h-0 overflow-hidden flex flex-col pt-1">
           {renderActiveModule()}
         </main>
 

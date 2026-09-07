@@ -51,8 +51,8 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
 
   const getModuleTitle = () => {
     switch (activeModule) {
-      case 'home': return '知识问答';
-      case 'pre_sales': return '询盘管理';
+      case 'home': return '通用知识问答';
+      case 'pre_sales': return '售前询盘';
       case 'in_sales': return '客户';
       case 'marketing': return '营销推广';
       case 'knowledge_base': return '知识库管理';
@@ -66,6 +66,20 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
   // Render sub-menu tree based on activeModule (NO NUMERIC PREFIXES)
   const renderTreeMenu = () => {
     switch (activeModule) {
+      case 'home':
+        return (
+          <div className="space-y-1">
+            <button
+              onClick={() => onSelectSubView('通用知识问答')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
+                subView === '通用知识问答' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              通用知识问答
+            </button>
+          </div>
+        );
+
       case 'in_sales':
       case 'pre_sales':
         return (
@@ -350,6 +364,22 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
               }`}
             >
               推广智能体统计
+            </button>
+            <button
+              onClick={() => onSelectSubView('员工培训统计')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
+                subView === '员工培训统计' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              员工培训统计
+            </button>
+            <button
+              onClick={() => onSelectSubView('通用知识库问答统计')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
+                subView === '通用知识库问答统计' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              通用知识库问答统计
             </button>
           </div>
         );

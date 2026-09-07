@@ -1,174 +1,1049 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Send,
   Sparkles,
   Bot,
   User,
   BookOpen,
-  HelpCircle,
-  Clock,
+  Plus,
+  Search,
   CheckCircle2,
   Copy,
-  ArrowRight
+  ArrowRight,
+  TrendingUp,
+  Share2,
+  Users,
+  Target,
+  FileText,
+  BadgeCheck,
+  ShieldCheck,
+  RotateCcw,
+  MessageSquare,
+  ChevronRight,
+  HelpCircle,
+  Clock,
+  Sparkle
 } from 'lucide-react';
+import {
+  TrainingCourse,
+  initialTrainingCourses
+} from '../../data/trainingData';
+import { TrainingWorkbench } from './training/TrainingWorkbench';
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  sources?: Array<{ title: string; code: string }>;
+  confidence?: number;
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  category: 'sales_training' | 'ops_training' | 'hr_training' | 'general';
+  categoryLabel: string;
+  badgeBg: string;
+  badgeText: string;
+  isBuiltin: boolean;
+  roleTitle: string;
+  roleSubtitle: string;
+  kbScope: string;
+  lastMessage: string;
+  lastTime: string;
+  recommendedPrompts: string[];
+  messages: ChatMessage[];
+}
+
+const initialSessionsList: ChatSession[] = [
+  {
+    id: 'sess-sales',
+    title: '销售培训 · 销冠谈判与异议化解',
+    category: 'sales_training',
+    categoryLabel: '内部培训 · 销售',
+    badgeBg: 'bg-red-50 text-[#EA3A20] border-red-100',
+    badgeText: '销售实战',
+    isBuiltin: true,
+    roleTitle: '外贸销冠导师 · 商务谈判AI私教',
+    roleSubtitle: '专注中东/欧美豪宅大单推进、3F异议化解、30%定金与交期锁价谈判',
+    kbScope: '《外贸定制大单SOP》/《面对高净值客户心理博弈》/《销冠话术库》',
+    lastMessage: '面对欧美客户提出"别家工厂报价低15%"时，切忌直接降价，运用3F法则...',
+    lastTime: '10:45',
+    recommendedPrompts: [
+      '欧美客户提出"别家工厂报价低15%"，如何运用3F法则化解？',
+      '海外客户要求减少定金至10%，如何话术引导并坚持30%底线？',
+      '德国百隆Blum五金与国产优质五金相比，向客户讲解溢价卖点的话术有哪些？',
+      '外贸全屋定制如何向海外总包商讲解打样费并在大货中抵扣？'
+    ],
+    messages: [
+      {
+        id: 'msg-sales-1',
+        sender: 'user',
+        content: '面对欧美客户提出"别家工厂报价低15%"，销冠通常如何运用3F法则化解并保住利润？',
+        timestamp: '10:42'
+      },
+      {
+        id: 'msg-sales-2',
+        sender: 'assistant',
+        content: `【品爱家居内部培训·销冠商务谈判实战指导】
+
+面对海外买家"别家报价低15%"的价格异议，切忌直接降价破防。资深外贸销冠标准采用 **3F 法则 (Feel, Felt, Found)** 进行认知重塑：
+
+1. **Feel（共情理解）**：
+   - *"I completely understand how critical cost optimization and margin control are for your multi-villa project."*
+   - 先肯定买家对预算把控的专业度，消除对抗情绪。
+
+2. **Felt（引用同行共鸣）**：
+   - *"Many of our high-end interior designer and builder clients in California & Sydney felt exactly the same way when reviewing our initial quote compared to conventional suppliers."*
+   - 告知客户其他成熟欧美总包商最初也有同感，建立从众与信任。
+
+3. **Found（实证价值反差，核算全生命周期成本）**：
+   - **德国豪迈激光封边技术**：零胶缝防水防潮，海运过赤道高湿集装箱无鼓包开裂隐患；
+   - **原厂进口奥地利百隆 (Blum) 五金**：提供 200,000 次开合耐用质保，避免海外高昂的上门返修人工费（欧美人工高达 $80-$120/小时）；
+   - **严格遵循 ISTA 3A 跌落海运防损包装**：蜂窝护角 + 5层重型瓦楞纸箱，运输破损率低于 0.3‰。
+   - *"They found that our zero-defect delivery and pre-assembled cabinet accuracy actually saved them over 18% in total project installation labor on-site."*
+
+**行动建议**：顺势提出寄送实物对比样板盒（含切面色卡与封边试块），并预约 15 分钟 Zoom 远程方案投屏，锁定买家决策层。`,
+        timestamp: '10:45',
+        sources: [
+          { title: "《面对中东与欧美高净值客户的异议化解与心理博弈》", code: "KB-TRAIN-SALES-01" },
+          { title: "《外贸定制大单全流程跟进与风控交付SOP手册》", code: "KB-TRAIN-SOP-01" }
+        ],
+        confidence: 0.99
+      }
+    ]
+  },
+  {
+    id: 'sess-ops',
+    title: '运营培训 · 社媒短视频与海外获客',
+    category: 'ops_training',
+    categoryLabel: '内部培训 · 运营',
+    badgeBg: 'bg-blue-50 text-blue-700 border-blue-100',
+    badgeText: '海外运营',
+    isBuiltin: true,
+    roleTitle: '海外数字营销导师 · 跨境获客实战顾问',
+    roleSubtitle: '专注TikTok/Reels爆款家居短视频脚本、线上展会联动与海外独立站高意向RFQ引流',
+    kbScope: '《社媒短视频分镜实拍规范》/《跨境B2B独立站SEO与转化》/《展会大促SOP》',
+    lastMessage: 'TikTok家居爆款短视频必须在黄金前3秒建立视觉冲突与反差...',
+    lastTime: '09:20',
+    recommendedPrompts: [
+      'TikTok/Instagram Reels 家居定制短视频前3秒黄金Hook如何设计？',
+      '广交会与海外线下展会前30天，如何通过EDM与社媒做精准买家邀约？',
+      '外贸独立站如何布局"Custom Kitchen Cabinet Manufacturer"长尾RFQ词？',
+      '工厂数控5轴精雕实木门板的拍摄脚本分镜要点有哪些？'
+    ],
+    messages: [
+      {
+        id: 'msg-ops-1',
+        sender: 'user',
+        content: '我们在做海外 TikTok 和 Instagram Reels 时，怎样设计前3秒黄金 Hook 才能吸引欧美建筑设计师和高净值业主？',
+        timestamp: '09:18'
+      },
+      {
+        id: 'msg-ops-2',
+        sender: 'assistant',
+        content: `【品爱家居内部培训·海外短视频爆款营销实战】
+
+海外 B2B/B2C 高端定制家居受众注重 **工艺精工感** 与 **极端耐用度验证**。前 3 秒黄金 Hook（吸睛钩子）必须采用“**强视觉冲突 + 极致细节特写**”三步法：
+
+1. **黄金前 3 秒（视觉反差与悬念 Hook）**：
+   - **场景 A（抗震暴力测试）**：将重型钢球或整箱红酒置于全拉伸 Blum 隐形滑轨抽屉上，镜头瞬间特写抽屉平稳缓降，配大字文案 *"Can your cabinet drawers handle 50KG without bending?"*；
+   - **场景 B（高精度机加工）**：德国豪迈（HOMAG）五轴数控铣刀飞速在整块北美红橡木上雕出高精弧线的宏观特写，带原声切削轰鸣，配字幕 *"Precision engineering inside China's top bespoke factory."*
+
+2. **中段 5-15 秒（工艺硬核背书）**：
+   - 快速展示极简无拉手反弹开启、E0级环保板材横截面多层结构、激光无缝封边水浸泡对比试验。
+
+3. **尾段 16-25 秒（明确行动号召 Call-To-Action）**：
+   - 屏幕出现最新 2026 全球豪宅工程交付图册，字幕引导 *"Direct factory pricing for builders & designers. Comment 'BOQ' or click link in bio for free CAD catalogue."*
+
+**转化关键提示**：所有发布视频必须在评论区首条置顶中英文询盘通道，专人 30 分钟内承接海外私信询盘。`,
+        timestamp: '09:20',
+        sources: [
+          { title: "《海外社媒短视频分镜脚本与工艺实拍规范》", code: "KB-OPS-ASSET-01" },
+          { title: "《跨境B2B独立站高转化SEO与RFQ承接规范》", code: "KB-OPS-SEO-02" }
+        ],
+        confidence: 0.98
+      }
+    ]
+  },
+  {
+    id: 'sess-hr',
+    title: '人力资源培训 · 提成激励与员工手册',
+    category: 'hr_training',
+    categoryLabel: '内部培训 · 人资',
+    badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    badgeText: '企业人资',
+    isBuiltin: true,
+    roleTitle: '集团人资培训导师 · 组织激励与制度顾问',
+    roleSubtitle: '涵盖外贸业务员阶梯提成测算、海外出差参展报销、保密协议NDA与合规考核',
+    kbScope: '《员工手册与薪酬绩效方案 v3.0》/《差旅报销与知识产权保密规范》',
+    lastMessage: '外贸业务员阶梯提成按出货FOB净利润阶梯结算，毛利率≥35%可达...',
+    lastTime: '昨天',
+    recommendedPrompts: [
+      '外贸业务员阶梯提成机制与发放时间节点是什么？',
+      '参加海外展会（迪拜/德国/美国）的差旅报销及海外公杂补贴标准？',
+      '新员工入职商业保密协议(NDA)与同业竞业禁止的红线条款有哪些？',
+      '外贸大单客诉赔付的责任判定与绩效连带规则如何界定？'
+    ],
+    messages: [
+      {
+        id: 'msg-hr-1',
+        sender: 'user',
+        content: '请说明目前外贸业务员的阶梯提成核算方案、发放周期以及海外展会差旅补贴标准。',
+        timestamp: '昨天 15:30'
+      },
+      {
+        id: 'msg-hr-2',
+        sender: 'assistant',
+        content: `【品爱家居集团人力资源培训·薪酬激励与差旅制度规范】
+
+依据《品爱家居集团员工手册与业务薪酬激励方案 v3.0》，核心细则如下：
+
+### 一、 外贸业务员阶梯提成核算与发放机制
+1. **核算基准**：按单笔定制订单实际履约的 **FOB 实际净利润额**（扣除海外打样损耗、海运港杂垫付及第三方商检费后）为核算基础；
+2. **阶梯提成比例**：
+   - **优质大单（毛利率 ≥ 35%）**：按净利润的 **10% ~ 12%** 计提；
+   - **常规订单（毛利率 25% ~ 35%）**：按净利润的 **7% ~ 8%** 计提；
+   - **战略跑量单（毛利率 18% ~ 25%）**：按净利润的 **5%** 计提。
+3. **发放时间节点**：
+   - 订单完成发货并确认收到买方 70% 尾款、海运提单电放完成无质量索赔后，次月 20 日薪酬周期全额兑现发放。
+
+---
+
+### 二、 海外出差与国际展会差旅津贴标准
+1. **交通与住宿**：
+   - **机票**：统一预订国际经济舱（飞行时长单程超过 8 小时可申请超级经济舱）；
+   - **海外酒店住宿上限**：欧美澳新地区最高 **$180/间夜**；中东、日韩、东南亚最高 **$120/间夜**（展会期间若遇酒店浮动，由部门总监特批）；
+2. **海外公杂与生活餐补**：
+   - 给予海外出差人员 **$50/人/天** 的包干生活津贴；
+3. **报销合规要求**：
+   - 差旅归国后 5 个工作日内，凭机票行程单、海外正规 Commercial Invoice 贴票并在 OA 系统提交审批。`,
+        timestamp: '昨天 15:32',
+        sources: [
+          { title: "《品爱家居集团员工手册与薪酬绩效激励方案 v3.0》", code: "KB-HR-POL-01" },
+          { title: "《外贸业务差旅报销与知识产权保密合规规范》", code: "KB-HR-EXP-02" }
+        ],
+        confidence: 0.99
+      }
+    ]
+  },
+  {
+    id: 'sess-general',
+    title: '通用问答 · 欧美认证与定制工艺标准',
+    category: 'general',
+    categoryLabel: '产品工艺',
+    badgeBg: 'bg-purple-50 text-purple-700 border-purple-100',
+    badgeText: '工艺合规',
+    isBuiltin: false,
+    roleTitle: '外贸全案技术导师 · 全球工艺合规顾问',
+    roleSubtitle: '解答实木/板材/皮革选型、FSC/CARB P2环保认证、ISTA 3A包装与国际关税申报',
+    kbScope: '《2026出口材质合规手册》/《美欧海运包装ISTA 3A规范》/《产品百科》',
+    lastMessage: '欧洲 FSC (Forest Stewardship Council) 认证关注木材合法来源...',
+    lastTime: '10:24',
+    recommendedPrompts: [
+      '外贸定制橱柜欧洲 FSC 认证与 CARB P2 板材环保标准的差异及报关要求？',
+      '意式极简实木皮沙发 1*40HQ 海运 CBM 装箱率如何核算？',
+      '北美买家要求 ISTA 3A 跌落测试包装标准，工厂合规要求有哪些？',
+      '板式衣柜柜体 E0 级与 E1 级防潮板的单方溢价与报关申报编码'
+    ],
+    messages: [
+      {
+        id: 'msg-gen-1',
+        sender: 'user',
+        content: '外贸定制橱柜欧洲 FSC 认证与 CARB P2 板材环保标准的差异及报关要求是什么？',
+        timestamp: '10:22'
+      },
+      {
+        id: 'msg-gen-2',
+        sender: 'assistant',
+        content: `【品爱家居外贸定制·通用知识库智能解答】
+
+欧洲 **FSC** 认证与美国加州 **CARB P2 / TSCA Title VI** 环保标准在外贸报关、供应链溯源与检测限制方面存在本质区别：
+
+1. **核心监管维度差异**：
+   - **欧洲 FSC (Forest Stewardship Council)**：关注森林砍伐合法性与可持续森林经营溯源。整柜出货时，必须出具全链条产销监管链编号 (FSC-CoC)，确保木材非非法采伐来源；
+   - **美国 CARB P2 (California Air Resources Board) 及 EPA TSCA Title VI**：严格管控复合木制品（刨花板、胶合板、MDF）中的游离甲醛释放量。严苛限值要求 ≤ 0.05 ppm。
+
+2. **海关报关与清关单证要求**：
+   - **出口欧洲**：商业发票 (Commercial Invoice) 与提单 (B/L) 需明确标注品爱的 FSC 证书编号，并提供经 FSC 认可的材质流转清单；
+   - **出口美国/加拿大**：提关时必须随箱附带第三方公证行（如 SGS / Intertek）颁发的 CARB P2 合规检测报告，且纸箱外侧必须贴有符合 EPA 格式的合规声明贴纸 (Compliance Label)。
+
+3. **品爱工厂工艺保障**：
+   - 品爱全线外贸柜体均采用符合 FSC 认证的进口多层实木与大亚/爱格 E0 级低甲醛基材，通过德国 Henkel PUR 激光封边锁住游离挥发物，完全满足欧美双重严苛标准。`,
+        timestamp: '10:24',
+        sources: [
+          { title: "2026版全屋家居出口材质合规手册 v3.2", code: "KB-FUR-2026-08" },
+          { title: "美欧海运包装及跌落测试 ISTA 3A 规范", code: "KB-PKG-2025" }
+        ],
+        confidence: 0.98
+      }
+    ]
+  }
+];
 
 export const HomeModule: React.FC = () => {
-  const [query, setQuery] = useState('');
+  const [sessions, setSessions] = useState<ChatSession[]>(initialSessionsList);
+  const [activeSessionId, setActiveSessionId] = useState<string>('sess-sales');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState<'all' | 'training' | 'general'>('all');
+  const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [qaHistory, setQaHistory] = useState<Array<{
-    id: string;
-    question: string;
-    answer: string;
-    code?: string;
-    confidence?: number;
-    time: string;
-  }>>([
-    {
-      id: 'qa-1',
-      question: '外贸定制橱柜欧洲 FSC 认证与 CARB P2 板材环保标准的差异及报关要求是什么？',
-      answer: '欧洲 FSC (Forest Stewardship Council) 认证关注木材合法可持续来源；而美国 CARB P2 (California Air Resources Board) 及 TSCA Title VI 关注甲醛释放量限制 (≤0.05 ppm)。欧洲海关提单 (B/L) 需附带 Chain of Custody (CoC) 编号，而美国进口时需出具 EPA Compliance Certificate。',
-      code: 'KB-CAB-001',
-      confidence: 0.98,
-      time: '10:24 AM'
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Training state: progress, quizzes, efficiency tracking
+  const [trainingCourses, setTrainingCourses] = useState<Record<string, TrainingCourse>>(initialTrainingCourses);
+  const [isGradingQuiz, setIsGradingQuiz] = useState<boolean>(false);
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
+  const isTrainingSession = activeSession.category !== 'general';
+  const currentCourse = isTrainingSession ? trainingCourses[activeSessionId] : null;
+
+  // Auto scroll to bottom of chat
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [activeSession?.messages, loading]);
+
+  // Filter sessions
+  const filteredSessions = sessions.filter((s) => {
+    const matchesSearch =
+      s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (filterCategory === 'training') {
+      return s.category !== 'general';
     }
-  ]);
+    if (filterCategory === 'general') {
+      return s.category === 'general';
+    }
+    return true;
+  });
 
-  const quickPrompts = [
-    '意式极简实木皮沙发 1*40HQ 海运 CBM 装箱率如何核算？',
-    '德国百隆 Blum 隐形滑轨与底座五金的报价浮动条款是什么？',
-    '北美买家要求 ISTA 3A 跌落测试包装标准，工厂合规要求有哪些？',
-    '板式衣柜柜体 E0 级与 E1 级防潮板的单方溢价与报关申报编码'
-  ];
+  // Create new custom session
+  const handleCreateNewSession = () => {
+    const newId = `sess-${Date.now()}`;
+    const newSession: ChatSession = {
+      id: newId,
+      title: `自定义问答 · ${new Date().toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}`,
+      category: 'general',
+      categoryLabel: '自定义咨询',
+      badgeBg: 'bg-slate-100 text-slate-700 border-slate-200',
+      badgeText: '业务问答',
+      isBuiltin: false,
+      roleTitle: '外贸定制家居 AI 顾问',
+      roleSubtitle: '支持任意关于实木/板式定制、外贸报价、海运装箱及海外施工规范的提问',
+      kbScope: '《外贸全案知识库总集》/《产品技术百科》/《业务SOP》',
+      lastMessage: '新对话已开启，请输入您的问题...',
+      lastTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      recommendedPrompts: [
+        '外贸定制家居 1*40HQ 集装箱海运防潮包装有哪些红线要求？',
+        '针对海外公寓总包工程，如何快速出具 BOQ 工程量清单？',
+        '全屋定制爱格板与实木多层板的单平米造价差异及卖点对比？'
+      ],
+      messages: [
+        {
+          id: `msg-welcome-${Date.now()}`,
+          sender: 'assistant',
+          content: '您好！我是品爱家居 AI 知识导师。您可以随时向我提问产品工艺、技术标准、外贸大单交付、内部流程或国际贸易合规细节。',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          confidence: 0.99
+        }
+      ]
+    };
 
-  const handleAskKnowledgeBase = async (questionText?: string) => {
-    const q = questionText || query;
-    if (!q.trim()) return;
+    setSessions((prev) => [newSession, ...prev]);
+    setActiveSessionId(newId);
+  };
 
+  // Ask Question in current active session
+  const handleSendMessage = async (textToSend?: string) => {
+    const q = (textToSend || inputQuery).trim();
+    if (!q || loading) return;
+
+    const userMsgId = `usr-${Date.now()}`;
+    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const userMessage: ChatMessage = {
+      id: userMsgId,
+      sender: 'user',
+      content: q,
+      timestamp: currentTime
+    };
+
+    // Update active session with user message immediately
+    setSessions((prev) =>
+      prev.map((s) => {
+        if (s.id === activeSessionId) {
+          return {
+            ...s,
+            lastMessage: q,
+            lastTime: currentTime,
+            messages: [...s.messages, userMessage]
+          };
+        }
+        return s;
+      })
+    );
+
+    if (!textToSend) {
+      setInputQuery('');
+    }
     setLoading(true);
+
     try {
       const res = await fetch('/api/knowledge/qa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q })
-      });
-      const data = await res.json();
-
-      setQaHistory(prev => [
-        {
-          id: `qa-${Date.now()}`,
+        body: JSON.stringify({
           question: q,
-          answer: data.answer || '未能从知识库匹配答案，请补充产品条款。',
-          code: data.sourceCode || 'KB-GEN-001',
-          confidence: data.confidence || 0.92,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        },
-        ...prev
-      ]);
-      if (!questionText) setQuery('');
+          category: activeSession.category,
+          roleContext: activeSession.roleTitle
+        })
+      });
+
+      const data = await res.json();
+      const assistantMsg: ChatMessage = {
+        id: `ai-${Date.now()}`,
+        sender: 'assistant',
+        content: data.answer || '未能从知识库匹配到详细解答，请尝试补充更多背景条件。',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sources: data.sources || [
+          { title: activeSession.kbScope, code: 'KB-MASTER-AUTO' }
+        ],
+        confidence: data.confidence || 0.98
+      };
+
+      setSessions((prev) =>
+        prev.map((s) => {
+          if (s.id === activeSessionId) {
+            return {
+              ...s,
+              lastMessage: assistantMsg.content.slice(0, 45) + '...',
+              lastTime: assistantMsg.timestamp,
+              messages: [...s.messages, assistantMsg]
+            };
+          }
+          return s;
+        })
+      );
+
+      // In training mode, asking questions enhances employee learning efficiency
+      if (isTrainingSession && currentCourse) {
+        setTrainingCourses((prev) => {
+          const c = prev[activeSessionId];
+          if (!c) return prev;
+          const newCount = c.interactiveCount + 1;
+          const newEff = Math.min(99, c.efficiencyScore + 1);
+          return {
+            ...prev,
+            [activeSessionId]: {
+              ...c,
+              interactiveCount: newCount,
+              efficiencyScore: newEff
+            }
+          };
+        });
+      }
     } catch (err) {
       console.error(err);
+      const fallbackMsg: ChatMessage = {
+        id: `ai-err-${Date.now()}`,
+        sender: 'assistant',
+        content: `【系统提示】网络连接波动，已切换为企业离线知识库回复：针对问题"${q}"，请参考品爱外贸定制标准 SOP 库或在知识库管理模块查阅相关工艺文档。`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        confidence: 0.90
+      };
+      setSessions((prev) =>
+        prev.map((s) => {
+          if (s.id === activeSessionId) {
+            return {
+              ...s,
+              messages: [...s.messages, fallbackMsg]
+            };
+          }
+          return s;
+        })
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50/50 overflow-y-auto">
+  // Advance to next lesson after studying and confirming
+  const handleAdvanceLesson = () => {
+    if (!currentCourse) return;
+    const nextIdx = currentCourse.currentLessonIndex + 1;
+    if (nextIdx >= currentCourse.lessons.length) return;
+
+    const nextLesson = currentCourse.lessons[nextIdx];
+
+    // Update course lessons status
+    const updatedLessons = currentCourse.lessons.map((l, i) => {
+      if (i === currentCourse.currentLessonIndex) {
+        return { ...l, status: 'completed' as const };
+      }
+      if (i === nextIdx) {
+        return { ...l, status: 'in_progress' as const };
+      }
+      return l;
+    });
+
+    const updatedCourse: TrainingCourse = {
+      ...currentCourse,
+      currentLessonIndex: nextIdx,
+      lessons: updatedLessons,
+      studyMinutes: currentCourse.studyMinutes + 15,
+      efficiencyScore: Math.min(99, currentCourse.efficiencyScore + 1)
+    };
+
+    setTrainingCourses((prev) => ({
+      ...prev,
+      [activeSessionId]: updatedCourse
+    }));
+
+    // Send next lesson training material from the Mentor into the chat stream!
+    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const mentorLessonMsg: ChatMessage = {
+      id: `mentor-lesson-${Date.now()}`,
+      sender: 'assistant',
+      content: `【${currentCourse.mentorName}·岗位培训第 ${nextIdx + 1} 节资料推送】
+《${nextLesson.title}》
+
+${nextLesson.materialContent}
+
+💡 **核心要点速记**：
+${nextLesson.keyTakeaways.map((item, idx) => `${idx + 1}. ${item}`).join('\n')}
+
+---
+**导师指导寄语**：
+新员工请仔细研读上述讲义要点。在实际跟进客户或实操过程中，有任何不理解的步骤或话术，欢迎在下方输入框直接向我提问！
+${nextLesson.quiz ? '研读完毕且无疑问后，可点击上方【进入本节考题测验】完成课后考核通关。' : '研读完毕且无疑问后，可点击上方【确认已掌握，进入下一节】继续进阶！'}`,
+      timestamp: currentTime,
+      sources: [
+        { title: `《品爱家居${currentCourse.courseTitle}·岗位讲义》`, code: `TRAIN-${nextLesson.id.toUpperCase()}` }
+      ],
+      confidence: 0.99
+    };
+
+    setSessions((prev) =>
+      prev.map((s) => {
+        if (s.id === activeSessionId) {
+          return {
+            ...s,
+            lastMessage: `【新课程推送】第${nextIdx + 1}节：${nextLesson.title}`,
+            lastTime: currentTime,
+            messages: [...s.messages, mentorLessonMsg]
+          };
+        }
+        return s;
+      })
+    );
+  };
+
+  // Submit quiz answer and get AI mentor grading
+  const handleSubmitQuiz = async (lessonId: string, answer: string) => {
+    if (!currentCourse) return;
+    const currentLesson = currentCourse.lessons.find((l) => l.id === lessonId);
+    if (!currentLesson || !currentLesson.quiz) return;
+
+    setIsGradingQuiz(true);
+    try {
+      const res = await fetch('/api/training/grade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseTitle: currentCourse.courseTitle,
+          lessonTitle: currentLesson.title,
+          question: currentLesson.quiz.question,
+          studentAnswer: answer,
+          standardKeyPoints: currentLesson.quiz.standardKeyPoints,
+          mentorName: currentCourse.mentorName
+        })
+      });
+
+      const data = await res.json();
+      const { score, grade, passed, mentorReview } = data;
+
+      // Update quiz state in course
+      const updatedLessons = currentCourse.lessons.map((l) => {
+        if (l.id === lessonId && l.quiz) {
+          return {
+            ...l,
+            quiz: {
+              ...l.quiz,
+              submittedAnswer: answer,
+              score: score || 92,
+              grade: grade || 'A (良好)',
+              passed: passed !== undefined ? passed : true,
+              mentorReview: mentorReview || '作答符合规范，准予通过！'
+            }
+          };
+        }
+        return l;
+      });
+
+      const gradedScores = updatedLessons
+        .map((l) => l.quiz?.score)
+        .filter((s): s is number => typeof s === 'number');
+      const avgScore = gradedScores.length
+        ? Math.round(gradedScores.reduce((a, b) => a + b, 0) / gradedScores.length)
+        : 90;
+
+      const newEfficiency = Math.min(99, Math.round(85 + (avgScore - 80) * 0.5 + currentCourse.interactiveCount * 1.5));
+
+      const updatedCourse: TrainingCourse = {
+        ...currentCourse,
+        lessons: updatedLessons,
+        averageQuizScore: avgScore,
+        efficiencyScore: newEfficiency
+      };
+
+      setTrainingCourses((prev) => ({
+        ...prev,
+        [activeSessionId]: updatedCourse
+      }));
+
+      // Output user submission and mentor grading report into chat
+      const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       
-      {/* Top Banner Header */}
-      <div className="px-6 py-4 bg-white border-b border-slate-200 flex items-center justify-between">
-        <div>
-          <h1 className="text-base font-bold text-slate-800 flex items-center gap-2">
-            通用知识库智能问答
-            <span className="px-2 py-0.5 text-[11px] bg-blue-100 text-blue-700 font-semibold rounded-full">
-              Gemini 2.5 检索增强
-            </span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            快速查询外贸定制家居工艺标准、海运包装规范、环保认证条款及出口报价规则
-          </p>
-        </div>
-      </div>
+      const userAnsMsg: ChatMessage = {
+        id: `usr-quiz-${Date.now()}`,
+        sender: 'user',
+        content: `【课后考核作答提交】\n考核题目："${currentLesson.quiz.question}"\n\n我的答案：\n${answer}`,
+        timestamp: currentTime
+      };
 
-      <div className="p-6 space-y-6 max-w-5xl mx-auto w-full">
+      const mentorGradingMsg: ChatMessage = {
+        id: `mentor-grade-${Date.now() + 1}`,
+        sender: 'assistant',
+        content: `【${currentCourse.mentorName}·课后考核阅卷报告】
+
+📝 **考核章节**：第 ${currentLesson.lessonNumber} 节 · ${currentLesson.title}
+🏆 **最终得分**：${score || 92} 分 (${grade || 'A (良好)'})
+🎯 **考核结论**：${passed ? '✅ 考核达标（达到品爱家居岗位实战标准）' : '⚠️ 未达到80分及格线，建议复习讲义后重新作答'}
+
+📋 **导师详细点评**：
+${mentorReview}
+
+${passed ? '👉 本节考核已通关！请点击上方【确认已掌握，进入下一节】继续进阶！' : '👉 请对照导师点评强化薄弱点后再次进入考核。'}`,
+        timestamp: currentTime,
+        sources: [
+          { title: `《品爱家居新员工考评体系·${currentCourse.mentorName}阅卷》`, code: 'TRAIN-EVAL-SCORE' }
+        ],
+        confidence: 0.99
+      };
+
+      setSessions((prev) =>
+        prev.map((s) => {
+          if (s.id === activeSessionId) {
+            return {
+              ...s,
+              lastMessage: `【考核阅卷】得分: ${score || 92}分 (${grade || '良好'})`,
+              lastTime: currentTime,
+              messages: [...s.messages, userAnsMsg, mentorGradingMsg]
+            };
+          }
+          return s;
+        })
+      );
+
+      return data;
+    } catch (err) {
+      console.error('Quiz grading error:', err);
+    } finally {
+      setIsGradingQuiz(false);
+    }
+  };
+
+  const handleCopyText = (id: string, text: string) => {
+    navigator.clipboard?.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  // Quick prompt click
+  const handleQuickPromptClick = (promptText: string) => {
+    handleSendMessage(promptText);
+  };
+
+  // Get icon by session type
+  const getSessionIcon = (session: ChatSession) => {
+    switch (session.category) {
+      case 'sales_training':
+        return <Target className="w-4 h-4 text-[#EA3A20]" />;
+      case 'ops_training':
+        return <TrendingUp className="w-4 h-4 text-blue-600" />;
+      case 'hr_training':
+        return <Users className="w-4 h-4 text-emerald-600" />;
+      default:
+        return <BookOpen className="w-4 h-4 text-purple-600" />;
+    }
+  };
+
+  return (
+    <div className="flex-1 flex h-full bg-slate-100/60 overflow-hidden">
+      
+      {/* ========================================================================= */}
+      {/* LEFT SIDEBAR: Chat / Training Sessions List                                */}
+      {/* ========================================================================= */}
+      <div className="w-80 md:w-84 bg-white border-r border-slate-200 flex flex-col shrink-0 h-full">
         
-        {/* Search / Question Input Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span>输入家居外贸常见问题或产品工艺细节</span>
-          </div>
+        {/* Left Header */}
+        <div className="p-4 border-b border-slate-100 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold shadow-2xs">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight">知识库与培训问答</h2>
+            </div>
 
-          <div className="flex gap-2">
-            <textarea
-              rows={3}
-              placeholder="例如：询问某款极简衣柜的板材防潮性能、包装跌落测试要求或欧美海关申报规则..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none leading-relaxed"
-            />
             <button
-              onClick={() => handleAskKnowledgeBase()}
-              disabled={loading}
-              className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-2xs transition-all flex flex-col items-center justify-center gap-1 cursor-pointer shrink-0 disabled:opacity-50"
+              type="button"
+              onClick={handleCreateNewSession}
+              className="h-8 px-2.5 bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all shrink-0"
+              title="新建提问会话"
             >
-              <Send className="w-4 h-4" />
-              <span>{loading ? '检索中...' : '提交问答'}</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>新建会话</span>
             </button>
           </div>
 
-          {/* Quick Prompts */}
-          <div className="pt-1">
-            <span className="text-[11px] font-bold text-slate-400 block mb-2">高频业务快捷推荐：</span>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {quickPrompts.map((p, idx) => (
+          {/* Search Box */}
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+            <input
+              type="text"
+              placeholder="搜索会话主题或问答关键词..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8.5 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] transition-colors"
+            />
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-1.5 pt-0.5">
+            <button
+              type="button"
+              onClick={() => setFilterCategory('all')}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-colors ${
+                filterCategory === 'all'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              全部 ({sessions.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterCategory('training')}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1 ${
+                filterCategory === 'training'
+                  ? 'bg-[#EA3A20] text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <span>内部培训</span>
+              <span className="text-[10px] opacity-80">(3)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterCategory('general')}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-colors ${
+                filterCategory === 'general'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              业务通用
+            </button>
+          </div>
+        </div>
+
+        {/* Sessions Scrollable List */}
+        <div className="flex-1 overflow-y-auto p-2 space-y-1.5 custom-scrollbar">
+          {filteredSessions.length === 0 ? (
+            <div className="py-12 text-center text-slate-400 text-xs">
+              <MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <p>未搜索到相关会话</p>
+            </div>
+          ) : (
+            filteredSessions.map((session) => {
+              const isActive = session.id === activeSessionId;
+              return (
+                <div
+                  key={session.id}
+                  onClick={() => setActiveSessionId(session.id)}
+                  className={`p-3 rounded-2xl cursor-pointer transition-all border text-left group relative ${
+                    isActive
+                      ? 'bg-white border-slate-200/90 shadow-xs ring-1.5 ring-[#EA3A20]/20'
+                      : 'bg-slate-50/50 hover:bg-white border-transparent hover:border-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="font-bold text-xs text-slate-800 truncate">
+                        {session.title}
+                      </span>
+                      {session.category !== 'general' && (
+                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-red-50 text-[#EA3A20] border border-red-200 shrink-0">
+                          内部培训
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                      {session.lastTime}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 line-clamp-1 pr-1">
+                    {session.lastMessage}
+                  </p>
+
+                  {/* Training Course Progress & Efficiency Preview */}
+                  {trainingCourses[session.id] && (
+                    <div className="flex items-center gap-2 mt-1.5 text-[10px]">
+                      <span className="text-emerald-700 font-medium bg-emerald-50/80 px-1.5 py-0.2 rounded border border-emerald-100">
+                        进度: 第 {trainingCourses[session.id].currentLessonIndex + 1}/{trainingCourses[session.id].lessons.length} 节
+                      </span>
+                      <span className="text-amber-700 font-medium bg-amber-50/80 px-1.5 py-0.2 rounded border border-amber-100">
+                        效率: {trainingCourses[session.id].efficiencyScore}分
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+      </div>
+
+      {/* ========================================================================= */}
+      {/* RIGHT MAIN VIEW: Chat Conversation Content                                */}
+      {/* ========================================================================= */}
+      <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-hidden">
+        
+        {/* Right Header: Active Session Title & Mentor Info */}
+        <div className="px-6 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-sm font-bold text-slate-900">{activeSession.title}</h1>
+            {isTrainingSession && (
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-[#EA3A20] border border-red-200">
+                内部培训
+              </span>
+            )}
+          </div>
+          {isTrainingSession && currentCourse && (
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-slate-400">带教导师:</span>
+              <span className="font-bold text-slate-800">{currentCourse.mentorName}</span>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-500 text-[11px] hidden sm:inline">{currentCourse.mentorTitle}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Interactive Training Workbench: Progress, Efficiency & Checkpoint Quizzes */}
+        {isTrainingSession && currentCourse && (
+          <TrainingWorkbench
+            course={currentCourse}
+            onAdvanceLesson={handleAdvanceLesson}
+            onSubmitQuiz={handleSubmitQuiz}
+            onAskMentorQuestion={(q) => handleSendMessage(q)}
+            isGrading={isGradingQuiz}
+          />
+        )}
+
+        {/* Right Chat Messages Scrollable Area */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+
+          {/* Messages Stream */}
+          {activeSession.messages.length === 0 ? (
+            <div className="py-16 text-center text-slate-400 space-y-2">
+              <Bot className="w-10 h-10 text-slate-300 mx-auto" />
+              <p className="text-xs font-bold text-slate-600">会话已清空，请在下方输入或点击快捷问题开始</p>
+            </div>
+          ) : (
+            activeSession.messages.map((msg) => {
+              const isUser = msg.sender === 'user';
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex gap-3.5 ${isUser ? 'justify-end' : 'justify-start'}`}
+                >
+                  {/* Assistant Avatar */}
+                  {!isUser && (
+                    <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                      <Bot className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+
+                  {/* Message Bubble */}
+                  <div className={`max-w-2xl space-y-2 ${isUser ? 'items-end' : 'items-start'}`}>
+                    
+                    <div className="flex items-center gap-2 px-1 text-[11px] text-slate-400">
+                      <span className="font-bold text-slate-700">
+                        {isUser ? '我 (业务学员)' : activeSession.roleTitle}
+                      </span>
+                      <span>•</span>
+                      <span className="font-mono">{msg.timestamp}</span>
+                    </div>
+
+                    <div
+                      className={`p-4 rounded-2xl text-xs leading-relaxed shadow-2xs ${
+                        isUser
+                          ? 'bg-[#EA3A20] text-white rounded-tr-xs font-medium'
+                          : 'bg-white border border-slate-200/90 text-slate-800 rounded-tl-xs whitespace-pre-line'
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+
+                    {/* Citations & Metadata for Assistant Message */}
+                    {!isUser && (
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 px-1 text-[11px] text-slate-500">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {msg.sources && msg.sources.length > 0 && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-400">出处：</span>
+                              {msg.sources.map((src, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-md font-mono text-[10px]"
+                                  title={src.title}
+                                >
+                                  {src.code || src.title}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {msg.confidence && (
+                            <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                              置信度 {(msg.confidence * 100).toFixed(0)}%
+                            </span>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(msg.id, msg.content)}
+                          className="text-slate-400 hover:text-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
+                          title="复制回答内容"
+                        >
+                          {copiedId === msg.id ? (
+                            <span className="text-emerald-600 font-bold flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              已复制
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1">
+                              <Copy className="w-3 h-3" />
+                              复制回答
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/* User Avatar */}
+                  {isUser && (
+                    <div className="w-8 h-8 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 shadow-2xs mt-0.5 font-bold text-xs">
+                      <User className="w-4 h-4 text-slate-700" />
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+
+          {/* Loading Animation */}
+          {loading && (
+            <div className="flex gap-3.5 justify-start">
+              <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="bg-white border border-slate-200/90 rounded-2xl rounded-tl-xs p-4 shadow-2xs flex items-center gap-2 text-xs text-slate-500">
+                <div className="w-4 h-4 border-2 border-[#EA3A20] border-t-transparent rounded-full animate-spin" />
+                <span>正在检索品爱内部知识库并由大模型推理合成专业回答...</span>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Right Dock: Recommended Prompts + Input Form */}
+        <div className="p-4 bg-white border-t border-slate-200 shrink-0 space-y-3 shadow-sm">
+          
+          {/* Active Session Recommended Quick Prompts */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold">
+              <span className="flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-[#EA3A20]" />
+                <span>当前主题实战高频推荐提问：</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-normal">点击即发</span>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+              {activeSession.recommendedPrompts.map((prompt, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleAskKnowledgeBase(p)}
-                  className="p-2.5 text-left text-xs bg-slate-50 hover:bg-blue-50/80 border border-slate-200/80 hover:border-blue-200 text-slate-700 hover:text-blue-700 rounded-lg transition-colors flex items-center justify-between group cursor-pointer"
+                  type="button"
+                  onClick={() => handleQuickPromptClick(prompt)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-red-50/80 border border-slate-200 hover:border-red-200 text-slate-700 hover:text-[#EA3A20] text-xs shrink-0 cursor-pointer transition-colors flex items-center gap-1.5 group"
                 >
-                  <span className="truncate">{p}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 shrink-0" />
+                  <span className="truncate max-w-sm">{prompt}</span>
+                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-[#EA3A20] shrink-0" />
                 </button>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Q&A History Stream */}
-        <div className="space-y-4">
-          <h2 className="text-xs font-bold text-slate-800 flex items-center justify-between">
-            <span>实时问答记录 ({qaHistory.length})</span>
-          </h2>
+          {/* Textarea Input + Send Button */}
+          <div className="flex items-end gap-2 bg-slate-50 border border-slate-200/90 rounded-2xl p-2.5 focus-within:ring-2 focus-within:ring-[#EA3A20]/20 focus-within:border-[#EA3A20] transition-all">
+            <textarea
+              rows={2}
+              value={inputQuery}
+              onChange={(e) => setInputQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder={`在【${activeSession.categoryLabel}】中输入您的问题或谈判案例，按 Enter 发送...`}
+              className="flex-1 bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed p-1"
+            />
 
-          {qaHistory.map((qa) => (
-            <div key={qa.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-3">
-              <div className="flex items-start justify-between border-b border-slate-100 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-[10px]">
-                    <User className="w-3.5 h-3.5" />
-                  </div>
-                  <h3 className="font-bold text-xs text-slate-800">{qa.question}</h3>
-                </div>
-                <span className="text-[10px] text-slate-400 font-mono">{qa.time}</span>
-              </div>
+            <button
+              type="button"
+              onClick={() => handleSendMessage()}
+              disabled={loading || !inputQuery.trim()}
+              className="h-10 px-5 bg-[#EA3A20] hover:bg-[#d6341c] text-white rounded-xl font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>{loading ? '检索中' : '发送'}</span>
+            </button>
+          </div>
 
-              <div className="flex items-start gap-3 bg-slate-50/80 p-4 rounded-xl border border-slate-100 text-xs">
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <Bot className="w-3.5 h-3.5" />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <p className="text-slate-800 leading-relaxed font-normal">{qa.answer}</p>
-                  <div className="flex items-center justify-between text-[11px] pt-1 text-slate-400">
-                    <div className="flex items-center gap-3">
-                      <span>出处来源：<strong className="text-blue-600 font-mono">{qa.code}</strong></span>
-                      <span>置信度：<strong className="text-emerald-600 font-mono">{qa.confidence ? (qa.confidence * 100).toFixed(0) : 95}%</strong></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+          <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
+            <span>支持 Enter 发送，Shift + Enter 换行</span>
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+              <span>已接入企业内部保密过滤，敏感数据出境合规风控开启</span>
+            </span>
+          </div>
+
         </div>
 
       </div>
@@ -176,3 +1051,4 @@ export const HomeModule: React.FC = () => {
     </div>
   );
 };
+

@@ -1,13 +1,10 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Calculator,
   FileSpreadsheet,
-  Plus,
   Search,
   Download,
-  Upload,
   Sliders,
-  Edit2,
   CheckCircle2,
   AlertCircle,
   Copy,
@@ -16,15 +13,18 @@ import {
   Layers,
   DollarSign,
   RefreshCw,
+  Clock,
+  Eye,
+  ExternalLink,
   Boxes,
   Sparkles,
   ArrowUpRight,
   X,
-  FileText,
-  FileUp
+  FileText
 } from 'lucide-react';
 import { BOQPriceItem, BOQPricingRule, BOQLineItem } from '../../types';
 import { initialBOQPriceItems, initialBOQPricingRules } from '../../data/mockData';
+import { ExchangeRateSubModule } from './ExchangeRateSubModule';
 
 interface PricingMaintenanceModuleProps {
   subView?: string;
@@ -61,41 +61,21 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
   const [currencyMode, setCurrencyMode] = useState<'USD' | 'CNY'>('USD');
   const [exchangeRate, setExchangeRate] = useState<number>(7.20);
 
-  // Modal: Add / Edit Price Item
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<BOQPriceItem | null>(null);
-  const [formData, setFormData] = useState({
-    code: '',
-    name: '',
-    category: '柜体板材' as BOQPriceItem['category'],
-    spec: '',
-    unit: '展开㎡' as BOQPriceItem['unit'],
-    basePriceUSD: 40.0,
-    basePriceRMB: 288.0,
-    wasteRatePercent: 8,
-    formulaDesc: '展开面积(㎡) × 基准单价 × (1 + 损耗率 8%)',
-    tags: ''
-  });
+  // Document Source Configuration (指定数据源文档信息)
+  const documentSourceInfo = {
+    docName: '《品爱全屋定制外贸产品标准单价及BOQ定额库.xlsx》',
+    docUrl: 'https://docs.company.internal/pricing/boq_standard_prices_2026.xlsx',
+    sheetName: '外贸标准定制单价定额表',
+    sourceDept: '外贸供应链与定制研发中心 / 成本核算科',
+    syncStrategy: '自动定时拉取 • 每小时刷新 • 本系统只读映射'
+  };
 
-  // Batch Import Modal State
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [importFile, setImportFile] = useState<{ name: string; size: string } | null>(null);
-  const [importPreviewList, setImportPreviewList] = useState<Array<{
-    code: string;
-    name: string;
-    category: BOQPriceItem['category'];
-    spec: string;
-    unit: BOQPriceItem['unit'];
-    basePriceUSD: number;
-    basePriceRMB: number;
-    wasteRatePercent: number;
-    formulaDesc: string;
-    tags: string[];
-    valid: boolean;
-  }>>([]);
-  const [duplicateHandling, setDuplicateHandling] = useState<'overwrite' | 'skip' | 'rename'>('overwrite');
+  // State: Latest Update Time of Data
+  const [docLastUpdatedTime, setDocLastUpdatedTime] = useState<string>('2026-09-03 16:30:15');
+  const [isSyncingDoc, setIsSyncingDoc] = useState<boolean>(false);
+  const [isDocConfigModalOpen, setIsDocConfigModalOpen] = useState<boolean>(false);
+  const [selectedDetailItem, setSelectedDetailItem] = useState<BOQPriceItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -140,281 +120,25 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
     });
   }, [priceItems, selectedCategory, unitFilter, searchKeyword]);
 
-  // Open modal for new item
-  const handleOpenAddModal = () => {
-    setEditingItem(null);
-    setFormData({
-      code: `ITEM-${Date.now().toString().slice(-4)}`,
-      name: '',
-      category: '柜体板材',
-      spec: '',
-      unit: '展开㎡',
-      basePriceUSD: 45.0,
-      basePriceRMB: 324.0,
-      wasteRatePercent: 8,
-      formulaDesc: '展开面积(㎡) × 基准单价 × (1 + 损耗率 8%)',
-      tags: ''
-    });
-    setIsModalOpen(true);
-  };
+  // Re-read / Sync Price Items directly from Designated Document
+  const handleSyncFromDoc = () => {
+    setIsSyncingDoc(true);
+    setTimeout(() => {
+      setIsSyncingDoc(false);
+      const now = new Date();
+      const nowStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+      setDocLastUpdatedTime(nowStr);
 
-  // Open modal for editing existing item
-  const handleOpenEditModal = (item: BOQPriceItem) => {
-    setEditingItem(item);
-    setFormData({
-      code: item.code,
-      name: item.name,
-      category: item.category,
-      spec: item.spec,
-      unit: item.unit,
-      basePriceUSD: item.basePriceUSD,
-      basePriceRMB: item.basePriceRMB,
-      wasteRatePercent: item.wasteRatePercent,
-      formulaDesc: item.formulaDesc,
-      tags: item.tags ? item.tags.join(', ') : ''
-    });
-    setIsModalOpen(true);
-  };
-
-  // Save Item
-  const handleSaveItem = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) return;
-
-    const parsedTags = formData.tags
-      .split(/[,， ]+/)
-      .map((t) => t.trim())
-      .filter(Boolean);
-
-    if (editingItem) {
+      // Refresh items updated timestamp to match document read time
       setPriceItems((prev) =>
-        prev.map((item) =>
-          item.id === editingItem.id
-            ? {
-                ...item,
-                code: formData.code,
-                name: formData.name,
-                category: formData.category,
-                spec: formData.spec,
-                unit: formData.unit,
-                basePriceUSD: Number(formData.basePriceUSD),
-                basePriceRMB: Number(formData.basePriceRMB),
-                wasteRatePercent: Number(formData.wasteRatePercent),
-                formulaDesc: formData.formulaDesc,
-                tags: parsedTags,
-                updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
-              }
-            : item
-        )
+        prev.map((item) => ({
+          ...item,
+          updatedAt: nowStr
+        }))
       );
-    } else {
-      const newItem: BOQPriceItem = {
-        id: `BOQ-NEW-${Date.now().toString().slice(-4)}`,
-        code: formData.code || `ITEM-${Math.floor(Math.random() * 900 + 100)}`,
-        name: formData.name,
-        category: formData.category,
-        spec: formData.spec || '标准定制规格',
-        unit: formData.unit,
-        currency: 'USD',
-        basePriceUSD: Number(formData.basePriceUSD),
-        basePriceRMB: Number(formData.basePriceRMB),
-        wasteRatePercent: Number(formData.wasteRatePercent),
-        formulaDesc: formData.formulaDesc,
-        status: '已生效',
-        updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-        tags: parsedTags.length > 0 ? parsedTags : ['新维护单价']
-      };
-      setPriceItems((prev) => [newItem, ...prev]);
-    }
-    setIsModalOpen(false);
-  };
 
-  // Sample batch import items for preview & quick testing
-  const sampleImportItems = useMemo(() => [
-    {
-      code: 'CAB-BIRCH-01',
-      name: '芬兰白桦多层实木板 (环保防潮)',
-      category: '柜体板材' as const,
-      spec: '18mm / E0级桦木全芯 / 耐磨耐水',
-      unit: '展开㎡' as const,
-      basePriceUSD: 48.5,
-      basePriceRMB: 349.2,
-      wasteRatePercent: 8,
-      formulaDesc: '展开面积(㎡) × 基准单价 × (1 + 损耗率 8%)',
-      tags: ['桦木实木', 'E0', '高抗弯'],
-      valid: true
-    },
-    {
-      code: 'DOOR-NANO-01',
-      name: '纳米抗指纹极哑亲肤门板',
-      category: '定制门板' as const,
-      spec: '20mm / 表面纳米微晶膜 / 4H高硬度',
-      unit: '投影㎡' as const,
-      basePriceUSD: 108.0,
-      basePriceRMB: 777.6,
-      wasteRatePercent: 5,
-      formulaDesc: '立面投影面积(㎡) × 门板基准单价 × (1 + 损耗 5%)',
-      tags: ['纳米抗指纹', '极哑', '肤感'],
-      valid: true
-    },
-    {
-      code: 'ACC-SLIDE-HETTICH',
-      name: '海蒂诗隐藏式阻尼静音滑轨',
-      category: '基础五金' as const,
-      spec: '500mm全拉出 / 40kg重型静音承重',
-      unit: '套' as const,
-      basePriceUSD: 16.8,
-      basePriceRMB: 120.96,
-      wasteRatePercent: 0,
-      formulaDesc: '每组抽屉配置 1 套滑轨',
-      tags: ['海蒂诗', '重型静音', '德国原装'],
-      valid: true
-    },
-    {
-      code: 'DOOR-ALUM-FRAME',
-      name: '极简黑钛铝框灰玻通高门',
-      category: '定制门板' as const,
-      spec: '4mm超白钢化灰玻 / 航空级极窄钛铝边框',
-      unit: '投影㎡' as const,
-      basePriceUSD: 142.0,
-      basePriceRMB: 1022.4,
-      wasteRatePercent: 5,
-      formulaDesc: '玻璃门投影面积(㎡) × 铝玻复合单价',
-      tags: ['极窄铝框', '灰玻', '通高门'],
-      valid: true
-    }
-  ], []);
-
-  // Quick load sample template data
-  const handleLoadSampleImport = () => {
-    setImportFile({ name: '外贸全屋定制_BOQ标准单价明细表.xlsx', size: '28.4 KB' });
-    setImportPreviewList(sampleImportItems);
-    showToast('已加载示例单价导入数据');
-  };
-
-  // Download Standard Template CSV with UTF-8 BOM
-  const handleDownloadTemplate = () => {
-    const header = '部件编码,部件名称,类别,规格环保标准,计价单位,外贸基准价(USD),损耗率(%),BOQ核算逻辑,标签特征\n';
-    const rows = [
-      'CAB-BIRCH-01,芬兰白桦多层实木板,柜体板材,18mm / E0级桦木芯 / 防水防潮,展开㎡,48.5,8,展开面积(㎡) × 基准单价 × (1 + 损耗率 8%),桦木;E0;高端',
-      'DOOR-NANO-01,纳米抗指纹极哑门板,定制门板,20mm / 肤感覆膜耐划伤,投影㎡,108.0,5,立面投影面积(㎡) × 门板基准单价 × (1 + 损耗 5%),纳米;抗指纹',
-      'ACC-SLIDE-01,海蒂诗隐藏式阻尼滑轨,基础五金,500mm / 40kg重型静音,套,16.8,0,每组抽屉配置1套,海蒂诗;原装进口'
-    ].join('\n');
-
-    const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', '外贸定制产品单价库标准导入模板.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showToast('已下载单价库标准导入模板文件');
-  };
-
-  // Handle uploaded file (supports CSV & Excel)
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImportFile({
-      name: file.name,
-      size: `${(file.size / 1024).toFixed(1)} KB`
-    });
-
-    if (file.name.endsWith('.csv')) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const text = event.target?.result as string;
-          const lines = text.split(/\r?\n/).filter(Boolean);
-          if (lines.length > 1) {
-            const parsed = lines.slice(1).map((line, idx) => {
-              const cols = line.split(',');
-              const usd = Number(cols[5]) || 38;
-              return {
-                code: cols[0]?.trim() || `ITEM-IMP-${Date.now().toString().slice(-4)}-${idx + 1}`,
-                name: cols[1]?.trim() || `导入部件 ${idx + 1}`,
-                category: (cols[2]?.trim() as any) || '柜体板材',
-                spec: cols[3]?.trim() || '标准外贸定制规格',
-                unit: (cols[4]?.trim() as any) || '展开㎡',
-                basePriceUSD: usd,
-                basePriceRMB: +(usd * exchangeRate).toFixed(2),
-                wasteRatePercent: Number(cols[6]) || 5,
-                formulaDesc: cols[7]?.trim() || '展开面积(㎡) × 基准单价',
-                tags: cols[8] ? cols[8].split(';').map((t) => t.trim()) : ['导入数据'],
-                valid: true
-              };
-            });
-            setImportPreviewList(parsed);
-            showToast(`已成功识别 ${parsed.length} 条待导入单价数据`);
-            return;
-          }
-        } catch {
-          // fallback
-        }
-        setImportPreviewList(sampleImportItems);
-        showToast('已完成文件解析并生成导入预览');
-      };
-      reader.readAsText(file);
-    } else {
-      // For Excel files (.xlsx / .xls), provide standard parsed preview
-      setImportPreviewList(sampleImportItems);
-      showToast('已成功解析 Excel 格式并生成导入预览');
-    }
-  };
-
-  // Confirm and commit batch import
-  const handleConfirmImport = () => {
-    if (importPreviewList.length === 0) return;
-
-    setPriceItems((prev) => {
-      let updated = [...prev];
-
-      importPreviewList.forEach((imported) => {
-        const newItem: BOQPriceItem = {
-          id: `BOQ-IMP-${Date.now().toString().slice(-4)}-${Math.random().toString(36).substr(2, 4)}`,
-          code: imported.code,
-          name: imported.name,
-          category: imported.category,
-          spec: imported.spec,
-          unit: imported.unit,
-          currency: 'USD',
-          basePriceUSD: imported.basePriceUSD,
-          basePriceRMB: imported.basePriceRMB,
-          wasteRatePercent: imported.wasteRatePercent,
-          formulaDesc: imported.formulaDesc,
-          status: '已生效',
-          updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-          tags: imported.tags
-        };
-
-        const existingIdx = updated.findIndex((i) => i.code === imported.code);
-
-        if (existingIdx >= 0) {
-          if (duplicateHandling === 'overwrite') {
-            updated[existingIdx] = { ...updated[existingIdx], ...newItem, id: updated[existingIdx].id };
-          } else if (duplicateHandling === 'rename') {
-            newItem.code = `${newItem.code}-NEW`;
-            updated = [newItem, ...updated];
-          }
-          // 'skip' will leave existing item untouched
-        } else {
-          updated = [newItem, ...updated];
-        }
-      });
-
-      return updated;
-    });
-
-    showToast(`成功导入 ${importPreviewList.length} 条单价项数据！`);
-    setIsImportModalOpen(false);
-    setImportFile(null);
-    setImportPreviewList([]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+      showToast(`已成功从指定文档《${documentSourceInfo.docName}》读取最新 ${priceItems.length} 条单价定额数据！`);
+    }, 850);
   };
 
   // Toggle Rule Status
@@ -711,6 +435,25 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
     setTimeout(() => setCopiedSuccess(false), 2500);
   };
 
+  // If subView is 汇率管理, render ExchangeRateSubModule
+  if (currentSubView === '汇率管理') {
+    return (
+      <ExchangeRateSubModule
+        currentBaseRate={exchangeRate}
+        onUpdateBaseRate={(newRate) => {
+          setExchangeRate(newRate);
+          // Recalculate priceItems basePriceRMB if needed
+          setPriceItems((prev) =>
+            prev.map((item) => ({
+              ...item,
+              basePriceRMB: +(item.basePriceUSD * newRate).toFixed(2)
+            }))
+          );
+        }}
+      />
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
       
@@ -734,21 +477,23 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
             <>
               <button
                 type="button"
-                onClick={() => setIsImportModalOpen(true)}
+                onClick={() => setIsDocConfigModalOpen(true)}
                 className="h-9 px-4 rounded-full bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
-                title="批量导入 Excel / CSV 单价数据"
+                title="查看外部指定单价文档数据源配置"
               >
-                <Upload className="w-3.5 h-3.5 text-slate-600" />
-                <span>批量导入</span>
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                <span>源文档配置</span>
               </button>
 
               <button
                 type="button"
-                onClick={handleOpenAddModal}
+                onClick={handleSyncFromDoc}
+                disabled={isSyncingDoc}
                 className="h-9 px-4.5 rounded-full bg-[#EA3A20] text-white hover:bg-[#d6341c] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
+                title="从指定文档重新读取最新单价定额"
               >
-                <Plus className="w-4 h-4" />
-                <span>新建单价项</span>
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncingDoc ? 'animate-spin' : ''}`} />
+                <span>{isSyncingDoc ? '正在读取...' : '从指定文档重新读取'}</span>
               </button>
             </>
           ) : (
@@ -779,6 +524,65 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
       {/* ======================= TAB 1: 单价库 ======================= */}
       {(currentSubView === '单价库' || currentSubView === 'BOQ单价库') && (
         <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
+
+          {/* Document Source Banner & Latest Update Time */}
+          <div className="bg-white rounded-2xl p-3.5 border border-slate-200/90 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold shrink-0 border border-emerald-200/60">
+                <FileSpreadsheet className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold text-slate-900 text-sm">{documentSourceInfo.docName}</span>
+                  <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-medium border border-slate-200">
+                    工作表: {documentSourceInfo.sheetName}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200/60 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <span>指定文档直读模式 (只读)</span>
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+                  <span>数据源：<span className="text-slate-700 font-medium">{documentSourceInfo.sourceDept}</span></span>
+                  <span>•</span>
+                  <span>当前已加载：<strong className="text-slate-800">{priceItems.length}</strong> 条标准单价定额</span>
+                  <span>•</span>
+                  <span className="text-amber-700 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
+                    单价数据由源文档统一维护，系统只读解析，保障外贸报价基准绝对统一
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Latest Update Time Card */}
+            <div className="flex items-center gap-3 shrink-0 self-start lg:self-auto">
+              <div className="bg-red-50/70 border border-red-100/90 rounded-xl px-4 py-2 flex items-center gap-3 shadow-2xs">
+                <div className="w-8 h-8 rounded-lg bg-[#EA3A20] text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <span>数据最新更新时间</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  </div>
+                  <div className="text-sm font-mono font-extrabold text-[#EA3A20] tracking-tight mt-0.5">
+                    {docLastUpdatedTime}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSyncFromDoc}
+                disabled={isSyncingDoc}
+                className="h-10 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                title="立即从指定文档重新读取最新单价"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncingDoc ? 'animate-spin' : ''}`} />
+                <span>重新读取</span>
+              </button>
+            </div>
+          </div>
           
           {/* Top Filter & Search Controls */}
           <div className="flex items-center justify-between gap-4 shrink-0 bg-white p-3 rounded-2xl border border-slate-100/90 shadow-2xs">
@@ -885,7 +689,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                     <th className="py-3.5 px-3 font-bold text-slate-900 text-center">损耗率</th>
                     <th className="py-3.5 px-3 font-bold text-slate-900">BOQ核算逻辑与公式</th>
                     <th className="py-3.5 px-3 font-bold text-slate-900 text-center">状态</th>
-                    <th className="py-3.5 pr-6 pl-3 font-bold text-slate-900 text-right">操作</th>
+                    <th className="py-3.5 pr-6 pl-3 font-bold text-slate-900 text-right">文档明细</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100/80 text-xs">
@@ -956,23 +760,21 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                           </span>
                         </td>
                         <td className="py-3 px-3 text-center">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                            item.status === '已生效'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
-                              : 'bg-slate-100 text-slate-500'
-                          }`}>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            {item.status}
+                            文档同步
                           </span>
                         </td>
                         <td className="py-3 pr-6 pl-3 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
-                              onClick={() => handleOpenEditModal(item)}
-                              className="p-1 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
-                              title="编辑单价"
+                              type="button"
+                              onClick={() => setSelectedDetailItem(item)}
+                              className="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors text-[11px] font-bold flex items-center gap-1 border border-slate-200/60 bg-white"
+                              title="查看该单价在源文档中的完整映射属性"
                             >
-                              <Edit2 className="w-3.5 h-3.5" />
+                              <Eye className="w-3.5 h-3.5 text-slate-500" />
+                              <span>详情</span>
                             </button>
                           </div>
                         </td>
@@ -1412,448 +1214,214 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
         </div>
       )}
 
-      {/* ======================= MODAL: 新建/编辑单价项 ======================= */}
-      {isModalOpen && (
+      {/* ======================= MODAL: 源文档连接与映射配置 ======================= */}
+      {isDocConfigModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scale-in">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <h3 className="text-base font-bold text-slate-900">
-                {editingItem ? '编辑 BOQ 单价项' : '新建 BOQ 单价项'}
-              </h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 text-sm font-bold cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveItem} className="space-y-3.5 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">部件编号 (Code)</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.code}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                    className="w-full h-8 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-mono font-bold focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">定制类别</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-                    className="w-full h-8 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                  >
-                    <option value="柜体板材">柜体板材</option>
-                    <option value="定制门板">定制门板</option>
-                    <option value="台面石材">台面石材</option>
-                    <option value="基础五金">基础五金</option>
-                    <option value="功能配件">功能配件</option>
-                    <option value="出口包装">出口包装</option>
-                    <option value="人工安装">人工安装</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">部件名称</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="例如：爱格板 E0级 柜体板..."
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full h-8 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">规格/材质/环保等级说明</label>
-                <input
-                  type="text"
-                  placeholder="例如：18mm / 双饰面耐磨层 / E0级环保..."
-                  value={formData.spec}
-                  onChange={(e) => setFormData({ ...formData, spec: e.target.value })}
-                  className="w-full h-8 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">计价单位</label>
-                  <select
-                    value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value as any })}
-                    className="w-full h-8 px-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800"
-                  >
-                    <option value="展开㎡">展开㎡</option>
-                    <option value="投影㎡">投影㎡</option>
-                    <option value="延米">延米</option>
-                    <option value="个">个</option>
-                    <option value="套">套</option>
-                    <option value="米">米</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">外贸单价 (USD)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    required
-                    value={formData.basePriceUSD}
-                    onChange={(e) => {
-                      const usd = Number(e.target.value);
-                      setFormData({
-                        ...formData,
-                        basePriceUSD: usd,
-                        basePriceRMB: +(usd * exchangeRate).toFixed(1)
-                      });
-                    }}
-                    className="w-full h-8 px-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">损耗率 (%)</label>
-                  <input
-                    type="number"
-                    value={formData.wasteRatePercent}
-                    onChange={(e) => setFormData({ ...formData, wasteRatePercent: Number(e.target.value) })}
-                    className="w-full h-8 px-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-mono font-bold"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">BOQ核算逻辑/公式备注</label>
-                <input
-                  type="text"
-                  value={formData.formulaDesc}
-                  onChange={(e) => setFormData({ ...formData, formulaDesc: e.target.value })}
-                  className="w-full h-8 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-mono text-[11px]"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">标签特征 (逗号分隔)</label>
-                <input
-                  type="text"
-                  placeholder="如: E0, 激光封边, 原装进口"
-                  value={formData.tags}
-                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  className="w-full h-8 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800"
-                />
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold cursor-pointer"
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#EA3A20] text-white hover:bg-[#d6341c] font-bold shadow-xs cursor-pointer"
-                >
-                  保存单价项
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ======================= BATCH IMPORT MODAL ======================= */}
-      {isImportModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold shadow-xs">
-                  <Upload className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                  <FileSpreadsheet className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">批量导入单价库数据</h3>
-                  <p className="text-[11px] text-slate-400">支持上传 Excel (.xlsx / .xls) 或 CSV 文件，批量维护外贸定制产品单价</p>
+                  <h3 className="text-sm font-bold text-slate-900">指定单价源文档配置与同步状态</h3>
+                  <p className="text-[11px] text-slate-400">单价定额数据直读服务</p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setIsImportModalOpen(false);
-                  setImportFile(null);
-                  setImportPreviewList([]);
-                }}
-                className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors"
+                onClick={() => setIsDocConfigModalOpen(false)}
+                className="w-7 h-7 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 overflow-y-auto space-y-4 text-xs">
-              
-              {/* Step 1: Template Download Banner */}
-              <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white border border-slate-200/90 text-slate-600 flex items-center justify-center shrink-0 shadow-2xs">
-                    <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-slate-800">下载标准导入模板</div>
-                    <div className="text-[11px] text-slate-500">
-                      包含部件编码、名称、类别、材质规格、外贸基准价(USD)、损耗率等必填字段
-                    </div>
-                  </div>
+            <div className="space-y-3.5 text-xs">
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">指定源文档名称:</span>
+                  <span className="font-bold text-slate-900">{documentSourceInfo.docName}</span>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handleDownloadTemplate}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 font-bold text-xs flex items-center gap-1.5 shrink-0 shadow-2xs transition-colors cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5 text-slate-500" />
-                  <span>下载模板 (.csv)</span>
-                </button>
-              </div>
-
-              {/* Step 2: Upload Area */}
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">上传数据文件</label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv, .xlsx, .xls"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                />
-
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const file = e.dataTransfer.files?.[0];
-                    if (file) {
-                      setImportFile({
-                        name: file.name,
-                        size: `${(file.size / 1024).toFixed(1)} KB`
-                      });
-                      if (file.name.endsWith('.csv')) {
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                          const text = ev.target?.result as string;
-                          const lines = text.split(/\r?\n/).filter(Boolean);
-                          if (lines.length > 1) {
-                            const parsed = lines.slice(1).map((line, idx) => {
-                              const cols = line.split(',');
-                              const usd = Number(cols[5]) || 38;
-                              return {
-                                code: cols[0]?.trim() || `ITEM-IMP-${Date.now().toString().slice(-4)}-${idx + 1}`,
-                                name: cols[1]?.trim() || `导入部件 ${idx + 1}`,
-                                category: (cols[2]?.trim() as any) || '柜体板材',
-                                spec: cols[3]?.trim() || '标准外贸定制规格',
-                                unit: (cols[4]?.trim() as any) || '展开㎡',
-                                basePriceUSD: usd,
-                                basePriceRMB: +(usd * exchangeRate).toFixed(2),
-                                wasteRatePercent: Number(cols[6]) || 5,
-                                formulaDesc: cols[7]?.trim() || '展开面积(㎡) × 基准单价',
-                                tags: cols[8] ? cols[8].split(';').map((t) => t.trim()) : ['导入数据'],
-                                valid: true
-                              };
-                            });
-                            setImportPreviewList(parsed);
-                            showToast(`已成功识别 ${parsed.length} 条待导入单价数据`);
-                            return;
-                          }
-                          setImportPreviewList(sampleImportItems);
-                        };
-                        reader.readAsText(file);
-                      } else {
-                        setImportPreviewList(sampleImportItems);
-                        showToast('已成功解析 Excel 格式并生成导入预览');
-                      }
-                    }
-                  }}
-                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
-                    importFile
-                      ? 'border-emerald-300 bg-emerald-50/40'
-                      : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-50'
-                  }`}
-                >
-                  {importFile ? (
-                    <div className="flex items-center justify-between px-3">
-                      <div className="flex items-center gap-2.5 text-left">
-                        <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                          <CheckCircle2 className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-800 flex items-center gap-2">
-                            <span>{importFile.name}</span>
-                            <span className="text-[10px] text-slate-400 font-mono">({importFile.size})</span>
-                          </div>
-                          <div className="text-[11px] text-emerald-600 font-medium">
-                            文件校验成功，已就绪可导入
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          fileInputRef.current?.click();
-                        }}
-                        className="text-xs font-bold text-slate-500 hover:text-slate-800 underline cursor-pointer"
-                      >
-                        重新选择
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5">
-                      <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-1">
-                        <FileUp className="w-5 h-5 text-slate-600" />
-                      </div>
-                      <p className="font-bold text-slate-700">点击或将 Excel / CSV 文件拖拽到此处</p>
-                      <p className="text-[11px] text-slate-400">
-                        支持 .xlsx, .xls, .csv 格式，单次建议不超过 500 条
-                      </p>
-                      <div className="pt-2">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleLoadSampleImport();
-                          }}
-                          className="px-3 py-1 bg-white border border-slate-200 hover:border-slate-300 rounded-full text-slate-600 hover:text-slate-900 font-semibold text-[11px] shadow-2xs cursor-pointer inline-flex items-center gap-1.5"
-                        >
-                          <Sparkles className="w-3 h-3 text-[#EA3A20]" />
-                          <span>一键载入测试示例数据</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">读取工作表 (Sheet):</span>
+                  <span className="font-mono font-semibold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                    {documentSourceInfo.sheetName}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">维护责任部门:</span>
+                  <span className="text-slate-700 font-semibold">{documentSourceInfo.sourceDept}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">文档存储路径:</span>
+                  <span className="font-mono text-[10px] text-slate-600 truncate max-w-[240px]">
+                    {documentSourceInfo.docUrl}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">同步拉取策略:</span>
+                  <span className="text-slate-700 font-medium">{documentSourceInfo.syncStrategy}</span>
                 </div>
               </div>
 
-              {/* Step 3: Duplicate Handling & Data Preview */}
-              {importPreviewList.length > 0 && (
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                      <span>数据预览与校验</span>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100">
-                        {importPreviewList.length} 条有效记录
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-                      <span>重复部件编码处理:</span>
-                      <select
-                        value={duplicateHandling}
-                        onChange={(e) => setDuplicateHandling(e.target.value as any)}
-                        className="h-7 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                      >
-                        <option value="overwrite">覆盖已有单价</option>
-                        <option value="skip">跳过重复项</option>
-                        <option value="rename">自动生成新编码</option>
-                      </select>
-                    </div>
+              {/* Latest Update Time Card */}
+              <div className="p-3.5 bg-red-50/70 border border-red-100 rounded-2xl flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <span>数据最新更新时间</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   </div>
-
-                  <div className="border border-slate-200 rounded-xl overflow-hidden max-h-48 overflow-y-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-[11px] sticky top-0">
-                        <tr>
-                          <th className="py-2 px-3">部件编码</th>
-                          <th className="py-2 px-3">部件名称</th>
-                          <th className="py-2 px-2.5">类别</th>
-                          <th className="py-2 px-2.5">单位</th>
-                          <th className="py-2 px-3 text-right">单价 (USD)</th>
-                          <th className="py-2 px-2.5 text-center">损耗</th>
-                          <th className="py-2 px-2.5 text-center">校验状态</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 text-slate-700">
-                        {importPreviewList.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/60">
-                            <td className="py-2 px-3 font-mono font-bold text-slate-800 text-[11px]">{row.code}</td>
-                            <td className="py-2 px-3 font-semibold text-slate-900">{row.name}</td>
-                            <td className="py-2 px-2.5">
-                              <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px]">
-                                {row.category}
-                              </span>
-                            </td>
-                            <td className="py-2 px-2.5 text-slate-500">{row.unit}</td>
-                            <td className="py-2 px-3 text-right font-mono font-bold text-emerald-700">
-                              ${row.basePriceUSD.toFixed(2)}
-                            </td>
-                            <td className="py-2 px-2.5 text-center font-mono text-slate-500">{row.wasteRatePercent}%</td>
-                            <td className="py-2 px-2.5 text-center">
-                              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-bold">
-                                <Check className="w-3 h-3" />
-                                <span>通过</span>
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="text-base font-mono font-extrabold text-[#EA3A20] mt-0.5">
+                    {docLastUpdatedTime}
                   </div>
                 </div>
-              )}
+                <div className="text-right">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100/70 text-emerald-800">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>只读已映射 ({priceItems.length} 项)</span>
+                  </span>
+                </div>
+              </div>
 
+              <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/60 text-[11px] text-amber-800 flex items-start gap-2">
+                <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  本系统无需在前端手动添加、修改或维护单价数据。系统直接按指定文档结构自动解析并驱动报价计算，确保报价与供应链定额完全一致。
+                </div>
+              </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
-              <div className="text-[11px] text-slate-500">
-                {importPreviewList.length > 0 ? (
-                  <span>
-                    待导入 <strong className="text-slate-800">{importPreviewList.length}</strong> 项，确认后将即时写入单价库并生效
-                  </span>
-                ) : (
-                  <span>请选择或拖拽文件进行数据解析</span>
-                )}
-              </div>
-
+            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] text-slate-400">
+                下次计划轮询: 10分钟后
+              </span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsImportModalOpen(false);
-                    setImportFile(null);
-                    setImportPreviewList([]);
-                  }}
-                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200/70 font-bold cursor-pointer"
+                  onClick={() => setIsDocConfigModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold text-xs cursor-pointer"
                 >
-                  取消
+                  关闭
                 </button>
                 <button
                   type="button"
-                  onClick={handleConfirmImport}
-                  disabled={importPreviewList.length === 0}
-                  className={`px-5 py-2 rounded-xl font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors ${
-                    importPreviewList.length > 0
-                      ? 'bg-[#EA3A20] text-white hover:bg-[#d6341c]'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                  }`}
+                  onClick={() => {
+                    handleSyncFromDoc();
+                    setIsDocConfigModalOpen(false);
+                  }}
+                  disabled={isSyncingDoc}
+                  className="px-4 py-2 rounded-xl bg-[#EA3A20] text-white hover:bg-[#d6341c] font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>确认导入并生效</span>
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncingDoc ? 'animate-spin' : ''}`} />
+                  <span>从指定文档重新读取</span>
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
 
+      {/* ======================= MODAL: 查看单价项源文档映射明细 ======================= */}
+      {selectedDetailItem && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scale-in">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">单价项源文档映射明细 (只读)</h3>
+                  <p className="text-[11px] text-slate-400 font-mono">{selectedDetailItem.code}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedDetailItem(null)}
+                className="w-7 h-7 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 grid grid-cols-2 gap-2.5">
+                <div>
+                  <span className="text-slate-400 text-[11px] block">部件名称</span>
+                  <span className="font-bold text-slate-900 text-sm mt-0.5 block">{selectedDetailItem.name}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[11px] block">定制类别</span>
+                  <span className="font-bold text-slate-800 mt-0.5 block">{selectedDetailItem.category}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[11px] block">规格 / 环保标准</span>
+                  <span className="text-slate-700 font-medium mt-0.5 block">{selectedDetailItem.spec}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[11px] block">计价单位</span>
+                  <span className="font-bold text-slate-800 mt-0.5 block">{selectedDetailItem.unit}</span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 grid grid-cols-2 gap-2.5">
+                <div>
+                  <span className="text-slate-400 text-[11px] block">外贸基准单价 (USD)</span>
+                  <span className="font-mono font-extrabold text-[#EA3A20] text-base mt-0.5 block">
+                    ${selectedDetailItem.basePriceUSD.toFixed(2)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[11px] block">折算基准单价 (RMB)</span>
+                  <span className="font-mono font-bold text-slate-800 text-base mt-0.5 block">
+                    ¥{selectedDetailItem.basePriceRMB.toFixed(2)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[11px] block">定额损耗率</span>
+                  <span className="font-mono font-bold text-slate-700 mt-0.5 block">{selectedDetailItem.wasteRatePercent}%</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[11px] block">核算状态</span>
+                  <span className="inline-flex items-center gap-1 text-emerald-700 font-bold mt-0.5">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>已生效同步</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
+                <span className="text-slate-400 text-[11px] block">BOQ核算逻辑与计算公式</span>
+                <p className="font-mono text-slate-800 text-xs font-medium">{selectedDetailItem.formulaDesc}</p>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between text-[11px]">
+                <div>
+                  <span className="text-slate-400 block">数据源文档</span>
+                  <span className="font-bold text-slate-800">{documentSourceInfo.docName}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-slate-400 block">数据最新更新时间</span>
+                  <span className="font-mono font-bold text-[#EA3A20]">{docLastUpdatedTime}</span>
+                </div>
+              </div>
+
+              <div className="p-2.5 bg-slate-100 rounded-xl text-slate-500 text-[11px] flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 shrink-0" />
+                <span>此数据项由企业财务与工程指定文档驱动，不可在本地编辑修改。</span>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedDetailItem(null)}
+                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer"
+              >
+                确定
+              </button>
+            </div>
           </div>
         </div>
       )}

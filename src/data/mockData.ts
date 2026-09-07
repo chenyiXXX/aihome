@@ -11,6 +11,8 @@ import {
   KBVersion,
   AgentStatMetric,
   EmployeeItem,
+  WeComDept,
+  OrgDeptNode,
   RoleConfig,
   SystemAgentConfig,
   OperationLog,
@@ -18,7 +20,9 @@ import {
   ContentGenLog,
   BOQPriceItem,
   BOQPricingRule,
-  BOQLineItem
+  BOQLineItem,
+  ExchangeRateItem,
+  ExchangeRateLogItem
 } from '../types';
 
 // Mock 2.1 & 2.2 Inquiries (售前询盘)
@@ -2953,51 +2957,357 @@ export const initialAgentStats: AgentStatMetric[] = [
   { date: '08-17', salesInquiriesHandled: 91, salesAiResolutionRate: 97, marketingPostsGenerated: 35, marketingInquiryLeads: 82, avgResponseSeconds: 2.6 }
 ];
 
-// Mock 7.1 & 7.2 Employees & Roles (员工权限)
+// Mock WeCom Organization Structure Tree (企业微信组织架构 - 严格对照截图)
+export const initialOrgTree: OrgDeptNode[] = [
+  {
+    id: 'product_center',
+    name: '产品中心',
+    hasChildren: true,
+    children: [
+      { id: 'design_dept', name: '设计部', parentId: 'product_center', hasChildren: false },
+      { id: 'pm_dept', name: '产品管理部', parentId: 'product_center', hasChildren: false },
+      { id: 'research_inst', name: '研究所', parentId: 'product_center', hasChildren: false },
+      { id: 'marketing_dept', name: '市场部', parentId: 'product_center', hasChildren: false }
+    ]
+  },
+  {
+    id: 'mfg_center',
+    name: '制造中心',
+    hasChildren: true,
+    children: [
+      { id: 'mfg_assembly', name: '装配车间', parentId: 'mfg_center', hasChildren: false },
+      { id: 'mfg_supply', name: '供应链部', parentId: 'mfg_center', hasChildren: false }
+    ]
+  },
+  {
+    id: 'qa_center',
+    name: '流程与质量',
+    hasChildren: true,
+    children: [
+      { id: 'qa_qc', name: '品质控制部', parentId: 'qa_center', hasChildren: false },
+      { id: 'qa_audit', name: '流程体系部', parentId: 'qa_center', hasChildren: false }
+    ]
+  },
+  {
+    id: 'hr_center',
+    name: '人力行政',
+    hasChildren: true,
+    children: [
+      { id: 'hr_recruitment', name: '招聘与培训组', parentId: 'hr_center', hasChildren: false },
+      { id: 'hr_admin', name: '行政综合组', parentId: 'hr_center', hasChildren: false }
+    ]
+  },
+  {
+    id: 'it_center',
+    name: '信息',
+    hasChildren: true,
+    children: [
+      { id: 'it_infra', name: '系统网络组', parentId: 'it_center', hasChildren: false },
+      { id: 'it_apps', name: '企业信息化组', parentId: 'it_center', hasChildren: false }
+    ]
+  },
+  {
+    id: 'aftersales_center',
+    name: '售后',
+    hasChildren: true,
+    children: [
+      { id: 'aftersales_tech', name: '技术支持部', parentId: 'aftersales_center', hasChildren: false },
+      { id: 'aftersales_svc', name: '客户服务部', parentId: 'aftersales_center', hasChildren: false }
+    ]
+  },
+  {
+    id: 'fin_center',
+    name: '财务',
+    hasChildren: true,
+    children: [
+      { id: 'fin_acc', name: '财务核算部', parentId: 'fin_center', hasChildren: false },
+      { id: 'fin_tax', name: '税务与资金部', parentId: 'fin_center', hasChildren: false }
+    ]
+  }
+];
+
+// Flat list for compatibility & count
+export const initialWeComDepts: WeComDept[] = [
+  { id: 'product_center', name: '产品中心', memberCount: 8, hasChildren: true },
+  { id: 'design_dept', name: '设计部', parentId: 'product_center', memberCount: 2, hasChildren: false },
+  { id: 'pm_dept', name: '产品管理部', parentId: 'product_center', memberCount: 2, hasChildren: false },
+  { id: 'research_inst', name: '研究所', parentId: 'product_center', memberCount: 1, hasChildren: false },
+  { id: 'marketing_dept', name: '市场部', parentId: 'product_center', memberCount: 2, hasChildren: false },
+  { id: 'mfg_center', name: '制造中心', memberCount: 2, hasChildren: true },
+  { id: 'qa_center', name: '流程与质量', memberCount: 1, hasChildren: true },
+  { id: 'hr_center', name: '人力行政', memberCount: 1, hasChildren: true },
+  { id: 'it_center', name: '信息', memberCount: 1, hasChildren: true },
+  { id: 'aftersales_center', name: '售后', memberCount: 1, hasChildren: true },
+  { id: 'fin_center', name: '财务', memberCount: 1, hasChildren: true }
+];
+
+// Mock 7.1 & 7.2 Employees & Roles (员工权限 - 对接企业微信通讯录)
 export const initialEmployees: EmployeeItem[] = [
   {
     id: 'EMP-001',
-    name: 'Chen Yi (陈总)',
+    name: '陈逸',
     email: '379411495chenyi@gmail.com',
-    department: '外贸事业部',
+    department: '产品中心',
+    deptId: 'product_center',
+    deptPath: '产品中心',
+    isDeptLeader: true,
+    wecomUserId: 'ChenYi_001',
+    wecomMobile: '13800138001',
+    wecomPosition: '产品中心总监',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
     role: '超级管理员',
-    status: '在职 (正常)',
+    status: '启用',
     lastActive: '2026-08-17 20:55',
     aiQuotaLimit: 10000,
     aiQuotaUsed: 1420
   },
   {
     id: 'EMP-002',
-    name: 'Sophia Wang',
+    name: '王淑华',
     email: 'sophia.wang@homecraft-ai.com',
-    department: '售前客服组',
+    department: '产品管理部',
+    deptId: 'pm_dept',
+    deptPath: '产品中心 / 产品管理部',
+    isDeptLeader: true,
+    wecomUserId: 'Sophia_Wang',
+    wecomMobile: '13900139002',
+    wecomPosition: '产品管理部主管',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
     role: '外贸主管',
-    status: '在职 (正常)',
+    status: '启用',
     lastActive: '2026-08-17 20:42',
     aiQuotaLimit: 3000,
     aiQuotaUsed: 890
   },
   {
     id: 'EMP-003',
-    name: 'Alex Schmidt',
-    email: 'alex.s@homecraft-ai.com',
-    department: '海外业务一组',
+    name: '张晓雅',
+    email: 'chloe.z@homecraft-ai.com',
+    department: '设计部',
+    deptId: 'design_dept',
+    deptPath: '产品中心 / 设计部',
+    isDeptLeader: false,
+    wecomUserId: 'Chloe_Zhang',
+    wecomMobile: '13400134006',
+    wecomPosition: '资深工业设计工程师',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '内容审稿员',
+    status: '启用',
+    lastActive: '2026-08-17 15:10',
+    aiQuotaLimit: 2500,
+    aiQuotaUsed: 540
+  },
+  {
+    id: 'EMP-004',
+    name: '卢卡斯',
+    email: 'lucas.m@homecraft-ai.com',
+    department: '设计部',
+    deptId: 'design_dept',
+    deptPath: '产品中心 / 设计部',
+    isDeptLeader: false,
+    wecomUserId: 'Lucas_Miller',
+    wecomMobile: '13500135005',
+    wecomPosition: 'UI/UX体验设计师',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
     role: '销售业务员',
-    status: '在职 (正常)',
+    status: '启用',
+    lastActive: '2026-08-17 16:30',
+    aiQuotaLimit: 1500,
+    aiQuotaUsed: 310
+  },
+  {
+    id: 'EMP-005',
+    name: '施密特',
+    email: 'alex.s@homecraft-ai.com',
+    department: '市场部',
+    deptId: 'marketing_dept',
+    deptPath: '产品中心 / 市场部',
+    isDeptLeader: false,
+    wecomUserId: 'Alex_Schmidt',
+    wecomMobile: '13700137003',
+    wecomPosition: '海外市场调研经理',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '销售业务员',
+    status: '启用',
     lastActive: '2026-08-17 18:12',
     aiQuotaLimit: 1500,
     aiQuotaUsed: 430
   },
   {
-    id: 'EMP-004',
-    name: 'Elena Rostova',
+    id: 'EMP-006',
+    name: '叶莲娜',
     email: 'elena.r@homecraft-ai.com',
-    department: '海外品牌推广部',
+    department: '研究所',
+    deptId: 'research_inst',
+    deptPath: '产品中心 / 研究所',
+    isDeptLeader: true,
+    wecomUserId: 'Elena_Rostova',
+    wecomMobile: '13600136004',
+    wecomPosition: '智能烹饪算法与温控研究员',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
     role: '推广运营官',
-    status: '在职 (正常)',
+    status: '启用',
     lastActive: '2026-08-17 17:05',
     aiQuotaLimit: 2000,
     aiQuotaUsed: 620
+  },
+  {
+    id: 'EMP-007',
+    name: '万斯',
+    email: 'marcus.v@homecraft-ai.com',
+    department: '产品管理部',
+    deptId: 'pm_dept',
+    deptPath: '产品中心 / 产品管理部',
+    isDeptLeader: false,
+    wecomUserId: 'Marcus_Vance',
+    wecomMobile: '13300133007',
+    wecomPosition: '商用厨电高级产品经理',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '销售业务员',
+    status: '启用',
+    lastActive: '2026-08-17 14:20',
+    aiQuotaLimit: 1500,
+    aiQuotaUsed: 780
+  },
+  {
+    id: 'EMP-008',
+    name: '林德伟',
+    email: 'david.lin@homecraft-ai.com',
+    department: '市场部',
+    deptId: 'marketing_dept',
+    deptPath: '产品中心 / 市场部',
+    isDeptLeader: false,
+    wecomUserId: 'David_Lin',
+    wecomMobile: '13200132008',
+    wecomPosition: '市场增长与用户调研专员',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '推广运营官',
+    status: '已禁用',
+    lastActive: '2026-08-17 11:45',
+    aiQuotaLimit: 2000,
+    aiQuotaUsed: 890
+  },
+  {
+    id: 'EMP-009',
+    name: '周敏',
+    email: 'emma.z@utech-kitchen.com',
+    department: '信息',
+    deptId: 'it_center',
+    deptPath: '信息',
+    isDeptLeader: true,
+    wecomUserId: 'Emma_Zhou',
+    wecomMobile: '13100131009',
+    wecomPosition: '企业信息化系统架构师',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '内容审稿员',
+    status: '启用',
+    lastActive: '2026-08-17 10:30',
+    aiQuotaLimit: 2500,
+    aiQuotaUsed: 420
+  },
+  {
+    id: 'EMP-010',
+    name: '刘凯',
+    email: 'kevin.l@utech-kitchen.com',
+    department: '制造中心',
+    deptId: 'mfg_center',
+    deptPath: '制造中心',
+    isDeptLeader: true,
+    wecomUserId: 'Kevin_Liu',
+    wecomMobile: '13000130010',
+    wecomPosition: '高端智能厨电装配主管',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '销售业务员',
+    status: '启用',
+    lastActive: '2026-08-17 09:15',
+    aiQuotaLimit: 2000,
+    aiQuotaUsed: 1120
+  },
+  {
+    id: 'EMP-011',
+    name: '宋磊',
+    email: 'frank.s@utech-kitchen.com',
+    department: '流程与质量',
+    deptId: 'qa_center',
+    deptPath: '流程与质量',
+    isDeptLeader: true,
+    wecomUserId: 'Frank_Song',
+    wecomMobile: '13000130011',
+    wecomPosition: '质量控制与合规高级经理',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '外贸主管',
+    status: '启用',
+    lastActive: '2026-08-17 10:15',
+    aiQuotaLimit: 3000,
+    aiQuotaUsed: 520
+  },
+  {
+    id: 'EMP-012',
+    name: '赵雅丽',
+    email: 'grace.z@utech-kitchen.com',
+    department: '人力行政',
+    deptId: 'hr_center',
+    deptPath: '人力行政',
+    isDeptLeader: true,
+    wecomUserId: 'Grace_Zhao',
+    wecomMobile: '13000130012',
+    wecomPosition: '人事行政组织发展总监',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '超级管理员',
+    status: '启用',
+    lastActive: '2026-08-17 09:50',
+    aiQuotaLimit: 4000,
+    aiQuotaUsed: 670
+  },
+  {
+    id: 'EMP-013',
+    name: '孙恒',
+    email: 'henry.s@utech-kitchen.com',
+    department: '售后',
+    deptId: 'aftersales_center',
+    deptPath: '售后',
+    isDeptLeader: true,
+    wecomUserId: 'Henry_Sun',
+    wecomMobile: '13000130013',
+    wecomPosition: '海外技术支持与备件主管',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '销售业务员',
+    status: '启用',
+    lastActive: '2026-08-17 11:20',
+    aiQuotaLimit: 2500,
+    aiQuotaUsed: 890
+  },
+  {
+    id: 'EMP-014',
+    name: '钱馨',
+    email: 'cynthia.q@utech-kitchen.com',
+    department: '财务',
+    deptId: 'fin_center',
+    deptPath: '财务',
+    isDeptLeader: true,
+    wecomUserId: 'Cynthia_Qian',
+    wecomMobile: '13000130014',
+    wecomPosition: '外贸结算与税务资金总监',
+    wecomStatus: '已激活',
+    wecomSyncTime: '今日 15:30:22',
+    role: '超级管理员',
+    status: '启用',
+    lastActive: '2026-08-17 13:40',
+    aiQuotaLimit: 3500,
+    aiQuotaUsed: 430
   }
 ];
 
@@ -3017,20 +3327,70 @@ export const initialRoles: RoleConfig[] = [
       { module: '员工权限', view: true, edit: true, delete: true, export: true },
       { module: '系统配置', view: true, edit: true, delete: true, export: true },
       { module: '日志审计', view: true, edit: true, delete: true, export: true }
-    ]
+    ],
+    dataPermission: {
+      scope: 'all',
+      scopeLabel: '全部数据权限 (跨部门全公司)',
+      customRegions: ['北美市场', '欧洲市场', '中东与海湾', '澳洲与大洋洲'],
+      maskCustomerContact: false,
+      maskCostPrice: false
+    },
+    operationPermissions: {
+      inquiryAssign: true,
+      inquiryTakeover: true,
+      inquiryExport: true,
+      customerTransfer: true,
+      customerPriceQuote: true,
+      customerTagEdit: true,
+      marketingApprove: true,
+      marketingDirectPost: true,
+      marketingBatchGenerate: true,
+      knowledgePublish: true,
+      knowledgeVectorRebuild: true,
+      knowledgeExport: true,
+      wecomSyncManual: true,
+      roleManage: true,
+      quotaAdjust: true,
+      auditExport: true
+    }
   },
   {
     id: 'ROLE-SUPERVISOR',
     roleName: '外贸主管',
     description: '管理询盘分配、会话监控、话术库共享审核及智能答复质量调控。',
-    userCount: 3,
+    userCount: 2,
     permissions: [
       { module: '首页问答', view: true, edit: true, delete: false, export: true },
       { module: '售前询盘', view: true, edit: true, delete: false, export: true },
       { module: '销售助手', view: true, edit: true, delete: false, export: true },
       { module: '知识库管理', view: true, edit: true, delete: false, export: true },
       { module: '数据统计', view: true, edit: false, delete: false, export: true }
-    ]
+    ],
+    dataPermission: {
+      scope: 'dept_and_sub',
+      scopeLabel: '本部门及下属部门数据',
+      customDepts: ['外贸事业部', '售前客服与在线接待组', '海外业务一组', '海外业务二组'],
+      maskCustomerContact: false,
+      maskCostPrice: false
+    },
+    operationPermissions: {
+      inquiryAssign: true,
+      inquiryTakeover: true,
+      inquiryExport: true,
+      customerTransfer: true,
+      customerPriceQuote: true,
+      customerTagEdit: true,
+      marketingApprove: false,
+      marketingDirectPost: false,
+      marketingBatchGenerate: false,
+      knowledgePublish: true,
+      knowledgeVectorRebuild: false,
+      knowledgeExport: true,
+      wecomSyncManual: false,
+      roleManage: false,
+      quotaAdjust: true,
+      auditExport: false
+    }
   },
   {
     id: 'ROLE-SALES',
@@ -3042,7 +3402,66 @@ export const initialRoles: RoleConfig[] = [
       { module: '售前询盘', view: true, edit: true, delete: false, export: false },
       { module: '销售助手', view: true, edit: true, delete: false, export: false },
       { module: '知识库管理', view: true, edit: false, delete: false, export: false }
-    ]
+    ],
+    dataPermission: {
+      scope: 'self_only',
+      scopeLabel: '仅本人数据权限 (个人私海与负责客户)',
+      maskCustomerContact: true,
+      maskCostPrice: true
+    },
+    operationPermissions: {
+      inquiryAssign: false,
+      inquiryTakeover: false,
+      inquiryExport: false,
+      customerTransfer: false,
+      customerPriceQuote: false,
+      customerTagEdit: true,
+      marketingApprove: false,
+      marketingDirectPost: false,
+      marketingBatchGenerate: false,
+      knowledgePublish: false,
+      knowledgeVectorRebuild: false,
+      knowledgeExport: false,
+      wecomSyncManual: false,
+      roleManage: false,
+      quotaAdjust: false,
+      auditExport: false
+    }
+  },
+  {
+    id: 'ROLE-MARKETING',
+    roleName: '推广运营官',
+    description: '负责海外社媒矩阵运营、AI视频与图文内容生成及发布审核。',
+    userCount: 3,
+    permissions: [
+      { module: '首页问答', view: true, edit: false, delete: false, export: false },
+      { module: '运营助手', view: true, edit: true, delete: true, export: true },
+      { module: '数据统计', view: true, edit: false, delete: false, export: true }
+    ],
+    dataPermission: {
+      scope: 'dept_only',
+      scopeLabel: '本部门数据权限 (海外品牌推广部)',
+      maskCustomerContact: true,
+      maskCostPrice: true
+    },
+    operationPermissions: {
+      inquiryAssign: false,
+      inquiryTakeover: false,
+      inquiryExport: false,
+      customerTransfer: false,
+      customerPriceQuote: false,
+      customerTagEdit: false,
+      marketingApprove: true,
+      marketingDirectPost: true,
+      marketingBatchGenerate: true,
+      knowledgePublish: false,
+      knowledgeVectorRebuild: false,
+      knowledgeExport: false,
+      wecomSyncManual: false,
+      roleManage: false,
+      quotaAdjust: false,
+      auditExport: false
+    }
   }
 ];
 
@@ -3374,4 +3793,175 @@ export const initialBOQPricingRules: BOQPricingRule[] = [
     remarks: '包含集装箱长途海运防霉干燥剂包及熏蒸检疫标准'
   }
 ];
+
+// Mock 6.2 汇率管理数据
+export const initialExchangeRates: ExchangeRateItem[] = [
+  {
+    id: 'RATE-USD',
+    currencyCode: 'USD',
+    currencyName: '美元 (主结算币种)',
+    symbol: '$',
+    flag: '🇺🇸',
+    marketRate: 7.1845,
+    systemRate: 7.2000,
+    bufferPercent: 0.5,
+    settlementRate: 7.2360,
+    isBaseCurrency: true,
+    status: '已生效',
+    autoSync: true,
+    lastUpdated: '2026-09-03 16:30',
+    operator: 'Franklin Jr (Superadmin)',
+    changeRate24h: 0.12
+  },
+  {
+    id: 'RATE-EUR',
+    currencyCode: 'EUR',
+    currencyName: '欧元 (欧洲高端工程)',
+    symbol: '€',
+    flag: '🇪🇺',
+    marketRate: 7.8210,
+    systemRate: 7.8500,
+    bufferPercent: 1.0,
+    settlementRate: 7.9285,
+    isBaseCurrency: false,
+    status: '已生效',
+    autoSync: true,
+    lastUpdated: '2026-09-03 16:30',
+    operator: 'Franklin Jr (Superadmin)',
+    changeRate24h: -0.28
+  },
+  {
+    id: 'RATE-GBP',
+    currencyCode: 'GBP',
+    currencyName: '英镑 (英国别墅豪宅)',
+    symbol: '£',
+    flag: '🇬🇧',
+    marketRate: 9.2140,
+    systemRate: 9.2500,
+    bufferPercent: 1.0,
+    settlementRate: 9.3425,
+    isBaseCurrency: false,
+    status: '已锁定',
+    autoSync: false,
+    lastUpdated: '2026-09-01 10:00',
+    operator: '财务总监 (Alice Zhang)',
+    changeRate24h: 0.05
+  },
+  {
+    id: 'RATE-AUD',
+    currencyCode: 'AUD',
+    currencyName: '澳元 (澳洲公寓联排)',
+    symbol: 'A$',
+    flag: '🇦🇺',
+    marketRate: 4.7120,
+    systemRate: 4.7500,
+    bufferPercent: 1.5,
+    settlementRate: 4.8213,
+    isBaseCurrency: false,
+    status: '已生效',
+    autoSync: true,
+    lastUpdated: '2026-09-03 16:30',
+    operator: '系统自动同步',
+    changeRate24h: 0.35
+  },
+  {
+    id: 'RATE-CAD',
+    currencyCode: 'CAD',
+    currencyName: '加元 (北美温哥华/多伦多)',
+    symbol: 'C$',
+    flag: '🇨🇦',
+    marketRate: 5.2380,
+    systemRate: 5.2800,
+    bufferPercent: 1.2,
+    settlementRate: 5.3434,
+    isBaseCurrency: false,
+    status: '已生效',
+    autoSync: true,
+    lastUpdated: '2026-09-03 16:30',
+    operator: '系统自动同步',
+    changeRate24h: -0.15
+  },
+  {
+    id: 'RATE-AED',
+    currencyCode: 'AED',
+    currencyName: '阿联酋迪拉姆 (迪拜中东豪宅)',
+    symbol: 'AED',
+    flag: '🇦🇪',
+    marketRate: 1.9560,
+    systemRate: 1.9600,
+    bufferPercent: 0.8,
+    settlementRate: 1.9757,
+    isBaseCurrency: false,
+    status: '已生效',
+    autoSync: true,
+    lastUpdated: '2026-09-03 16:30',
+    operator: '系统自动同步',
+    changeRate24h: 0.02
+  },
+  {
+    id: 'RATE-SGD',
+    currencyCode: 'SGD',
+    currencyName: '新加坡元 (东南亚高奢公寓)',
+    symbol: 'S$',
+    flag: '🇸🇬',
+    marketRate: 5.3420,
+    systemRate: 5.3800,
+    bufferPercent: 1.0,
+    settlementRate: 5.4338,
+    isBaseCurrency: false,
+    status: '已生效',
+    autoSync: true,
+    lastUpdated: '2026-09-03 16:30',
+    operator: '系统自动同步',
+    changeRate24h: 0.18
+  }
+];
+
+export const initialExchangeRateLogs: ExchangeRateLogItem[] = [
+  {
+    id: 'LOG-FX-101',
+    currencyCode: 'USD',
+    currencyName: '美元',
+    previousRate: 7.1500,
+    newRate: 7.2000,
+    changeType: '季度锁汇',
+    operator: 'Franklin Jr',
+    timestamp: '2026-09-01 09:30',
+    note: 'Q3季度财务锁汇调整，统一下发销售智能体BOQ试算与报价引擎'
+  },
+  {
+    id: 'LOG-FX-102',
+    currencyCode: 'GBP',
+    currencyName: '英镑',
+    previousRate: 9.1800,
+    newRate: 9.2500,
+    changeType: '手动调整',
+    operator: '财务总监 (Alice Zhang)',
+    timestamp: '2026-08-25 15:20',
+    note: '应对英镑长周期工程合同波动风险，手动上浮锁定汇率'
+  },
+  {
+    id: 'LOG-FX-103',
+    currencyCode: 'USD',
+    currencyName: '美元',
+    previousRate: 7.1820,
+    newRate: 7.1845,
+    changeType: '自动同步',
+    operator: '央行中间价同步引擎',
+    timestamp: '2026-09-03 09:15',
+    note: '每日早盘自动同步中国外汇交易中心牌价'
+  },
+  {
+    id: 'LOG-FX-104',
+    currencyCode: 'AUD',
+    currencyName: '澳元',
+    previousRate: 4.7000,
+    newRate: 4.7500,
+    changeType: '安全缓冲调整',
+    operator: 'Franklin Jr',
+    timestamp: '2026-08-18 11:45',
+    note: '澳元汇率波动放大，安全缓冲比提升至 1.5%'
+  }
+];
+
 

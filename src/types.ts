@@ -6,7 +6,7 @@ export type ModuleType =
   | 'in_sales'             // 三、销售助手 (3.1 会话列表, 3.2 会话详情 & 话术/素材)
   | 'marketing'            // 四、运营助手 (4.1 视频剪辑, 4.2 图文生成, 4.3 发布审核, 4.4 发布计划, 4.5 账号管理)
   | 'knowledge_base'       // 五、知识库管理 (5.1 内容上传, 5.2 知识复核, 5.3 分类管理, 5.4 标签管理)
-  | 'pricing_maintenance'  // 六、产品价格维护 (6.1 单价库, 6.2 算价规则配置, 6.3 BOQ报价试算)
+  | 'pricing_maintenance'  // 六、产品价格维护 (6.1 单价库, 6.2 汇率管理, 6.3 算价规则配置, 6.4 BOQ报价试算)
   | 'analytics'            // 七、数据统计 (智能体使用情况)
   | 'employee'             // 八、员工权限 (7.1 员工列表, 7.2 角色配置)
   | 'sys_config'           // 九、系统配置 (8.1 智能体基础配置)
@@ -288,16 +288,77 @@ export interface AgentStatMetric {
 }
 
 // 7. Employee & Permissions Types (员工权限)
+export interface OrgDeptNode {
+  id: string;
+  name: string;
+  parentId?: string;
+  hasChildren?: boolean;
+  memberCount?: number;
+  children?: OrgDeptNode[];
+}
+
+export interface WeComDept {
+  id: number | string;
+  name: string;
+  parentId?: number | string;
+  memberCount: number;
+  hasChildren?: boolean;
+}
+
 export interface EmployeeItem {
   id: string;
   name: string;
   email: string;
   department: string;
-  role: '超级管理员' | '外贸主管' | '销售业务员' | '推广运营官' | '内容审稿员';
-  status: '在职 (正常)' | '已禁用';
+  deptId?: number | string;
+  deptPath?: string;
+  isDeptLeader?: boolean; // 部门负责人：是 / 否
+  wecomUserId: string; // 企业微信成员UserID
+  wecomAvatar?: string;
+  wecomMobile: string; // 企业微信手机号
+  wecomPosition: string; // 企业微信职位
+  wecomStatus: '已激活' | '未激活' | '已离职';
+  wecomSyncTime?: string;
+  role: '超级管理员' | '外贸主管' | '销售业务员' | '推广运营官' | '内容审稿员' | string;
+  status: '启用' | '禁用' | '在职 (正常)' | '已禁用';
   lastActive: string;
-  aiQuotaLimit: number; // Daily AI calls limit
+  aiQuotaLimit: number; // 每日 AI 算力限额
   aiQuotaUsed: number;
+}
+
+export type DataScopeType = 'all' | 'dept_and_sub' | 'dept_only' | 'self_only' | 'custom';
+
+export interface DataPermissionConfig {
+  scope: DataScopeType;
+  scopeLabel: string;
+  customDepts?: string[];
+  customRegions?: string[]; // e.g. ['北美市场', '欧洲市场', '中东与海湾', '澳洲与大洋洲']
+  maskCustomerContact: boolean; // 客户电话/邮箱/WhatsApp脱敏保护
+  maskCostPrice: boolean; // 出厂成本与底价毛利脱敏
+}
+
+export interface OperationPermissionsConfig {
+  // 售前询盘
+  inquiryAssign: boolean; // 询盘人工改派
+  inquiryTakeover: boolean; // 强制接管会话
+  inquiryExport: boolean; // 导出询盘线索
+  // 客户与销售
+  customerTransfer: boolean; // 公私海客户转移
+  customerPriceQuote: boolean; // 生成工程特批底价单
+  customerTagEdit: boolean; // 强制变更客户阶段与标签
+  // 营销与运营
+  marketingApprove: boolean; // 海外社媒发布审核
+  marketingDirectPost: boolean; // 直连社媒一键发布
+  marketingBatchGenerate: boolean; // 批量AI视频与文案生成
+  // 知识库管理
+  knowledgePublish: boolean; // 免审发布知识词条
+  knowledgeVectorRebuild: boolean; // 触发向量库全量重建
+  knowledgeExport: boolean; // 导出外贸工艺百科
+  // 员工与系统
+  wecomSyncManual: boolean; // 手动同步企业微信通讯录
+  roleManage: boolean; // 分配与配置角色
+  quotaAdjust: boolean; // 调整员工AI算力上限
+  auditExport: boolean; // 导出审计日志
 }
 
 export interface RoleConfig {
@@ -312,6 +373,8 @@ export interface RoleConfig {
     delete: boolean;
     export: boolean;
   }[];
+  dataPermission: DataPermissionConfig;
+  operationPermissions: OperationPermissionsConfig;
 }
 
 // 8. System Config Types (系统配置)
@@ -406,5 +469,36 @@ export interface BOQLineItem {
   amountUSD: number;
   wastePercent: number;
   totalUSD: number;
+}
+
+// 6.2 汇率管理 Types
+export interface ExchangeRateItem {
+  id: string;
+  currencyCode: string;   // 'USD' | 'EUR' | 'GBP' | 'AUD' | 'CAD' | 'AED' | 'SGD'
+  currencyName: string;   // '美元' | '欧元' | '英镑' | '澳元' | '加元' | '阿联酋迪拉姆' | '新加坡元'
+  symbol: string;         // '$' | '€' | '£' | 'A$' | 'C$' | 'AED' | 'S$'
+  flag: string;           // '🇺🇸' | '🇪🇺' | '🇬🇧' | '🇦🇺' | '🇨🇦' | '🇦🇪' | '🇸🇬'
+  marketRate: number;     // 市场实时中间牌价 (对CNY)
+  systemRate: number;     // 企业核算锁定汇率 (用于BOQ与报价)
+  bufferPercent: number;  // 锁汇安全抗波动浮动比 (%)
+  settlementRate: number; // 实际核算汇率 (systemRate * (1 + bufferPercent/100))
+  isBaseCurrency?: boolean;// 是否为核心结算主货币 (USD)
+  status: '已生效' | '已锁定' | '预警中';
+  autoSync: boolean;      // 是否开启每日自动同步
+  lastUpdated: string;    // 最后更新时间
+  operator: string;       // 最后维护人
+  changeRate24h: number;  // 24小时波动率 %
+}
+
+export interface ExchangeRateLogItem {
+  id: string;
+  currencyCode: string;
+  currencyName: string;
+  previousRate: number;
+  newRate: number;
+  changeType: '手动调整' | '自动同步' | '季度锁汇' | '安全缓冲调整';
+  operator: string;
+  timestamp: string;
+  note: string;
 }
 

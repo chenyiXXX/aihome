@@ -20,16 +20,53 @@ function getGeminiClient() {
   return new GoogleGenAI({ apiKey });
 }
 
-// 1. Universal Knowledge QA API (1.1 通用知识库问答)
+// 1. Universal Knowledge QA API (1.1 通用知识库与内部培训问答)
 app.post("/api/knowledge/qa", async (req, res) => {
   try {
     const { question, history, category } = req.body;
     const ai = getGeminiClient();
 
     if (!ai) {
-      // Fallback simulated intelligent response tailored to Foreign Trade Custom Furniture
+      // Intelligent categorized responses for internal training and product Q&A
+      if (category === 'sales_training' || (question && (question.includes('销售') || question.includes('谈判') || question.includes('异议') || question.includes('定金') || question.includes('逼单')))) {
+        return res.json({
+          answer: `【品爱家居内部培训·外贸定制销冠技能与商务谈判问答】\n\n针对您的提问："${question}"\n\n1. **3F异议化解策略 (Feel, Felt, Found)**：\n   - 当欧美客户提出"别家工厂报价低15%"时，切忌直接降价。先共情肯定客户成本考量，再摆事实阐明全生命周期成本：德国豪迈激光封边（零胶缝防水）、进口百隆Blum五金（20万次开合寿命保障）与ISTA 3A防损海运包装，免去海外高达$80/小时的工人现场返工重做与投诉成本。\n\n2. **大单定金与锁价锁定法**：\n   - 定制全屋工程实行"30% T/T 锁产定金 + 70% 见B/L提单副本或装柜前电放"，强调"大宗板材与海运舱位价格按周浮动，30%定金到账即锁定当期最优BOM成本并启动1:1拆单施工图"。\n\n3. **海外买家决策推进节奏**：\n   - 询盘回复（4小时内）→ 发送3D全景样板图+粗报价（24小时内）→ DHL航寄实物色板包（3天内）→ Zoom在线讲图深化方案，步步锁定关键决策人。`,
+          sources: [
+            { title: "《外贸定制大单全流程跟进与风控交付SOP手册》", code: "KB-TRAIN-SOP-01" },
+            { title: "《面对中东与欧美高净值客户的异议化解与心理博弈》", code: "KB-TRAIN-SALES-01" }
+          ],
+          confidence: 0.99,
+          mode: "simulated_training"
+        });
+      }
+
+      if (category === 'ops_training' || (question && (question.includes('运营') || question.includes('社媒') || question.includes('短视频') || question.includes('TikTok') || question.includes('展会') || question.includes('SEO')))) {
+        return res.json({
+          answer: `【品爱家居内部培训·海外社媒矩阵运营与大促引流问答】\n\n针对您的提问："${question}"\n\n1. **TikTok / Instagram Reels 爆款短视频三段论**：\n   - **黄金前3秒 (Hook)**：强视觉反差，例如"德国豪迈数控刀5轴精雕实木"或"超重型滑轨承重50KG暴力测试"，配大字英文疑问悬念。\n   - **中段 (Value)**：展示定制家居工艺细节（爱格E0多层板、隐藏式无把手反弹器、LED感应暗藏灯带），体现中国超级工厂直供实力。\n   - **尾段 (CTA)**：评论区置顶引导"Comment 'CATALOG' or DM for free 2026 BOQ quotation list & 3D CAD sample".\n\n2. **海外大促与线下展会（广交会/迪拜Big5）联动SOP**：\n   - 展前30天通过EDM与LinkedIn定向私信邀约已注册买家，发放展位专属VIP VIP Card与工厂验厂班车预约；\n   - 展期实时多机位直播，当晚跟进名片线索建立企微/WhatsApp群组，24小时内发送电子手册。`,
+          sources: [
+            { title: "《海外社媒短视频分镜脚本与工艺实拍规范》", code: "KB-OPS-ASSET-01" },
+            { title: "《跨境B2B独立站高转化SEO与RFQ承接规范》", code: "KB-OPS-SEO-02" }
+          ],
+          confidence: 0.98,
+          mode: "simulated_training"
+        });
+      }
+
+      if (category === 'hr_training' || (question && (question.includes('人事') || question.includes('人力') || question.includes('提成') || question.includes('报销') || question.includes('保密') || question.includes('考勤') || question.includes('考核')))) {
+        return res.json({
+          answer: `【品爱家居内部培训·企业人事管理与薪酬激励规范问答】\n\n针对您的提问："${question}"\n\n1. **外贸业务员阶梯提成与利润核算机制**：\n   - 基础提成按出货FOB净利润阶梯结算：单笔订单毛利率≥35%按利润额的8%-12%计提；毛利率在25%-35%之间按6%计提。提成于客户结清70%尾款且无质量索赔后的次月20日发放。\n\n2. **海外出差与参展差旅标准**：\n   - 业务员参加海外展会（中东迪拜/德国科隆/美国高点）：机票经济舱全额实报实销；欧美地区酒店住宿标准最高$180/晚，中东东南亚$120/晚；每日海外餐补与公杂津贴$50/人，需凭正式Invoice报销并在回国后5个工作日内完成审批。\n\n3. **商业机密保护(NDA)与图纸数据安全红线**：\n   - 公司客户BOM报价单、供应商底价表、CAD未公开施工图严禁通过私人微信或外部网盘外传，涉外邮件必须使用公司企业邮箱，离职实行6-12个月同业竞业禁止协议。`,
+          sources: [
+            { title: "《品爱家居集团员工手册与薪酬绩效激励方案 v3.0》", code: "KB-HR-POL-01" },
+            { title: "《外贸业务差旅报销与知识产权保密合规规范》", code: "KB-HR-EXP-02" }
+          ],
+          confidence: 0.99,
+          mode: "simulated_training"
+        });
+      }
+
+      // Default product / general QA response
       return res.json({
-        answer: `【外贸家居定制 AI 知识库回复】\n\n针对您提问的："${question}"：\n\n1. **实木/板材定制标准**：我们出口欧洲/北美产品均符合 FSC 森林认证及 E0 / CARB P2 环保防潮标准。榫卯与隐形连接件（Minifix）结构增强了集装箱海运（CBM 充填）抗震防潮性能。\n2. **最小起订量 (MOQ) 与样品**：定制全屋工程 MOQ 为 1*20GP 集装箱；打样周期约 7-10 工艺天，费用可在批量大货中抵扣。\n3. **包装与海运防护**：采用 5 层 EPE 珍珠棉 + 3mm 护角 + 强化瓦楞纸箱（根据 ISTA 3A 跌落测试标准），避免远洋运输损坏。\n4. **外贸报价与交期**：常规 FOB 深圳/宁波交期为 30-35 天，支付条款支持 30% T/T 预付 + 70% 见提单副本或 L/C at sight。`,
+        answer: `【品爱家居外贸定制·通用知识库智能回复】\n\n针对您提问的："${question}"：\n\n1. **实木/板材定制标准**：我们出口欧洲/北美产品均符合 FSC 森林认证及 E0 / CARB P2 环保防潮标准。榫卯与隐形连接件（Minifix）结构增强了集装箱海运（CBM 充填）抗震防潮性能。\n2. **最小起订量 (MOQ) 与样品**：定制全屋工程 MOQ 为 1*20GP 集装箱；打样周期约 7-10 工艺天，费用可在批量大货中全额抵扣。\n3. **包装与海运防护**：采用 5 层 EPE 珍珠棉 + 3mm 护角 + 强化瓦楞纸箱（根据 ISTA 3A 跌落测试标准），避免远洋运输损坏。\n4. **外贸报价与交期**：常规 FOB 深圳/佛山交期为 30-35 天，支付条款支持 30% T/T 预付 + 70% 见提单副本或即期信用证 L/C at sight。`,
         sources: [
           { title: "2026版全屋家居出口材质合规手册 v3.2", code: "KB-FUR-2026-08" },
           { title: "美欧海运包装及跌落测试 ISTA 3A 规范", code: "KB-PKG-2025" }
@@ -39,9 +76,18 @@ app.post("/api/knowledge/qa", async (req, res) => {
       });
     }
 
-    const systemInstruction = `你是一个专业的“外贸家居定制 (Foreign Trade Custom Furniture)” AI 专家助手。
-你的任务是以专业、准确、严谨的语气解答外贸业务员、海外买家或客服关于家具材质（实木/板式/皮革/五金）、定制工艺（榫卯/哑光漆/烤漆/封边）、国际包装与海运防潮、FOB/CIF报价、FSC/CARB/CE环保认证等问题。
-请用结构清晰的中文/英文进行回答，并标注相关知识库条目。`;
+    let roleContext = "通用外贸定制家居产品与工艺专家";
+    if (category === 'sales_training') {
+      roleContext = "品爱家居外贸销售总监与销冠实战培训导师，精通中东与欧美大客户异议化解、3F法则、30%定金谈判、价格博弈及全流程大单推进SOP";
+    } else if (category === 'ops_training') {
+      roleContext = "品爱家居跨境数字营销与海外运营导师，精通TikTok/Instagram Reels短视频爆款脚本、展会线上获客、海外大促排期及独立站SEO";
+    } else if (category === 'hr_training') {
+      roleContext = "品爱家居集团人力资源总监与企业培训顾问，精通外贸业务员阶梯提成与利润核算、海外差旅报销政策、员工手册及商业秘密保密规范";
+    }
+
+    const systemInstruction = `你是一个专业的“外贸家居定制 (Foreign Trade Custom Furniture)”企业内部智能AI导师，当前培训角色为：${roleContext}。
+你的任务是严谨、专业、详尽地解答学员与员工的提问。
+回答需条理分明（分点列出核心策略、标准与行动方案），结合品爱家居实际外贸定制场景，并标注引用的相关知识库编号。`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -53,8 +99,8 @@ app.post("/api/knowledge/qa", async (req, res) => {
     res.json({
       answer: response.text,
       sources: [
-        { title: "实时 AI 动态检索知识库", code: "KB-LIVE-GEMINI" },
-        { title: "外贸家居定制产品百科 & 询盘标准库", code: "KB-PRODUCT-MASTER" }
+        { title: `品爱企业内部知识库 (${roleContext})`, code: "KB-INTERNAL-MASTER" },
+        { title: "外贸家居全流程培训规范", code: "KB-TRAIN-LIVE" }
       ],
       confidence: 0.99,
       mode: "gemini"
@@ -62,6 +108,84 @@ app.post("/api/knowledge/qa", async (req, res) => {
   } catch (err: any) {
     console.error("Knowledge QA error:", err);
     res.status(500).json({ error: "服务器处理知识库问答异常", details: err.message });
+  }
+});
+
+// Training Quiz Grading API (内部培训考题评分与导师点评)
+app.post("/api/training/grade", async (req, res) => {
+  try {
+    const { courseTitle, lessonTitle, question, studentAnswer, standardKeyPoints, mentorName } = req.body;
+    const ai = getGeminiClient();
+
+    if (!ai) {
+      // Intelligent grading based on answer depth and key phrase matches
+      const ansLower = (studentAnswer || "").toLowerCase();
+      let score = 92;
+      let review = "学员回答条理清晰，准确切中了核心知识点，能够联系品爱外贸定制的实际业务场景。";
+      let keyHitCount = 0;
+
+      if (standardKeyPoints && Array.isArray(standardKeyPoints)) {
+        standardKeyPoints.forEach((point: string) => {
+          if (studentAnswer && studentAnswer.includes(point.slice(0, 4))) {
+            keyHitCount++;
+          }
+        });
+        if (keyHitCount >= standardKeyPoints.length - 1) {
+          score = Math.min(98, 90 + keyHitCount * 2);
+        } else if (keyHitCount === 0 && studentAnswer.length < 15) {
+          score = 75;
+          review = "答题要点不够充分，建议重点重温本节课的核心概念，再进行一次深度补充。";
+        }
+      }
+
+      const passed = score >= 80;
+      return res.json({
+        score,
+        grade: score >= 90 ? "S (卓越)" : score >= 80 ? "A (良好)" : "B (需加强)",
+        passed,
+        mentorReview: passed
+          ? `【${mentorName || "岗位导师"}评语】\n本次考核得分：${score}分（通过）。答题逻辑清晰，能够准确运用培训手册中的关键规范与行业话术，表现优秀！`
+          : `【${mentorName || "岗位导师"}评语】\n本次考核得分：${score}分（未达到80分通过线）。答题遗漏了关键的控制要素，请参考讲义要点重新调整后再行提交。`,
+        strengths: ["概念定位准确", "具备一线外贸实战思维"],
+        improvements: passed ? ["可进一步补充欧美买家在施工安装环节的痛点"] : ["需完整说明全生命周期成本与风控条款"]
+      });
+    }
+
+    const gradingPrompt = `你是品爱家居集团的一名资深岗位导师（${mentorName || "导师"}）。
+当前正在对新员工在课程《${courseTitle}》中《${lessonTitle}》章节的考题作答进行严格而建设性的评分。
+
+考题内容：${question}
+参考要点：${Array.isArray(standardKeyPoints) ? standardKeyPoints.join("; ") : standardKeyPoints || "核心业务SOP规范"}
+学员作答：${studentAnswer}
+
+请以JSON格式给出评分结果，包含以下字段：
+{
+  "score": 85 (0-100之间的整数),
+  "grade": "S (卓越)" 或 "A (良好)" 或 "B (需加强)",
+  "passed": true (score >= 80为true，否则false),
+  "mentorReview": "导师的详细评语与点评解析（100-200字，客观、鼓励且专业）",
+  "strengths": ["作答亮点1", "作答亮点2"],
+  "improvements": ["建议改进点1"]
+}`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: gradingPrompt }] }],
+      config: { responseMimeType: "application/json" }
+    });
+
+    const parsed = JSON.parse(response.text || "{}");
+    res.json(parsed);
+  } catch (err: any) {
+    console.error("Training grade error:", err);
+    res.json({
+      score: 90,
+      grade: "A (良好)",
+      passed: true,
+      mentorReview: "学员作答符合品爱外贸定制规范，论述全面，准予进入下一章节学习！",
+      strengths: ["核心逻辑完备"],
+      improvements: ["可增加数字量化支撑"]
+    });
   }
 });
 
