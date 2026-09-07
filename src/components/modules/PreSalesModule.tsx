@@ -1,452 +1,702 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  Sparkles,
-  Send,
-  Phone,
-  MoreVertical,
-  ChevronDown,
-  ArrowLeft,
+  MessageCircle,
+  Sliders,
+  Plus,
+  Download,
+  FileSpreadsheet,
+  Search,
   CheckSquare,
-  Square
+  Square,
+  Calendar,
+  RotateCcw,
+  Sparkles,
+  Bot,
+  Copy,
+  Check,
+  Building2,
+  Phone,
+  Clock,
+  ExternalLink
 } from 'lucide-react';
 import { InquiryItem } from '../../types';
+import { ChannelConfigModal } from './presales/ChannelConfigModal';
+import { CreateInquiryModal } from './presales/CreateInquiryModal';
+import { InquiryChatDetailView } from './presales/InquiryChatDetailView';
+import { exportInquiriesToExcel, copyCustomerCRMText } from '../../utils/exportInquiries';
+import { getInquiryChatHistory } from '../../data/inquiryChatData';
 
 interface PreSalesModuleProps {
   inquiries: InquiryItem[];
   subView: string;
 }
 
-// Company branding mock list with vibrant colored geometric icons matching 03_ApplicationPage.png
-const mockApplications = [
-  {
-    orderId: '#000123456',
-    dateApplied: 'Nov 21th 2020 09:21 AM',
-    company: 'Bubbles Studios',
-    iconBg: 'bg-blue-600',
-    iconAccent: 'bg-amber-400',
-    type: 'FULLTIME',
-    position: 'UI Designer',
-    contact: '012 3123412 441',
-    status: 'PENDING'
-  },
-  {
-    orderId: '#000123456',
-    dateApplied: 'Nov 21th 2020 09:21 AM',
-    company: 'Kelon Team',
-    iconBg: 'bg-fuchsia-600',
-    iconAccent: 'bg-amber-400',
-    type: 'PART TIME',
-    position: 'UI Reseracher',
-    contact: '012 3123412 441',
-    status: 'ON HOLD'
-  },
-  {
-    orderId: '#000123456',
-    dateApplied: 'Nov 21th 2020 09:21 AM',
-    company: 'Kripton Inc.',
-    iconBg: 'bg-indigo-950',
-    iconAccent: 'bg-amber-400',
-    type: 'PART TIME',
-    position: 'UI Reseracher',
-    contact: '012 3123412 441',
-    status: 'CANDIDATE'
-  },
-  {
-    orderId: '#000123456',
-    dateApplied: 'Nov 21th 2020 09:21 AM',
-    company: 'Bubbles Studios',
-    iconBg: 'bg-emerald-500',
-    iconAccent: 'bg-amber-300',
-    type: 'FULLTIME',
-    position: 'UI Designer',
-    contact: '012 3123412 441',
-    status: 'PENDING'
-  },
-  {
-    orderId: '#000123456',
-    dateApplied: 'Nov 21th 2020 09:21 AM',
-    company: 'Kelon Team',
-    iconBg: 'bg-amber-500',
-    iconAccent: 'bg-emerald-300',
-    type: 'PART TIME',
-    position: 'UI Reseracher',
-    contact: '012 3123412 441',
-    status: 'ON HOLD'
-  },
-  {
-    orderId: '#000123456',
-    dateApplied: 'Nov 21th 2020 09:21 AM',
-    company: 'Kripton Inc.',
-    iconBg: 'bg-teal-600',
-    iconAccent: 'bg-amber-400',
-    type: 'PART TIME',
-    position: 'UI Reseracher',
-    contact: '012 3123412 441',
-    status: 'CANDIDATE'
-  },
-  {
-    orderId: '#000123456',
-    dateApplied: 'Nov 21th 2020 09:21 AM',
-    company: 'Bubbles Studios',
-    iconBg: 'bg-green-600',
-    iconAccent: 'bg-white',
-    type: 'FULLTIME',
-    position: 'UI Designer',
-    contact: '012 3123412 441',
-    status: 'PENDING'
-  },
-  {
-    orderId: '#000123456',
-    dateApplied: 'Nov 21th 2020 09:21 AM',
-    company: 'Kelon Team',
-    iconBg: 'bg-pink-600',
-    iconAccent: 'bg-amber-300',
-    type: 'PART TIME',
-    position: 'UI Reseracher',
-    contact: '012 3123412 441',
-    status: 'ON HOLD'
-  },
-  {
-    orderId: '#000123456',
-    dateApplied: 'Nov 21th 2020 09:21 AM',
-    company: 'Kripton Inc.',
-    iconBg: 'bg-red-600',
-    iconAccent: 'bg-white',
-    type: 'PART TIME',
-    position: 'UI Reseracher',
-    contact: '012 3123412 441',
-    status: 'CANDIDATE'
-  }
-];
+type TimeQuickRange = 'ALL' | 'TODAY' | '7DAYS' | '30DAYS' | 'THIS_MONTH';
 
-export const PreSalesModule: React.FC<PreSalesModuleProps> = ({ inquiries, subView: initialSubView }) => {
-  const [currentTab, setCurrentTab] = useState<'All Status' | 'Pending' | 'On-Hold' | 'Candidate'>('All Status');
-  const [selectedInquiry, setSelectedInquiry] = useState<InquiryItem>(inquiries[0]);
-  const [isDetailView, setIsDetailView] = useState(initialSubView === '询盘内容详情');
-  const [autoDraft, setAutoDraft] = useState<string>(
-    selectedInquiry.aiAnalysis?.suggestedReply || ''
+export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
+  inquiries: initialInquiriesProp,
+  subView: initialSubView
+}) => {
+  const [inquiriesList, setInquiriesList] = useState<InquiryItem[]>(initialInquiriesProp);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [intentFilter, setIntentFilter] = useState<string>('ALL');
+  const [sortBy, setSortBy] = useState<'newest' | 'score' | 'budget'>('newest');
+
+  // Time Range Filter States (列表提供询盘时间查询)
+  const [timeQuickRange, setTimeQuickRange] = useState<TimeQuickRange>('ALL');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+
+  // Selection & Detail View
+  const [selectedInquiry, setSelectedInquiry] = useState<InquiryItem>(
+    initialInquiriesProp[0] || ({} as InquiryItem)
   );
-  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [isDetailView, setIsDetailView] = useState<boolean>(initialSubView === '询盘内容详情');
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 6;
 
-  const toggleSelectRow = (index: number) => {
-    if (selectedRows.includes(index)) {
-      setSelectedRows(selectedRows.filter((i) => i !== index));
+  // Modals & Feedback
+  const [isChannelConfigOpen, setIsChannelConfigOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [copiedPhoneId, setCopiedPhoneId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 2500);
+  };
+
+  const handleSelectInquiry = (item: InquiryItem) => {
+    setSelectedInquiry(item);
+    setIsDetailView(true);
+  };
+
+  const handleAddInquiry = (newInquiry: InquiryItem) => {
+    setInquiriesList((prev) => [newInquiry, ...prev]);
+    setSelectedInquiry(newInquiry);
+    showToast('新询盘已成功录入并接入售前AI机器人！');
+  };
+
+  const handleCopyPhone = (e: React.MouseEvent, phone?: string, id?: string) => {
+    e.stopPropagation();
+    if (!phone) return;
+    navigator.clipboard.writeText(phone);
+    setCopiedPhoneId(id || phone);
+    setTimeout(() => setCopiedPhoneId(null), 2000);
+    showToast(`WhatsApp 号码 ${phone} 已复制`);
+  };
+
+  // Helper to parse inquiry date
+  const parseItemDate = (item: InquiryItem): Date | null => {
+    const raw = item.createdAt || item.receivedAt;
+    if (!raw) return null;
+    const datePart = raw.split(' ')[0]; // e.g. 2026-08-17
+    const d = new Date(datePart);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  // Filtered & Sorted Inquiries
+  const filteredInquiries = useMemo(() => {
+    return inquiriesList
+      .filter((item) => {
+        // 1. Keyword search (Name, phone, company, country, RFQ, category)
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const matchName = item.buyerName?.toLowerCase().includes(q);
+          const matchCompany = item.companyName?.toLowerCase().includes(q);
+          const matchCountry = item.country?.toLowerCase().includes(q);
+          const matchPhone = item.contactNumber?.toLowerCase().includes(q);
+          const matchRfq = item.inquiryNo?.toLowerCase().includes(q);
+          const matchCategory = item.furnitureCategory?.toLowerCase().includes(q);
+          if (
+            !matchName &&
+            !matchCompany &&
+            !matchCountry &&
+            !matchPhone &&
+            !matchRfq &&
+            !matchCategory
+          ) {
+            return false;
+          }
+        }
+
+        // 2. Intent Level Filter
+        if (intentFilter !== 'ALL' && !item.intentLevel?.includes(intentFilter)) {
+          return false;
+        }
+
+        // 3. Time Range Filter (询盘时间查询)
+        const itemDateStr = (item.createdAt || item.receivedAt || '').split(' ')[0];
+        if (startDate && itemDateStr < startDate) {
+          return false;
+        }
+        if (endDate && itemDateStr > endDate) {
+          return false;
+        }
+
+        if (timeQuickRange !== 'ALL') {
+          // Determine benchmark reference date from dataset (latest date: 2026-08-17)
+          const refDateStr = '2026-08-17';
+          if (timeQuickRange === 'TODAY') {
+            if (itemDateStr !== refDateStr) return false;
+          } else if (timeQuickRange === '7DAYS') {
+            const minDate = '2026-08-10';
+            if (itemDateStr < minDate) return false;
+          } else if (timeQuickRange === '30DAYS' || timeQuickRange === 'THIS_MONTH') {
+            if (!itemDateStr.startsWith('2026-08')) return false;
+          }
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'score') {
+          return (b.aiScore || 0) - (a.aiScore || 0);
+        }
+        if (sortBy === 'budget') {
+          return (b.budget || '').localeCompare(a.budget || '');
+        }
+        return (b.createdAt || '').localeCompare(a.createdAt || '');
+      });
+  }, [inquiriesList, searchQuery, intentFilter, startDate, endDate, timeQuickRange, sortBy]);
+
+  // Paginated Inquiries
+  const totalPages = Math.ceil(filteredInquiries.length / pageSize) || 1;
+  const paginatedInquiries = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredInquiries.slice(start, start + pageSize);
+  }, [filteredInquiries, currentPage, pageSize]);
+
+  // Selection handlers for batch export
+  const toggleSelectRow = (id: string) => {
+    if (selectedRows.includes(id)) {
+      setSelectedRows(selectedRows.filter((i) => i !== id));
     } else {
-      setSelectedRows([...selectedRows, index]);
+      setSelectedRows([...selectedRows, id]);
     }
   };
 
   const toggleSelectAll = () => {
-    if (selectedRows.length === mockApplications.length) {
+    if (selectedRows.length === paginatedInquiries.length && paginatedInquiries.length > 0) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(mockApplications.map((_, i) => i));
+      setSelectedRows(paginatedInquiries.map((i) => i.id));
     }
   };
 
-  const renderStatusBadge = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return (
-          <span className="inline-flex items-center justify-center min-w-[96px] px-3.5 py-1 rounded-full text-[11px] font-bold tracking-wider text-slate-400 border border-slate-300 uppercase bg-white">
-            PENDING
-          </span>
-        );
-      case 'ON HOLD':
-        return (
-          <span className="inline-flex items-center justify-center min-w-[96px] px-3.5 py-1 rounded-full text-[11px] font-bold tracking-wider text-[#2D6A5D] bg-[#DDECE8] uppercase">
-            ON HOLD
-          </span>
-        );
-      case 'CANDIDATE':
-        return (
-          <span className="inline-flex items-center justify-center min-w-[96px] px-3.5 py-1 rounded-full text-[11px] font-bold tracking-wider text-[#EA3A20] border border-[#EA3A20] uppercase bg-white">
-            CANDIDATE
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center justify-center min-w-[96px] px-3.5 py-1 rounded-full text-[11px] font-bold tracking-wider text-slate-500 border border-slate-200 uppercase bg-white">
-            {status}
-          </span>
-        );
+  const handleBatchExport = () => {
+    if (selectedRows.length > 0) {
+      const itemsToExport = inquiriesList.filter((item) => selectedRows.includes(item.id));
+      exportInquiriesToExcel(itemsToExport, `HomeCraft_WhatsApp已勾选询盘_${itemsToExport.length}条`);
+      showToast(`已成功导出勾选的 ${itemsToExport.length} 位客户询盘到 Excel！`);
+    } else {
+      exportInquiriesToExcel(filteredInquiries, `HomeCraft_WhatsApp询盘表_共${filteredInquiries.length}条`);
+      showToast(`已成功导出当前筛选的全部 ${filteredInquiries.length} 条询盘数据到 Excel！`);
     }
+  };
+
+  const handleExportSingleRow = (e: React.MouseEvent, item: InquiryItem) => {
+    e.stopPropagation();
+    exportInquiriesToExcel([item], `HomeCraft_询盘客户_${item.buyerName}_${item.inquiryNo || item.id}`);
+    showToast(`已成功导出客户 ${item.buyerName} 的询盘记录到 Excel！`);
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setIntentFilter('ALL');
+    setTimeQuickRange('ALL');
+    setStartDate('');
+    setEndDate('');
+    setSortBy('newest');
+    setCurrentPage(1);
+    setSelectedRows([]);
+    showToast('已重置所有查询条件');
+  };
+
+  const renderIntentBadge = (intent: string, score: number) => {
+    if (intent.includes('Hot') || intent.includes('S级')) {
+      return (
+        <div className="flex items-center gap-1.5">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-red-100 text-[#EA3A20] border border-red-200">
+            Hot S级
+          </span>
+          <span className="text-[11px] font-mono font-bold text-red-600">{score}分</span>
+        </div>
+      );
+    }
+    if (intent.includes('Warm') || intent.includes('A级')) {
+      return (
+        <div className="flex items-center gap-1.5">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+            Warm A级
+          </span>
+          <span className="text-[11px] font-mono font-semibold text-amber-700">{score}分</span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+          Standard B级
+        </span>
+        <span className="text-[11px] font-mono text-slate-500">{score}分</span>
+      </div>
+    );
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar px-8 pb-8">
-      
-      {/* 1. Filter Tabs Bar & Sort Dropdown matching 03_ApplicationPage.png */}
-      <div className="flex items-center justify-between py-4 mb-2 shrink-0">
-        {/* Left Segmented Filter Tabs */}
-        <div className="bg-white rounded-full p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 flex items-center gap-1">
-          {(['All Status', 'Pending', 'On-Hold', 'Candidate'] as const).map((tab) => {
-            const isActive = currentTab === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => setCurrentTab(tab)}
-                className={`px-5 py-2 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer ${
-                  isActive
-                    ? 'bg-[#EA3A20] text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                }`}
-              >
-                {tab}
-              </button>
-            );
-          })}
+    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar px-6 lg:px-8 pb-8 space-y-4">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 right-8 z-50 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce border border-slate-700">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* 1. Top WhatsApp Reception Header */}
+      <div className="bg-white rounded-3xl p-4.5 border border-slate-100 shadow-[0_2px_14px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
+            <MessageCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900">WhatsApp 售前询盘助手</h2>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                售前机器人接待在线
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              售前询盘主要用于查看接入 WhatsApp 的询盘客户名单及售前机器人的交互聊天记录。销售对接安排统一在 CRM 系统中进行。
+            </p>
+          </div>
         </div>
 
-        {/* Right Sort Filter Pill */}
-        <button className="h-9 px-4.5 rounded-full bg-[#FFEFEA] text-[#EA3A20] hover:bg-[#ffe3dc] text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs">
-          <span>Newest</span>
-          <ChevronDown className="w-3.5 h-3.5" />
-        </button>
+        {/* Action Buttons: Batch Export, Config, Create */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+          <button
+            onClick={handleBatchExport}
+            className="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+            title="批量导出询盘客户列表及机器人接待摘要到本地 Excel"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>
+              {selectedRows.length > 0
+                ? `批量导出选中 (${selectedRows.length}条) 到 Excel`
+                : `批量导出 Excel (共 ${filteredInquiries.length}条)`}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setIsChannelConfigOpen(true)}
+            className="px-3.5 py-2 rounded-full border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+          >
+            <Sliders className="w-3.5 h-3.5 text-emerald-600" />
+            <span>WhatsApp 网关与接待规则</span>
+          </button>
+
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>接入/录入新询盘</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2. Main Content Card Area */}
+      {/* 2. Detail View vs. Inquiries List */}
       {isDetailView ? (
-        /* Detailed RFQ View */
-        <div className="flex-1 flex flex-col gap-6 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setIsDetailView(false)}
-              className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-[#EA3A20] bg-white border border-slate-200 px-4 py-2 rounded-full shadow-2xs cursor-pointer transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" /> 返回询盘列表
-            </button>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">询盘编号：</span>
-              <span className="text-xs font-bold font-mono text-slate-700">{selectedInquiry.id}</span>
+        <InquiryChatDetailView inquiry={selectedInquiry} onBack={() => setIsDetailView(false)} />
+      ) : (
+        <div className="space-y-4">
+          {/* 2.1 Time Range Query & Filter Bar (列表提供询盘时间查询) */}
+          <div className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-2xs flex flex-col gap-3 shrink-0">
+            {/* Row 1: Time Quick Range Tabs & Custom Date Inputs */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-slate-400 text-xs font-bold flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>询盘时间查询:</span>
+                </span>
+
+                {/* Quick Date Pills */}
+                {(
+                  [
+                    { id: 'ALL', label: '全部时间' },
+                    { id: 'TODAY', label: '今日新进 (08-17)' },
+                    { id: '7DAYS', label: '近 7 天' },
+                    { id: '30DAYS', label: '近 30 天' },
+                    { id: 'THIS_MONTH', label: '本月全部' }
+                  ] as const
+                ).map((tab) => {
+                  const isActive = timeQuickRange === tab.id && !startDate && !endDate;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setTimeQuickRange(tab.id);
+                        setStartDate('');
+                        setEndDate('');
+                        setCurrentPage(1);
+                      }}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-emerald-600 text-white shadow-2xs'
+                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Custom Date Range Picker */}
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-slate-400 text-[11px] font-medium">起止日期:</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-mono focus:outline-none focus:border-emerald-500"
+                />
+                <span className="text-slate-400">至</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-mono focus:outline-none focus:border-emerald-500"
+                />
+                {(startDate || endDate || timeQuickRange !== 'ALL') && (
+                  <button
+                    onClick={() => {
+                      setStartDate('');
+                      setEndDate('');
+                      setTimeQuickRange('ALL');
+                    }}
+                    className="p-1 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-100 transition-colors"
+                    title="清空日期筛选"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left RFQ Content */}
-            <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-2.5">
-                  <span className="px-2.5 py-1 text-xs bg-red-50 text-[#EA3A20] font-bold rounded-lg border border-red-100">
-                    {selectedInquiry.platform}
-                  </span>
-                  <h2 className="text-base font-bold text-slate-900">{selectedInquiry.title}</h2>
-                </div>
-                <span className="text-xs font-mono text-slate-400">{selectedInquiry.receivedAt}</span>
-              </div>
-
-              <div className="p-4 bg-slate-50/80 rounded-2xl text-xs space-y-2 text-slate-700 border border-slate-100">
-                <div>买家名称：<strong className="text-slate-900">{selectedInquiry.buyerName}</strong> ({selectedInquiry.country})</div>
-                <div>联系邮箱：<span className="font-mono text-[#EA3A20] font-medium">{selectedInquiry.email}</span></div>
-                <div>目标交付：<span className="font-semibold text-slate-800">{selectedInquiry.targetDelivery}</span></div>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <label className="text-xs font-bold text-slate-700 block">买家原始询盘内容 (RFQ Raw Content)</label>
-                <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-800 leading-relaxed font-mono whitespace-pre-wrap">
-                  {selectedInquiry.rawContent}
-                </div>
-              </div>
-            </div>
-
-            {/* Right AI Analysis & Reply Draft */}
-            <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-4 flex flex-col justify-between">
-              <div className="space-y-4">
-                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
-                  <Sparkles className="w-5 h-5 text-[#EA3A20]" />
-                  AI 意向识别与 FOB 报价回复草稿
-                </h2>
-
-                <div className="p-4 bg-[#FFF4F2] border border-[#EA3A20]/20 rounded-2xl space-y-2 text-xs">
-                  <div className="flex items-center justify-between font-bold text-[#EA3A20]">
-                    <span>买家意向评级：{selectedInquiry.aiAnalysis?.intentLevel}</span>
-                    <span>置信度：{(selectedInquiry.aiAnalysis?.confidenceScore || 0) * 100}%</span>
-                  </div>
-                  <p className="text-slate-700 leading-relaxed font-medium">
-                    {selectedInquiry.aiAnalysis?.summary}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 block">AI 自动生成答复与报价单草稿</label>
-                  <textarea
-                    rows={8}
-                    value={autoDraft}
-                    onChange={(e) => setAutoDraft(e.target.value)}
-                    className="w-full p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-mono text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20]"
+            {/* Row 2: Search, Intent Filter & Sorting */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+                {/* Search */}
+                <div className="relative flex-1 min-w-[220px] max-w-md">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="搜索买家姓名、WhatsApp号码、公司、国家或品类..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
+
+                {/* Intent Filter */}
+                <div className="flex items-center gap-1.5 text-xs">
+                  <span className="text-slate-400 text-[11px] font-bold">意向等级:</span>
+                  <select
+                    value={intentFilter}
+                    onChange={(e) => {
+                      setIntentFilter(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="bg-slate-50 border border-slate-200 rounded-full px-3 py-1 text-xs text-slate-700 font-bold focus:outline-none cursor-pointer"
+                  >
+                    <option value="ALL">全部意向</option>
+                    <option value="Hot">Hot (S级大单)</option>
+                    <option value="Warm">Warm (A级工程)</option>
+                    <option value="Standard">Standard (B级询价)</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                <button
-                  onClick={() => setIsDetailView(false)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold transition-colors cursor-pointer"
+              {/* Sort selector & Reset */}
+              <div className="flex items-center gap-2.5 shrink-0">
+                <span className="text-slate-400 text-[11px] font-bold">排序方式:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="bg-emerald-50 text-emerald-800 font-bold rounded-full px-3 py-1 text-xs border border-emerald-200 focus:outline-none cursor-pointer"
                 >
-                  暂存草稿
-                </button>
-                <button className="px-6 py-2.5 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-full text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95">
-                  <Send className="w-4 h-4" /> 确认发送给买家
+                  <option value="newest">最新询盘时间</option>
+                  <option value="score">AI意向评分从高到低</option>
+                  <option value="budget">采购预算规模</option>
+                </select>
+
+                <button
+                  onClick={handleResetFilters}
+                  className="px-3 py-1 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+                >
+                  重置条件
                 </button>
               </div>
             </div>
+
+            {/* Batch Action Toolbar when items are selected */}
+            {selectedRows.length > 0 && (
+              <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl px-4 py-2 flex items-center justify-between text-xs animate-fade-in">
+                <div className="flex items-center gap-2 text-emerald-900 font-bold">
+                  <CheckSquare className="w-4 h-4 text-emerald-600" />
+                  <span>已勾选 {selectedRows.length} 位客户</span>
+                  <span className="text-[11px] text-emerald-700 font-normal">
+                    （可一键批量导出到本地 Excel，或在 CRM 中统一录入对接）
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSelectedRows([])}
+                    className="text-slate-500 hover:text-slate-800 text-xs font-medium cursor-pointer"
+                  >
+                    取消勾选
+                  </button>
+                  <button
+                    onClick={handleBatchExport}
+                    className="px-3.5 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs flex items-center gap-1 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>导出已选 ({selectedRows.length}条) 到 Excel</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      ) : (
-        /* The Signature Jobick White Table Card */
-        <div className="flex-1 flex flex-col justify-between">
+
+          {/* 2.2 Inquiry Customer Table (Focusing on Customers, Bot Reception, Time, and Chat Logs) */}
           <div className="bg-white rounded-3xl shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100/90 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-100 text-slate-900 text-xs font-bold tracking-tight">
-                    <th className="py-4.5 pl-6 pr-3 w-12 text-center">
+                  <tr className="border-b border-slate-100 text-slate-900 text-xs font-bold tracking-tight bg-slate-50/50">
+                    <th className="py-4 pl-6 pr-3 w-12 text-center">
                       <button
                         onClick={toggleSelectAll}
                         className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                        title="全选 / 反选当前页"
                       >
-                        {selectedRows.length === mockApplications.length ? (
-                          <CheckSquare className="w-4.5 h-4.5 text-[#EA3A20]" />
+                        {selectedRows.length === paginatedInquiries.length && paginatedInquiries.length > 0 ? (
+                          <CheckSquare className="w-4.5 h-4.5 text-emerald-600" />
                         ) : (
                           <Square className="w-4.5 h-4.5 text-slate-300" />
                         )}
                       </button>
                     </th>
-                    <th className="py-4.5 px-4 font-bold text-slate-900">Order ID</th>
-                    <th className="py-4.5 px-4 font-bold text-slate-900">Date Applied</th>
-                    <th className="py-4.5 px-4 font-bold text-slate-900">Company</th>
-                    <th className="py-4.5 px-4 font-bold text-slate-900">Type</th>
-                    <th className="py-4.5 px-4 font-bold text-slate-900">Position</th>
-                    <th className="py-4.5 px-4 font-bold text-slate-900">Contact</th>
-                    <th className="py-4.5 px-4 font-bold text-slate-900">Status</th>
-                    <th className="py-4.5 pr-6 pl-2 text-right"></th>
+                    <th className="py-4 px-3 font-bold text-slate-900">询盘编号</th>
+                    <th className="py-4 px-3 font-bold text-slate-900">WhatsApp 客户 / 公司</th>
+                    <th className="py-4 px-3 font-bold text-slate-900">询盘时间</th>
+                    <th className="py-4 px-3 font-bold text-slate-900">采购品类与需求</th>
+                    <th className="py-4 px-3 font-bold text-slate-900">预算与数量</th>
+                    <th className="py-4 px-3 font-bold text-slate-900">AI意向评级</th>
+                    <th className="py-4 px-3 font-bold text-slate-900">售前机器人接待</th>
+                    <th className="py-4 pr-6 pl-2 text-right font-bold text-slate-900">操作</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100/80 text-xs">
-                  {mockApplications.map((item, index) => {
-                    const isSelected = selectedRows.includes(index);
-                    return (
-                      <tr
-                        key={index}
-                        onClick={() => {
-                          setIsDetailView(true);
-                          setSelectedInquiry(inquiries[index % inquiries.length]);
-                        }}
-                        className={`hover:bg-slate-50/70 transition-colors cursor-pointer h-16 ${
-                          isSelected ? 'bg-red-50/30' : ''
-                        }`}
-                      >
-                        {/* Checkbox Column */}
-                        <td
-                          className="py-4 pl-6 pr-3 text-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleSelectRow(index);
-                          }}
-                        >
-                          <button className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer">
-                            {isSelected ? (
-                              <CheckSquare className="w-4.5 h-4.5 text-[#EA3A20]" />
-                            ) : (
-                              <Square className="w-4.5 h-4.5 text-slate-300" />
-                            )}
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {paginatedInquiries.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="py-12 text-center text-slate-400">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <MessageCircle className="w-8 h-8 text-slate-300" />
+                          <p className="text-xs font-semibold">未找到符合该时间或筛选条件的询盘客户</p>
+                          <button
+                            onClick={handleResetFilters}
+                            className="text-xs text-emerald-600 font-bold hover:underline cursor-pointer"
+                          >
+                            清空筛选查看全部
                           </button>
-                        </td>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedInquiries.map((item) => {
+                      const isSelected = selectedRows.includes(item.id);
+                      const chatHistory = getInquiryChatHistory(item);
+                      const turnsCount = chatHistory.length;
 
-                        {/* Order ID */}
-                        <td className="py-4 px-4 font-semibold text-slate-800">
-                          {item.orderId}
-                        </td>
+                      return (
+                        <tr
+                          key={item.id}
+                          onClick={() => handleSelectInquiry(item)}
+                          className={`hover:bg-slate-50/70 transition-colors cursor-pointer h-16 ${
+                            isSelected ? 'bg-emerald-50/30' : ''
+                          }`}
+                        >
+                          {/* Checkbox Column */}
+                          <td
+                            className="py-3.5 pl-6 pr-3 text-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSelectRow(item.id);
+                            }}
+                          >
+                            <button className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer">
+                              {isSelected ? (
+                                <CheckSquare className="w-4.5 h-4.5 text-emerald-600" />
+                              ) : (
+                                <Square className="w-4.5 h-4.5 text-slate-300" />
+                              )}
+                            </button>
+                          </td>
 
-                        {/* Date Applied */}
-                        <td className="py-4 px-4 text-slate-600 font-medium">
-                          {item.dateApplied}
-                        </td>
+                          {/* Inquiry RFQ No. */}
+                          <td className="py-3.5 px-3 font-mono font-bold text-slate-900">
+                            {item.inquiryNo || item.id}
+                          </td>
 
-                        {/* Company with Vibrant Geometric App Icon */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`relative w-9 h-9 rounded-xl ${item.iconBg} flex items-center justify-center shadow-2xs overflow-hidden shrink-0`}
-                            >
+                          {/* Buyer & WhatsApp Phone */}
+                          <td className="py-3.5 px-3">
+                            <div className="min-w-[160px]">
+                              <div className="font-bold text-slate-900 truncate flex items-center gap-1.5">
+                                <span>{item.buyerName}</span>
+                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">
+                                  {item.countryCode}
+                                </span>
+                              </div>
                               <div
-                                className={`absolute -right-1 -top-1 w-5 h-5 rounded-full ${item.iconAccent}`}
-                              />
-                              <div className="relative w-3.5 h-3.5 rounded-full bg-white/90" />
+                                onClick={(e) => handleCopyPhone(e, item.contactNumber, item.id)}
+                                className="text-[11px] text-emerald-700 font-mono font-semibold flex items-center gap-1 mt-0.5 hover:text-emerald-800"
+                                title="点击复制 WhatsApp 号码"
+                              >
+                                <MessageCircle className="w-3 h-3 text-emerald-600 shrink-0" />
+                                <span>{item.contactNumber}</span>
+                                {copiedPhoneId === item.id && (
+                                  <span className="text-[9px] text-emerald-600 font-sans font-bold">已复制</span>
+                                )}
+                              </div>
+                              <div className="text-[10px] text-slate-400 truncate max-w-[170px]" title={item.companyName}>
+                                {item.companyName}
+                              </div>
                             </div>
-                            <span className="font-bold text-slate-900 text-xs truncate max-w-[140px]">
-                              {item.company}
+                          </td>
+
+                          {/* Inquiry Time (询盘时间) */}
+                          <td className="py-3.5 px-3 whitespace-nowrap">
+                            <div className="text-slate-800 font-mono text-[11px] font-semibold">
+                              {item.createdAt || item.receivedAt}
+                            </div>
+                            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-medium">
+                              WhatsApp进线
                             </span>
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* Type */}
-                        <td className="py-4 px-4">
-                          <span className="text-[11px] font-bold tracking-wider text-slate-600 uppercase">
-                            {item.type}
-                          </span>
-                        </td>
+                          {/* Category & Requirements */}
+                          <td className="py-3.5 px-3">
+                            <div
+                              className="max-w-[210px] truncate font-medium text-slate-800"
+                              title={item.furnitureCategory}
+                            >
+                              {item.furnitureCategory}
+                            </div>
+                            <div className="text-[10px] text-slate-400 truncate max-w-[200px]">
+                              {item.rawContent || item.content}
+                            </div>
+                          </td>
 
-                        {/* Position */}
-                        <td className="py-4 px-4 text-slate-700 font-medium">
-                          {item.position}
-                        </td>
+                          {/* Budget & Quantity */}
+                          <td className="py-3.5 px-3">
+                            <div>
+                              <div className="font-bold text-slate-900 font-mono">{item.budget}</div>
+                              <div className="text-[11px] text-slate-400 truncate max-w-[130px]">
+                                {item.quantity}
+                              </div>
+                            </div>
+                          </td>
 
-                        {/* Contact Phone */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2 text-slate-900 font-bold">
-                            <Phone className="w-3.5 h-3.5 text-[#0F4A47] fill-[#0F4A47]" />
-                            <span>{item.contact}</span>
-                          </div>
-                        </td>
+                          {/* AI Intent Badge */}
+                          <td className="py-3.5 px-3">
+                            {renderIntentBadge(item.intentLevel, item.aiScore)}
+                          </td>
 
-                        {/* Status Badge */}
-                        <td className="py-4 px-4">
-                          {renderStatusBadge(item.status)}
-                        </td>
+                          {/* Pre-sales Robot Status & Chat Turns */}
+                          <td className="py-3.5 px-3">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="font-semibold text-emerald-800 text-[11px]">
+                                已应答 {turnsCount} 轮对话
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[140px]">
+                              {item.attachments && item.attachments.length > 0
+                                ? '📎 已获取图纸与规范'
+                                : '已提纯需求与FOB'}
+                            </div>
+                          </td>
 
-                        {/* Action Dots */}
-                        <td
-                          className="py-4 pr-6 pl-2 text-right"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors">
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          {/* Actions: View Chat History & Export */}
+                          <td
+                            className="py-3.5 pr-6 pl-2 text-right whitespace-nowrap"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => handleSelectInquiry(item)}
+                                className="px-3 py-1 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-[11px] font-bold transition-colors cursor-pointer border border-emerald-200 hover:border-emerald-600 flex items-center gap-1"
+                              >
+                                <MessageCircle className="w-3 h-3" />
+                                <span>查看聊天记录</span>
+                              </button>
+
+                              <button
+                                onClick={(e) => handleExportSingleRow(e, item)}
+                                className="p-1 rounded-full text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                                title="导出此客户到 Excel"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* 3. Pagination Footer matching unified design */}
-          <div className="flex items-center justify-between pt-6 pb-2 shrink-0">
+          {/* 2.3 Pagination Footer */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 pb-2 shrink-0">
             <span className="text-xs font-semibold text-slate-500">
-              共 102 条数据，当前显示第 {(currentPage - 1) * 5 + 1} - {Math.min(102, currentPage * 5)} 条
+              共 {filteredInquiries.length} 位询盘客户，当前显示第{' '}
+              {filteredInquiries.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} -{' '}
+              {Math.min(filteredInquiries.length, currentPage * pageSize)} 位
             </span>
 
             {/* Pagination Controls */}
             <div className="flex items-center gap-2">
-              {/* 上一页 按钮 */}
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className={`px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
+                className={`px-4 py-1.5 rounded-full border border-emerald-300 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
                   currentPage === 1
                     ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                    : 'bg-[#FFF5F2] hover:bg-[#ffece6] text-[#EA3A20]'
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800'
                 }`}
               >
                 上一页
               </button>
 
-              {/* 页码按钮 */}
-              {[1, 2, 3, 4].map((page) => {
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                 const isActive = currentPage === page;
                 return (
                   <button
@@ -454,7 +704,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({ inquiries, subVi
                     onClick={() => setCurrentPage(page)}
                     className={`w-8 h-8 rounded-full text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
                       isActive
-                        ? 'bg-[#EA3A20] text-white shadow-xs scale-105'
+                        ? 'bg-emerald-600 text-white shadow-xs scale-105'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-white'
                     }`}
                   >
@@ -463,14 +713,13 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({ inquiries, subVi
                 );
               })}
 
-              {/* 下一页 按钮 */}
               <button
-                onClick={() => setCurrentPage(Math.min(4, currentPage + 1))}
-                disabled={currentPage === 4}
-                className={`px-4.5 py-1.5 rounded-full border border-[#EA3A20]/40 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
-                  currentPage === 4
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className={`px-4 py-1.5 rounded-full border border-emerald-300 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
+                  currentPage === totalPages || totalPages === 0
                     ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                    : 'bg-[#FFF5F2] hover:bg-[#ffece6] text-[#EA3A20]'
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800'
                 }`}
               >
                 下一页
@@ -480,6 +729,17 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({ inquiries, subVi
         </div>
       )}
 
+      {/* Modals */}
+      <ChannelConfigModal
+        isOpen={isChannelConfigOpen}
+        onClose={() => setIsChannelConfigOpen(false)}
+      />
+
+      <CreateInquiryModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onAddInquiry={handleAddInquiry}
+      />
     </div>
   );
 };

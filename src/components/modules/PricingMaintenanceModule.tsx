@@ -32,17 +32,17 @@ interface PricingMaintenanceModuleProps {
 }
 
 export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> = ({
-  subView = '单价库',
+  subView = '面价设置',
   onSelectSubView
 }) => {
-  // Current active subview tab (单价库 | 算价规则配置 | BOQ报价试算)
-  const normalizedSubView = subView === 'BOQ单价库' ? '单价库' : subView;
-  const [currentSubView, setCurrentSubView] = useState<string>(normalizedSubView || '单价库');
+  // Current active subview tab (面价设置 | 算价规则配置 | BOQ报价试算)
+  const normalizedSubView = (subView === 'BOQ单价库' || subView === '单价库' || subView === '面价设置') ? '面价设置' : subView;
+  const [currentSubView, setCurrentSubView] = useState<string>(normalizedSubView || '面价设置');
 
   // Keep in sync with prop if changed externally
   React.useEffect(() => {
     if (subView) {
-      setCurrentSubView(subView === 'BOQ单价库' ? '单价库' : subView);
+      setCurrentSubView((subView === 'BOQ单价库' || subView === '单价库' || subView === '面价设置') ? '面价设置' : subView);
     }
   }, [subView]);
 
@@ -473,7 +473,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2.5">
-          {(currentSubView === '单价库' || currentSubView === 'BOQ单价库') ? (
+          {(currentSubView === '面价设置' || currentSubView === '单价库' || currentSubView === 'BOQ单价库') ? (
             <>
               <button
                 type="button"
@@ -511,18 +511,18 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
 
               <button
                 type="button"
-                onClick={() => handleTabChange('单价库')}
+                onClick={() => handleTabChange('面价设置')}
                 className="h-9 px-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
               >
-                <span>← 返回单价库</span>
+                <span>← 返回面价设置</span>
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* ======================= TAB 1: 单价库 ======================= */}
-      {(currentSubView === '单价库' || currentSubView === 'BOQ单价库') && (
+      {/* ======================= TAB 1: 面价设置 ======================= */}
+      {(currentSubView === '面价设置' || currentSubView === '单价库' || currentSubView === 'BOQ单价库') && (
         <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
 
           {/* Document Source Banner & Latest Update Time */}
@@ -1124,7 +1124,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                   <h3 className="text-sm font-bold text-slate-900">工程量清单及明细核算 (Bill of Quantities)</h3>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  所有分项均根据左侧单价库、板材损耗率及规格标准自动计算汇总，支持无缝导出至正式报价单。
+                  所有分项均根据左侧面价设置、板材损耗率及规格标准自动计算汇总，支持无缝导出至正式报价单。
                 </p>
               </div>
 

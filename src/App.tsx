@@ -38,7 +38,7 @@ const getModuleTitleById = (mod: ModuleType): string => {
     case 'home':
       return '通用知识问答';
     case 'pre_sales':
-      return '售前询盘';
+      return '售前询盘助手';
     case 'in_sales':
       return '销售助手';
     case 'marketing':
@@ -52,11 +52,11 @@ const getModuleTitleById = (mod: ModuleType): string => {
     case 'employee':
       return '员工权限';
     case 'sys_config':
-      return '系统配置';
+      return '智能体基础设置';
     case 'audit_logs':
       return '日志与审计';
     default:
-      return '售前询盘';
+      return '售前询盘助手';
   }
 };
 
@@ -73,13 +73,13 @@ const getDefaultSubViewByModule = (mod: ModuleType): string => {
     case 'knowledge_base':
       return '内容上传';
     case 'pricing_maintenance':
-      return '单价库';
+      return '面价设置';
     case 'analytics':
       return '销售智能体统计';
     case 'employee':
       return '员工列表';
     case 'sys_config':
-      return '智能体基础配置';
+      return 'Agent 配置';
     case 'audit_logs':
       return '操作日志';
     default:
@@ -100,9 +100,9 @@ export function App() {
     {
       id: 'pre_sales__售前询盘列表',
       moduleId: 'pre_sales',
-      moduleTitle: '售前询盘',
+      moduleTitle: '售前询盘助手',
       subView: '售前询盘列表',
-      title: '售前询盘',
+      title: '售前询盘助手',
       closable: true
     }
   ]);
@@ -236,7 +236,7 @@ export function App() {
       case 'employee':
         return <StaffModule employees={initialEmployees} roles={initialRoles} subView={subView} />;
       case 'sys_config':
-        return <SystemConfigModule config={initialSystemConfig} subView={subView} />;
+        return <SystemConfigModule config={initialSystemConfig} subView={subView} onSelectSubView={handleSelectSubView} />;
       case 'audit_logs':
         return <AuditLogsModule logs={initialOperationLogs as any} subView={subView} />;
       default:

@@ -1,129 +1,174 @@
-import React, { useState } from 'react';
-import { Save, ChevronDown, Check } from 'lucide-react';
-import { SystemAgentConfig } from '../../types';
+import React, { useState, useEffect } from 'react';
+import {
+  Save,
+  Check,
+  Bot,
+  Wrench,
+  Sliders,
+  Sparkles,
+  Layers,
+  HelpCircle,
+  Download,
+  Upload
+} from 'lucide-react';
+import { SystemAgentConfig, AgentSkill } from '../../types';
+import { initialAgentSkills } from '../../data/mockData';
+import { AgentConfigView } from './agent_config/AgentConfigView';
+import { SkillConfigView } from './agent_config/SkillConfigView';
 
 interface SystemConfigModuleProps {
   config: SystemAgentConfig;
   subView: string;
+  onSelectSubView?: (subView: string) => void;
 }
 
-export const SystemConfigModule: React.FC<SystemConfigModuleProps> = ({ config }) => {
-  const [model, setModel] = useState(config.defaultModel);
-  const [temperature, setTemperature] = useState(config.temperature);
-  const [systemPrompt, setSystemPrompt] = useState(config.systemPrompt);
+export const SystemConfigModule: React.FC<SystemConfigModuleProps> = ({
+  config,
+  subView,
+  onSelectSubView
+}) => {
+  // Determine tab from subView
+  const initialTab = subView === 'Skill 配置' ? 'Skill 配置' : 'Agent 配置';
+  const [activeTab, setActiveTab] = useState<'Agent 配置' | 'Skill 配置'>(initialTab);
+  
+  // Local state for full config
+  const [agentConfig, setAgentConfig] = useState<SystemAgentConfig>(config);
+  const [skillsList, setSkillsList] = useState<AgentSkill[]>(config.skills || initialAgentSkills);
   const [isSaved, setIsSaved] = useState(false);
-  const [activeTab, setActiveTab] = useState<'模型参数' | '角色设定' | '同传与合规'>('模型参数');
 
-  const handleSave = () => {
+  // Synchronize when external subView changes
+  useEffect(() => {
+    if (subView === 'Skill 配置') {
+      setActiveTab('Skill 配置');
+    } else if (subView === 'Agent 配置' || subView === '智能体基础配置' || subView === '智能体基础设置') {
+      setActiveTab('Agent 配置');
+    }
+  }, [subView]);
+
+  const handleTabChange = (tab: 'Agent 配置' | 'Skill 配置') => {
+    setActiveTab(tab);
+    if (onSelectSubView) {
+      onSelectSubView(tab);
+    }
+  };
+
+  const handleSaveGlobal = () => {
     setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
+    setTimeout(() => setIsSaved(false), 2200);
+  };
+
+  const handleExportConfig = () => {
+    const fullPayload = {
+      exportTime: new Date().toISOString(),
+      agentConfig,
+      skills: skillsList
+    };
+    const blob = new Blob([JSON.stringify(fullPayload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `HomeCraft_AI_Agent_Config_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
-      
-      {/* Top Filter Bar */}
-      <div className="flex items-center justify-between py-4 mb-2 shrink-0">
-        <div className="bg-white rounded-full p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 flex items-center gap-1">
-          {(['模型参数', '角色设定', '同传与合规'] as const).map((tab) => {
-            const isActive = activeTab === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-[#EA3A20] text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+      {/* Top Header & Tab Selector Bar */}
+      <div className="flex items-center justify-between py-4 mb-2 shrink-0 border-b border-slate-200/80">
+        <div className="flex items-center gap-4">
+          <div className="bg-white rounded-2xl p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-200/80 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => handleTabChange('Agent 配置')}
+              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'Agent 配置'
+                  ? 'bg-[#EA3A20] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Bot className="w-4 h-4" />
+              <span>Agent 配置</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium ${
+                  activeTab === 'Agent 配置' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
                 }`}
               >
-                {tab}
-              </button>
-            );
-          })}
+                底座与人设
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabChange('Skill 配置')}
+              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'Skill 配置'
+                  ? 'bg-[#EA3A20] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Wrench className="w-4 h-4" />
+              <span>Skill 配置</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium ${
+                  activeTab === 'Skill 配置' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                }`}
+              >
+                {skillsList.filter((s) => s.status === 'enabled').length} 项技能激活
+              </span>
+            </button>
+          </div>
+
+          <div className="hidden xl:flex items-center gap-2 text-xs text-slate-400">
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>智能体基础设置：涵盖 Agent 核心模型底座参数与 Skill 专业外贸算力工具库</span>
+          </div>
         </div>
 
-        <button
-          onClick={handleSave}
-          className="h-9 px-5 rounded-full bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold flex items-center gap-2 cursor-pointer transition-all shadow-xs active:scale-95"
-        >
-          {isSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-          <span>{isSaved ? '已保存！' : '保存全局配置'}</span>
-        </button>
+        {/* Right Actions */}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleExportConfig}
+            className="h-9 px-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+            title="导出当前全套 Agent 与 Skill JSON 配置清单"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden sm:inline">导出配置包</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSaveGlobal}
+            className="h-9 px-5 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold flex items-center gap-2 cursor-pointer transition-all shadow-xs active:scale-95"
+          >
+            {isSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            <span>{isSaved ? '已全局保存！' : '保存全局基础设置'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-6">
-        {activeTab === '模型参数' && (
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-6">
-            <h2 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">AI 基础底层大模型及算力分配</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-2">默认调用的 Gemini 模型版本</label>
-                <select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20]"
-                >
-                  <option value="gemini-2.5-flash">gemini-2.5-flash (极致低延迟、高并发推荐)</option>
-                  <option value="gemini-2.5-pro">gemini-2.5-pro (长文本高推理、复杂合同专用)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-2">
-                  Temperature 采样随机度: <span className="font-mono text-[#EA3A20]">{temperature}</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={temperature}
-                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                  className="w-full mt-3 accent-[#EA3A20]"
-                />
-              </div>
-            </div>
-          </div>
+      {/* Dynamic Content Area */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar pt-2 pr-1">
+        {activeTab === 'Agent 配置' && (
+          <AgentConfigView
+            config={agentConfig}
+            allSkills={skillsList}
+            onSave={(newCfg) => {
+              setAgentConfig((prev) => ({ ...prev, ...newCfg }));
+            }}
+          />
         )}
 
-        {activeTab === '角色设定' && (
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
-              全局销售智能体角色设定 (System Persona Prompt)
-            </h2>
-
-            <div>
-              <textarea
-                rows={10}
-                value={systemPrompt}
-                onChange={(e) => setSystemPrompt(e.target.value)}
-                className="w-full p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-mono text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20]"
-              />
-            </div>
-          </div>
-        )}
-
-        {activeTab === '同传与合规' && (
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">自动多语种同传与合规约束</h2>
-
-            <div className="space-y-3.5 text-xs">
-              <label className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl cursor-pointer hover:bg-[#FFF4F2] transition-colors">
-                <input type="checkbox" defaultChecked className="rounded-md border-slate-300 w-4 h-4 accent-[#EA3A20]" />
-                <span className="font-semibold text-slate-800">开启非英语海外买家聊天自动英/中实时双语同传模式</span>
-              </label>
-              <label className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl cursor-pointer hover:bg-[#FFF4F2] transition-colors">
-                <input type="checkbox" defaultChecked className="rounded-md border-slate-300 w-4 h-4 accent-[#EA3A20]" />
-                <span className="font-semibold text-slate-800">严格遵守 FSC、CARB P2 及 BS5852 等国际家具认证关键词审校拦截</span>
-              </label>
-            </div>
-          </div>
+        {activeTab === 'Skill 配置' && (
+          <SkillConfigView
+            skills={skillsList}
+            onUpdateSkills={(updated) => {
+              setSkillsList(updated);
+            }}
+          />
         )}
       </div>
-
     </div>
   );
 };

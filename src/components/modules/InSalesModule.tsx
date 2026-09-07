@@ -34,9 +34,13 @@ import {
   Loader2,
   Image as ImageIcon,
   PlayCircle,
-  BookOpen
+  BookOpen,
+  MicOff,
+  Keyboard
 } from 'lucide-react';
 import { SessionItem, ChatMessage, ScriptItem } from '../../types';
+import { useVoiceToText } from '../../hooks/useVoiceToText';
+import { VoiceInputBanner } from '../common/VoiceInputBanner';
 
 interface InSalesModuleProps {
   sessions: SessionItem[];
@@ -134,6 +138,46 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>(initialAiMessages);
   const [expandedCitations, setExpandedCitations] = useState<string[]>([]);
   const [inputMessage, setInputMessage] = useState('');
+  const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
+
+  // Voice to text integration for AI Sales Assistant chat
+  const {
+    isListening,
+    transcript,
+    interimTranscript,
+    audioLevel,
+    lang,
+    setLang,
+    errorMsg,
+    startListening,
+    stopListening
+  } = useVoiceToText({
+    contextHint: 'sales',
+    defaultLang: 'zh-CN'
+  });
+
+  const handleVoiceConfirm = () => {
+    const textToInsert = transcript || interimTranscript;
+    if (textToInsert) {
+      setInputMessage((prev) => (prev ? `${prev} ${textToInsert}` : textToInsert));
+    }
+    stopListening();
+  };
+
+  const handleVoiceCancel = () => {
+    stopListening();
+  };
+
+  const handleToggleVoice = () => {
+    if (isListening) {
+      handleVoiceConfirm();
+    } else {
+      setInputMode('voice');
+      startListening((text) => {
+        setInputMessage((prev) => (prev ? `${prev} ${text}` : text));
+      });
+    }
+  };
 
   const toggleCitations = (msgId: string) => {
     setExpandedCitations(prev => prev.includes(msgId) ? prev.filter(id => id !== msgId) : [...prev, msgId]);
@@ -625,13 +669,60 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
 
             {/* Input Bar */}
             <div className="p-4 bg-white border-t border-slate-100 space-y-2">
-              <div className="flex items-center gap-3 text-xs text-slate-500 pb-1">
-                <button
-                  onClick={() => setShowCbmCalc(true)}
-                  className="flex items-center gap-1 hover:text-[#EA3A20] cursor-pointer font-bold transition-colors"
-                >
-                  <Calculator className="w-3.5 h-3.5 text-amber-500" /> 生成报价单
-                </button>
+              {/* Voice Input Banner */}
+              <VoiceInputBanner
+                isListening={isListening}
+                transcript={transcript}
+                interimTranscript={interimTranscript}
+                audioLevel={audioLevel}
+                lang={lang}
+                onToggleLang={() => setLang(lang === 'zh-CN' ? 'en-US' : 'zh-CN')}
+                onConfirm={handleVoiceConfirm}
+                onCancel={handleVoiceCancel}
+                errorMsg={errorMsg}
+              />
+
+              <div className="flex items-center justify-between text-xs text-slate-500 pb-1">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowCbmCalc(true)}
+                    className="flex items-center gap-1 hover:text-[#EA3A20] cursor-pointer font-bold transition-colors"
+                  >
+                    <Calculator className="w-3.5 h-3.5 text-amber-500" /> 生成报价单
+                  </button>
+                </div>
+
+                {/* Input Method Switcher */}
+                <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-xl text-[11px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isListening) stopListening();
+                      setInputMode('keyboard');
+                    }}
+                    className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                      inputMode === 'keyboard' && !isListening
+                        ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <Keyboard className="w-3 h-3 text-slate-600" />
+                    <span>键盘输入</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleToggleVoice}
+                    className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                      isListening || inputMode === 'voice'
+                        ? 'bg-[#EA3A20] text-white shadow-2xs font-bold animate-pulse'
+                        : 'text-slate-500 hover:text-[#EA3A20]'
+                    }`}
+                  >
+                    <Mic className="w-3 h-3" />
+                    <span>{isListening ? '录音中...' : '语音转文字'}</span>
+                  </button>
+                </div>
               </div>
 
               <div className="relative flex items-end gap-2">
@@ -639,15 +730,48 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   rows={2}
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="向 AI 助手提问，如：分析客户痛点、撰写降价话术..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder={
+                    isListening
+                      ? '正在倾听语音转文字中... 也可以直接在键盘打字输入...'
+                      : '向 AI 销售助手提问，支持键盘打字或点击麦克风语音转文字...'
+                  }
                   className="flex-1 p-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20] resize-none"
                 />
+
+                <button
+                  type="button"
+                  onClick={handleToggleVoice}
+                  className={`h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 cursor-pointer transition-all ${
+                    isListening
+                      ? 'bg-red-600 text-white shadow-xs animate-pulse ring-2 ring-red-300'
+                      : 'bg-white hover:bg-slate-200/80 text-slate-600 border border-slate-200/80 shadow-2xs hover:text-[#EA3A20]'
+                  }`}
+                  title={isListening ? '点击完成语音录入' : '点击开始语音转文字'}
+                >
+                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+
                 <button
                   onClick={() => handleSendMessage()}
-                  className="px-5 py-3 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-2xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  disabled={!inputMessage.trim()}
+                  className="h-11 px-5 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-2xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                 >
                   <Send className="w-3.5 h-3.5" /> 发送
                 </button>
+              </div>
+
+              <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-0.5">
+                <span>支持键盘输入（Enter 发送，Shift+Enter 换行）或语音实时转文字</span>
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                  <span>AI 销售实战辅助 & 合规保密保障</span>
+                </span>
               </div>
             </div>
 

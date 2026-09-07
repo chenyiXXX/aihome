@@ -126,7 +126,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       userCount: 0,
       permissions: [
         { module: '通用知识问答', view: true, edit: false, delete: false, export: false },
-        { module: '售前询盘', view: true, edit: false, delete: false, export: false },
+        { module: '售前询盘助手', view: true, edit: false, delete: false, export: false },
         { module: '销售助手', view: true, edit: false, delete: false, export: false },
         { module: '运营助手', view: false, edit: false, delete: false, export: false },
         { module: '知识库管理', view: true, edit: false, delete: false, export: false },
@@ -491,14 +491,6 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                 <span>{isSyncing ? '正在拉取企业微信...' : '立即同步企业微信'}</span>
-              </button>
-
-              <button
-                onClick={() => setIsWeComModalOpen(true)}
-                className="h-9 px-4 rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
-              >
-                <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>企微对接设置</span>
               </button>
             </>
           ) : (

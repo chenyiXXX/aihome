@@ -16,9 +16,14 @@ import {
   Loader2,
   Lock,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Mic,
+  MicOff,
+  Keyboard
 } from 'lucide-react';
 import { TrainingCourse, TrainingLesson, QuizData } from '../../../data/trainingData';
+import { useVoiceToText } from '../../../hooks/useVoiceToText';
+import { VoiceInputBanner } from '../../common/VoiceInputBanner';
 
 interface TrainingWorkbenchProps {
   course: TrainingCourse;
@@ -40,6 +45,46 @@ export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
   const [selectedOption, setSelectedOption] = useState<string>('');
   const [textAnswer, setTextAnswer] = useState<string>('');
   const [lastGradeResult, setLastGradeResult] = useState<any>(null);
+  const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
+
+  // Voice to text integration for Training open-ended practice
+  const {
+    isListening,
+    transcript,
+    interimTranscript,
+    audioLevel,
+    lang,
+    setLang,
+    errorMsg,
+    startListening,
+    stopListening
+  } = useVoiceToText({
+    contextHint: 'training',
+    defaultLang: 'zh-CN'
+  });
+
+  const handleVoiceConfirm = () => {
+    const textToInsert = transcript || interimTranscript;
+    if (textToInsert) {
+      setTextAnswer((prev) => (prev ? `${prev} ${textToInsert}` : textToInsert));
+    }
+    stopListening();
+  };
+
+  const handleVoiceCancel = () => {
+    stopListening();
+  };
+
+  const handleToggleVoice = () => {
+    if (isListening) {
+      handleVoiceConfirm();
+    } else {
+      setInputMode('voice');
+      startListening((text) => {
+        setTextAnswer((prev) => (prev ? `${prev} ${text}` : text));
+      });
+    }
+  };
 
   const currentLesson = course.lessons[course.currentLessonIndex] || course.lessons[0];
   const completedCount = course.lessons.filter((l) => l.status === 'completed').length;
@@ -328,18 +373,86 @@ export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-700">请写出你的作答策略与话术：</span>
-                    <span className="text-[11px] text-slate-400">建议结合讲义核心知识点阐述</span>
+
+                    {/* Mode Selector */}
+                    <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-xl text-[11px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isListening) stopListening();
+                          setInputMode('keyboard');
+                        }}
+                        className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                          inputMode === 'keyboard' && !isListening
+                            ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                            : 'text-slate-500 hover:text-slate-800'
+                        }`}
+                      >
+                        <Keyboard className="w-3 h-3 text-slate-600" />
+                        <span>键盘输入</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleToggleVoice}
+                        className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                          isListening || inputMode === 'voice'
+                            ? 'bg-[#EA3A20] text-white shadow-2xs font-bold animate-pulse'
+                            : 'text-slate-500 hover:text-[#EA3A20]'
+                        }`}
+                      >
+                        <Mic className="w-3 h-3" />
+                        <span>{isListening ? '语音录制中...' : '语音口述作答'}</span>
+                      </button>
+                    </div>
                   </div>
-                  <textarea
-                    rows={4}
-                    value={textAnswer}
-                    onChange={(e) => setTextAnswer(e.target.value)}
-                    placeholder="在此输入您的实战解答内容...（例如：首先共情客户预算要求，引用其他欧美买家案例，重点核算全生命周期成本...）"
-                    className="w-full p-3 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] resize-none"
+
+                  {/* Voice Input Banner */}
+                  <VoiceInputBanner
+                    isListening={isListening}
+                    transcript={transcript}
+                    interimTranscript={interimTranscript}
+                    audioLevel={audioLevel}
+                    lang={lang}
+                    onToggleLang={() => setLang(lang === 'zh-CN' ? 'en-US' : 'zh-CN')}
+                    onConfirm={handleVoiceConfirm}
+                    onCancel={handleVoiceCancel}
+                    errorMsg={errorMsg}
                   />
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400">
-                    <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-                    <span>考察要点：{currentLesson.quiz.standardKeyPoints.join('、')}</span>
+
+                  <div className="relative">
+                    <textarea
+                      rows={4}
+                      value={textAnswer}
+                      onChange={(e) => setTextAnswer(e.target.value)}
+                      placeholder={
+                        isListening
+                          ? '正在倾听您的对练口述并转写文字... 亦可随时使用键盘修改完善...'
+                          : '支持键盘打字作答，或点击右下角麦克风通过语音口述实战话术（自动转文字）...'
+                      }
+                      className="w-full p-3 pr-12 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] resize-none"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={handleToggleVoice}
+                      className={`absolute right-2.5 bottom-2.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0 cursor-pointer transition-all ${
+                        isListening
+                          ? 'bg-red-600 text-white shadow-xs animate-pulse ring-2 ring-red-300'
+                          : 'bg-white hover:bg-slate-200/80 text-slate-600 border border-slate-200 shadow-2xs hover:text-[#EA3A20]'
+                      }`}
+                      title={isListening ? '点击完成语音录入' : '点击开启语音口述对练'}
+                    >
+                      {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <div className="flex items-center gap-1">
+                      <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+                      <span>考察要点：{currentLesson.quiz.standardKeyPoints.join('、')}</span>
+                    </div>
+                    <span>支持键盘输入与语音口述转文字</span>
                   </div>
                 </div>
               )}

@@ -1,6 +1,6 @@
 {
   "name": "外贸家居定制 AI 平台",
-  "description": "面向外贸家居定制企业的全流程 AI 智能平台，涵盖售前询盘、销售助手、运营助手、知识库管理、产品价格维护（BOQ清单与明细算价）、数据统计、员工权限、系统配置及日志审计。",
-  "requestFramePermissions": [],
+  "description": "面向外贸家居定制企业的全流程 AI 智能平台，涵盖售前询盘、销售助手、运营助手、知识库管理、产品价格维护（BOQ清单与明细算价）、数据统计、员工权限、智能体基础设置（Agent 配置与 Skill 配置）及日志审计。",
+  "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

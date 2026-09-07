@@ -52,13 +52,14 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
   const getModuleTitle = () => {
     switch (activeModule) {
       case 'home': return '通用知识问答';
-      case 'pre_sales': return '售前询盘';
+      case 'pre_sales': return '售前询盘助手';
       case 'in_sales': return '客户';
       case 'marketing': return '营销推广';
       case 'knowledge_base': return '知识库管理';
+      case 'pricing_maintenance': return '产品价格维护';
       case 'analytics': return '数据报告';
       case 'employee': return '团队与权限';
-      case 'sys_config': return '系统设置';
+      case 'sys_config': return '智能体基础设置';
       case 'audit_logs': return '日志与审计';
     }
   };
@@ -346,6 +347,28 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
           </div>
         );
 
+      case 'pricing_maintenance':
+        return (
+          <div className="space-y-1">
+            <button
+              onClick={() => onSelectSubView('面价设置')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
+                subView === '面价设置' || subView === '单价库' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              面价设置
+            </button>
+            <button
+              onClick={() => onSelectSubView('汇率管理')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
+                subView === '汇率管理' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              汇率管理
+            </button>
+          </div>
+        );
+
       case 'analytics':
         return (
           <div className="space-y-1">
@@ -410,12 +433,26 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
         return (
           <div className="space-y-1">
             <button
-              onClick={() => onSelectSubView('智能体基础配置')}
-              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '智能体基础配置' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+              onClick={() => onSelectSubView('Agent 配置')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs flex items-center justify-between cursor-pointer ${
+                subView === 'Agent 配置' || subView === '智能体基础配置' || subView === '智能体基础设置'
+                  ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold'
+                  : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              智能体基础配置
+              <span>Agent 配置</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">核心引擎</span>
+            </button>
+            <button
+              onClick={() => onSelectSubView('Skill 配置')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs flex items-center justify-between cursor-pointer ${
+                subView === 'Skill 配置'
+                  ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold'
+                  : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              <span>Skill 配置</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium">7项技能</span>
             </button>
           </div>
         );

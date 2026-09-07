@@ -22,13 +22,18 @@ import {
   ChevronRight,
   HelpCircle,
   Clock,
-  Sparkle
+  Sparkle,
+  Mic,
+  MicOff,
+  Keyboard
 } from 'lucide-react';
 import {
   TrainingCourse,
   initialTrainingCourses
 } from '../../data/trainingData';
 import { TrainingWorkbench } from './training/TrainingWorkbench';
+import { useVoiceToText } from '../../hooks/useVoiceToText';
+import { VoiceInputBanner } from '../common/VoiceInputBanner';
 
 export interface ChatMessage {
   id: string;
@@ -290,6 +295,46 @@ export const HomeModule: React.FC = () => {
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
+
+  // Voice to text integration
+  const {
+    isListening,
+    transcript,
+    interimTranscript,
+    audioLevel,
+    lang,
+    setLang,
+    errorMsg,
+    startListening,
+    stopListening
+  } = useVoiceToText({
+    contextHint: 'general',
+    defaultLang: 'zh-CN'
+  });
+
+  const handleVoiceConfirm = () => {
+    const textToInsert = transcript || interimTranscript;
+    if (textToInsert) {
+      setInputQuery((prev) => (prev ? `${prev} ${textToInsert}` : textToInsert));
+    }
+    stopListening();
+  };
+
+  const handleVoiceCancel = () => {
+    stopListening();
+  };
+
+  const handleToggleVoice = () => {
+    if (isListening) {
+      handleVoiceConfirm();
+    } else {
+      setInputMode('voice');
+      startListening((text) => {
+        setInputQuery((prev) => (prev ? `${prev} ${text}` : text));
+      });
+    }
+  };
 
   // Training state: progress, quizzes, efficiency tracking
   const [trainingCourses, setTrainingCourses] = useState<Record<string, TrainingCourse>>(initialTrainingCourses);
@@ -1009,35 +1054,108 @@ ${passed ? '👉 本节考核已通关！请点击上方【确认已掌握，进
             </div>
           </div>
 
-          {/* Textarea Input + Send Button */}
-          <div className="flex items-end gap-2 bg-slate-50 border border-slate-200/90 rounded-2xl p-2.5 focus-within:ring-2 focus-within:ring-[#EA3A20]/20 focus-within:border-[#EA3A20] transition-all">
-            <textarea
-              rows={2}
-              value={inputQuery}
-              onChange={(e) => setInputQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              placeholder={`在【${activeSession.categoryLabel}】中输入您的问题或谈判案例，按 Enter 发送...`}
-              className="flex-1 bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed p-1"
-            />
+          {/* Voice Input Banner */}
+          <VoiceInputBanner
+            isListening={isListening}
+            transcript={transcript}
+            interimTranscript={interimTranscript}
+            audioLevel={audioLevel}
+            lang={lang}
+            onToggleLang={() => setLang(lang === 'zh-CN' ? 'en-US' : 'zh-CN')}
+            onConfirm={handleVoiceConfirm}
+            onCancel={handleVoiceCancel}
+            errorMsg={errorMsg}
+          />
 
-            <button
-              type="button"
-              onClick={() => handleSendMessage()}
-              disabled={loading || !inputQuery.trim()}
-              className="h-10 px-5 bg-[#EA3A20] hover:bg-[#d6341c] text-white rounded-xl font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>{loading ? '检索中' : '发送'}</span>
-            </button>
+          {/* Input Method Switch & Textarea Container */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-xl text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isListening) stopListening();
+                    setInputMode('keyboard');
+                  }}
+                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    inputMode === 'keyboard' && !isListening
+                      ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <Keyboard className="w-3.5 h-3.5 text-slate-600" />
+                  <span>键盘输入</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleToggleVoice}
+                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    isListening || inputMode === 'voice'
+                      ? 'bg-[#EA3A20] text-white shadow-2xs font-bold animate-pulse'
+                      : 'text-slate-500 hover:text-[#EA3A20]'
+                  }`}
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                  <span>{isListening ? '录音中 (点击完成)' : '语音转文字'}</span>
+                </button>
+              </div>
+
+              {isListening && (
+                <span className="text-[11px] text-[#EA3A20] font-bold flex items-center gap-1 animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-[#EA3A20]"></span>
+                  正在收音并转写为文字...
+                </span>
+              )}
+            </div>
+
+            {/* Textarea Input + Mic Toggle + Send Button */}
+            <div className="flex items-end gap-2 bg-slate-50 border border-slate-200/90 rounded-2xl p-2.5 focus-within:ring-2 focus-within:ring-[#EA3A20]/20 focus-within:border-[#EA3A20] transition-all">
+              <textarea
+                rows={2}
+                value={inputQuery}
+                onChange={(e) => setInputQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                placeholder={
+                  isListening
+                    ? '正在倾听语音转写中... 您也可以直接使用键盘打字输入补充...'
+                    : `在【${activeSession.categoryLabel}】中输入您的问题，支持键盘输入或点击麦克风语音转文字...`
+                }
+                className="flex-1 bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed p-1"
+              />
+
+              <button
+                type="button"
+                onClick={handleToggleVoice}
+                className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer transition-all ${
+                  isListening
+                    ? 'bg-red-600 text-white shadow-xs animate-pulse ring-2 ring-red-300'
+                    : 'bg-white hover:bg-slate-200/80 text-slate-600 border border-slate-200/80 shadow-2xs hover:text-[#EA3A20]'
+                }`}
+                title={isListening ? '点击完成语音录入' : '点击开始语音转文字'}
+              >
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSendMessage()}
+                disabled={loading || !inputQuery.trim()}
+                className="h-10 px-5 bg-[#EA3A20] hover:bg-[#d6341c] text-white rounded-xl font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>{loading ? '检索中' : '发送'}</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
-            <span>支持 Enter 发送，Shift + Enter 换行</span>
+            <span>支持键盘输入（Enter 发送，Shift + Enter 换行）或语音转文字输入</span>
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-600" />
               <span>已接入企业内部保密过滤，敏感数据出境合规风控开启</span>

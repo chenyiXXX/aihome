@@ -145,7 +145,7 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
     },
     {
       id: 'pre_sales' as ModuleType,
-      label: '售前询盘',
+      label: '售前询盘助手',
       icon: Send,
       defaultSubView: '售前询盘列表',
       subViews: []
@@ -161,8 +161,8 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       id: 'pricing_maintenance' as ModuleType,
       label: '产品价格维护',
       icon: Calculator,
-      defaultSubView: '单价库',
-      subViews: ['单价库', '汇率管理']
+      defaultSubView: '面价设置',
+      subViews: ['面价设置', '汇率管理']
     },
     {
       id: 'analytics' as ModuleType,
@@ -180,10 +180,10 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
     },
     {
       id: 'sys_config' as ModuleType,
-      label: '系统配置',
+      label: '智能体基础设置',
       icon: Settings,
-      defaultSubView: '智能体基础配置',
-      subViews: ['智能体基础配置']
+      defaultSubView: 'Agent 配置',
+      subViews: ['Agent 配置', 'Skill 配置']
     },
     {
       id: 'audit_logs' as ModuleType,

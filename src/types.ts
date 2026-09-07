@@ -6,7 +6,7 @@ export type ModuleType =
   | 'in_sales'             // 三、销售助手 (3.1 会话列表, 3.2 会话详情 & 话术/素材)
   | 'marketing'            // 四、运营助手 (4.1 视频剪辑, 4.2 图文生成, 4.3 发布审核, 4.4 发布计划, 4.5 账号管理)
   | 'knowledge_base'       // 五、知识库管理 (5.1 内容上传, 5.2 知识复核, 5.3 分类管理, 5.4 标签管理)
-  | 'pricing_maintenance'  // 六、产品价格维护 (6.1 单价库, 6.2 汇率管理, 6.3 算价规则配置, 6.4 BOQ报价试算)
+  | 'pricing_maintenance'  // 六、产品价格维护 (6.1 面价设置, 6.2 汇率管理, 6.3 算价规则配置, 6.4 BOQ报价试算)
   | 'analytics'            // 七、数据统计 (智能体使用情况)
   | 'employee'             // 八、员工权限 (7.1 员工列表, 7.2 角色配置)
   | 'sys_config'           // 九、系统配置 (8.1 智能体基础配置)
@@ -33,6 +33,30 @@ export interface QAMessage {
 }
 
 // 2. Pre-sales Inquiry Types (售前询盘)
+export type InquiryChannel =
+  | 'WhatsApp'
+  | 'Alibaba'
+  | 'Made-in-China'
+  | 'Official Website'
+  | 'Email'
+  | 'Exhibition'
+  | 'Social Media';
+
+export interface InquiryChatMessage {
+  id: string;
+  sender: 'customer' | 'bot';
+  senderName: string;
+  time: string;
+  content: string;
+  translatedContent?: string;
+  attachments?: {
+    name: string;
+    size: string;
+    type: 'image' | 'pdf' | 'cad' | 'excel';
+    url?: string;
+  }[];
+}
+
 export interface InquiryItem {
   id: string;
   inquiryNo: string;
@@ -40,16 +64,17 @@ export interface InquiryItem {
   companyName: string;
   country: string;
   countryCode: string;
-  channel: 'Alibaba' | 'Made-in-China' | 'Official Website' | 'WhatsApp' | 'Exhibition';
+  channel: InquiryChannel | string;
+  contactNumber?: string;
   furnitureCategory: string; // e.g., '全屋定制 Solid Wood Cabinetry', '意式真皮沙发 Sofa', '现代简易衣柜 Wardrobe'
   budget: string;
   quantity: string;
   intentLevel: 'Hot (S级)' | 'Warm (A级)' | 'Standard (B级)' | 'Cold (C级)';
-  status: '待跟进' | 'AI已自动答复' | '已提供CAD报价' | '打样中' | '已签单' | '已归档';
+  status?: '待跟进' | 'AI已自动答复' | '已提供CAD报价' | '打样中' | '已签单' | '已归档' | string;
   createdAt: string;
-  assignedSales: string;
+  assignedSales?: string;
   content: string;
-  attachments: { name: string; url: string; size: string; type: 'image' | 'pdf' | 'cad' }[];
+  attachments: { name: string; url: string; size: string; type: 'image' | 'pdf' | 'cad' | 'excel' }[];
   aiReplyDraft?: string;
   aiScore: number;
   platform?: string;
@@ -58,6 +83,8 @@ export interface InquiryItem {
   email?: string;
   targetDelivery?: string;
   rawContent?: string;
+  chatHistory?: InquiryChatMessage[];
+  botTurns?: number;
   aiAnalysis?: {
     intentLevel?: string;
     confidenceScore?: number;
@@ -377,20 +404,108 @@ export interface RoleConfig {
   operationPermissions: OperationPermissionsConfig;
 }
 
-// 8. System Config Types (系统配置)
+// 8. System Config Types (智能体基础设置: 销售类智能体 Agent 配置 & 销售类 Skill 配置)
+export type SalesAgentCode =
+  | 'pre_processing_agent'
+  | 'intent_dispatcher_agent'
+  | 'knowledge_expert_agent'
+  | 'quotation_commercial_agent'
+  | 'sales_strategy_agent'
+  | 'qc_compliance_agent'
+  | 'aftersales_troubleshooting_agent';
+
+export interface SalesAgentItem {
+  id: string;
+  name: string;
+  code: SalesAgentCode;
+  role: string;
+  category: '前置接入' | '中枢路由' | '核心专家' | '商务报价' | '策略推进' | '合规风控' | '售后保障';
+  description: string;
+  status: 'active' | 'inactive' | 'standby';
+  geminiModel: string;
+  temperature: number;
+  topP: number;
+  maxOutputTokens: number;
+  contextRounds: number;
+  systemPrompt: string;
+  attachedSkillCodes: string[];
+  throughput24h: number;
+  avgLatencyMs: number;
+  accuracyRate: string;
+  pipelineOrder: number;
+  parameters: AgentSkillParameter[];
+  iconName: string;
+}
+
+export interface AgentSkillParameter {
+  name: string;
+  key: string;
+  type: 'string' | 'number' | 'boolean' | 'select';
+  value: any;
+  options?: string[];
+  description: string;
+  unit?: string;
+}
+
+export interface AgentSkill {
+  id: string;
+  name: string;
+  code: string;
+  category:
+    | '解析与数据'
+    | '通信与同步'
+    | '画像与枚举'
+    | '检索与RAG'
+    | '报价与计价'
+    | '文档与商业'
+    | '风控与合规'
+    | '生命周期'
+    | '知识协同'
+    | '计算与配载'
+    | '工程与图纸'
+    | '合规与质检'
+    | '商务与文案'
+    | '语音与多模态';
+  description: string;
+  version: string;
+  status: 'enabled' | 'disabled';
+  iconName: string;
+  triggerType: '自动语义唤起' | '指令调用' | '事件监听' | '混合触发' | '流水线串联';
+  triggerKeywords: string[];
+  parameters: AgentSkillParameter[];
+  inputSchemaSummary: string;
+  outputSchemaSummary: string;
+  associatedAgents?: string[];
+  apiEndpoint?: string;
+  lastInvoked?: string;
+  invocationCount: number;
+  successRate: string;
+  avgLatencyMs: number;
+  isCustom?: boolean;
+}
+
 export interface SystemAgentConfig {
   agentName: string;
+  agentId?: string;
   primaryPersona: string;
   languageMode: '中英双语 (默认)' | '多国语言自动翻译' | '纯英文纯粹视角';
   temperature: number;
+  topP?: number;
+  maxOutputTokens?: number;
+  contextRounds?: number;
   geminiModel: string;
   autoReplyDelaySeconds: number;
   enableAiScore: boolean;
   enableCbmCalculator: boolean;
   enableWatermark: boolean;
+  enableFSCComplianceFilter?: boolean;
+  enablePriceFormulaMasking?: boolean;
   fobDefaultPort: string;
   defaultModel?: string;
   systemPrompt?: string;
+  toneStyle?: '严谨专业' | '热情亲切' | '高层商务' | '工程顾问';
+  salesAgents?: SalesAgentItem[];
+  skills?: AgentSkill[];
 }
 
 // 9. Logs & Audit Types (日志与审计)
