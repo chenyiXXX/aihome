@@ -12,7 +12,6 @@ import {
   Clock,
   ShieldCheck,
   Phone,
-  FileSpreadsheet,
   Building2,
   Globe2,
   DollarSign,
@@ -22,7 +21,7 @@ import {
 } from 'lucide-react';
 import { InquiryItem, InquiryChatMessage } from '../../../types';
 import { getInquiryChatHistory } from '../../../data/inquiryChatData';
-import { exportInquiriesToExcel, copyCustomerCRMText } from '../../../utils/exportInquiries';
+import { exportInquiriesToExcel } from '../../../utils/exportInquiries';
 
 interface InquiryChatDetailViewProps {
   inquiry: InquiryItem;
@@ -34,20 +33,12 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
   onBack
 }) => {
   const [showTranslation, setShowTranslation] = useState<boolean>(true);
-  const [copiedCRM, setCopiedCRM] = useState<boolean>(false);
   const [copiedPhone, setCopiedPhone] = useState<boolean>(false);
   const [messages, setMessages] = useState<InquiryChatMessage[]>(() =>
     getInquiryChatHistory(inquiry)
   );
   const [simulatedInput, setSimulatedInput] = useState<string>('');
   const [isBotReplying, setIsBotReplying] = useState<boolean>(false);
-
-  const handleCopyCRM = () => {
-    const text = copyCustomerCRMText(inquiry);
-    navigator.clipboard.writeText(text);
-    setCopiedCRM(true);
-    setTimeout(() => setCopiedCRM(false), 2000);
-  };
 
   const handleCopyPhone = (phone?: string) => {
     if (!phone) return;
@@ -129,7 +120,7 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
           </div>
         </div>
 
-        {/* Right Actions: Export & CRM Sync */}
+        {/* Right Actions: Export */}
         <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
           <button
             onClick={() => setShowTranslation(!showTranslation)}
@@ -142,15 +133,6 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
           >
             <Languages className="w-3.5 h-3.5" />
             <span>{showTranslation ? '已开启中文翻译' : '仅看外语原文'}</span>
-          </button>
-
-          <button
-            onClick={handleCopyCRM}
-            className="px-3.5 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            title="复制结构化客户档案与对话摘要，方便直接粘贴至企业 CRM 系统"
-          >
-            {copiedCRM ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
-            <span>{copiedCRM ? '已复制 CRM 建档文本' : '复制对接 CRM'}</span>
           </button>
 
           <button
@@ -459,33 +441,6 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
             <div className="p-3.5 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl text-xs text-slate-700 leading-relaxed font-medium">
               {inquiry.aiAnalysis?.summary ||
                 '买家通过 WhatsApp 发起工程定制询价，包含CAD图纸与技术要求。售前智能体已完成多轮智能接待与面价测算。'}
-            </div>
-          </div>
-
-          {/* Card 4: CRM Handoff Notice & Local Export */}
-          <div className="bg-gradient-to-br from-amber-50 to-orange-50/60 border border-amber-200/80 rounded-3xl p-5 shadow-2xs space-y-3">
-            <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
-              <FileSpreadsheet className="w-4 h-4 text-amber-700" />
-              <span>CRM 销售跟进对接说明</span>
-            </div>
-            <p className="text-[11px] text-amber-900/80 leading-relaxed">
-              安排销售对接及后续商机流转已统一在企业 CRM 系统中承接。本平台负责 WhatsApp 售前机器人的全天候智能接待与对话记录沉淀。
-            </p>
-            <div className="pt-2 flex items-center gap-2">
-              <button
-                onClick={handleCopyCRM}
-                className="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-amber-100 text-amber-900 font-bold text-xs border border-amber-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                {copiedCRM ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-amber-700" />}
-                <span>{copiedCRM ? '已复制完整摘要' : '一键复制录入 CRM'}</span>
-              </button>
-              <button
-                onClick={handleExportSingle}
-                className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>导出此条</span>
-              </button>
             </div>
           </div>
 

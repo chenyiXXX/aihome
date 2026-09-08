@@ -89,13 +89,6 @@ export const SystemConfigModule: React.FC<SystemConfigModuleProps> = ({
             >
               <Bot className="w-4 h-4" />
               <span>Agent 配置</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium ${
-                  activeTab === 'Agent 配置' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                }`}
-              >
-                底座与人设
-              </span>
             </button>
 
             <button
@@ -109,13 +102,6 @@ export const SystemConfigModule: React.FC<SystemConfigModuleProps> = ({
             >
               <Wrench className="w-4 h-4" />
               <span>Skill 配置</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium ${
-                  activeTab === 'Skill 配置' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                }`}
-              >
-                {skillsList.filter((s) => s.status === 'enabled').length} 项技能激活
-              </span>
             </button>
           </div>
 

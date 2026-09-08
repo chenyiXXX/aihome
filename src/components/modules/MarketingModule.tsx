@@ -18,6 +18,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { VideoClipItem, MarketingPost } from '../../types';
+import { GraphicTextModule } from './marketing/GraphicTextModule';
 
 interface MarketingModuleProps {
   videoClips: VideoClipItem[];
@@ -202,78 +203,7 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
         )}
 
         {activeTab === '图文生成' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column: Input Form */}
-            <div className="bg-white border border-slate-100 rounded-3xl p-6 space-y-5 shadow-[0_4px_25px_rgba(0,0,0,0.03)]">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-                <FileText className="w-4 h-4 text-[#EA3A20]" /> 图文营销文案 AI 生成器
-              </h2>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">宣发主题/产品概念</label>
-                <input
-                  type="text"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20]"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">发布渠道目标</label>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {['Instagram', 'LinkedIn', 'Pinterest', 'TikTok', 'Facebook'].map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setChannel(p)}
-                      className={`py-2.5 px-3 rounded-2xl text-xs font-bold text-center cursor-pointer transition-all ${
-                        channel === p
-                          ? 'bg-[#EA3A20] text-white shadow-xs'
-                          : 'bg-slate-50 text-slate-700 border border-slate-100 hover:bg-slate-100'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={() => handleGenerateContent('text')}
-                disabled={loading}
-                className="w-full py-3.5 bg-[#EA3A20] hover:bg-[#c42810] text-white font-bold text-xs rounded-full shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
-              >
-                <Sparkles className="w-4 h-4" /> {loading ? '文案生成中...' : '生成海外多语种营销文案'}
-              </button>
-            </div>
-
-            {/* Right Column: Output Card */}
-            <div className="bg-white border border-slate-100 rounded-3xl p-6 space-y-4 shadow-[0_4px_25px_rgba(0,0,0,0.03)]">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-                <Share2 className="w-4 h-4 text-[#0F4A47]" /> 生成的推文效果预览 ({channel})
-              </h2>
-
-              {generatedResult ? (
-                <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl space-y-3">
-                  <h3 className="font-bold text-sm text-slate-900">{generatedResult.title}</h3>
-                  <div className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
-                    {generatedResult.content}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 pt-3 border-t border-slate-200">
-                    {generatedResult.hashtags?.map((tag: string, i: number) => (
-                      <span key={i} className="px-2.5 py-0.5 text-[10px] bg-white text-[#EA3A20] rounded-full font-bold border border-red-100">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="py-20 text-center text-slate-400 text-xs">
-                  在左侧点击“生成海外多语种营销文案”，预览效果将实时渲染于此。
-                </div>
-              )}
-            </div>
-          </div>
+          <GraphicTextModule />
         )}
 
         {activeTab === '发布审核' && (

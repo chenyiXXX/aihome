@@ -23,7 +23,7 @@ import { InquiryItem } from '../../types';
 import { ChannelConfigModal } from './presales/ChannelConfigModal';
 import { CreateInquiryModal } from './presales/CreateInquiryModal';
 import { InquiryChatDetailView } from './presales/InquiryChatDetailView';
-import { exportInquiriesToExcel, copyCustomerCRMText } from '../../utils/exportInquiries';
+import { exportInquiriesToExcel } from '../../utils/exportInquiries';
 import { getInquiryChatHistory } from '../../data/inquiryChatData';
 
 interface PreSalesModuleProps {
@@ -270,7 +270,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              售前询盘主要用于查看接入 WhatsApp 的询盘客户名单及售前机器人的交互聊天记录。销售对接安排统一在 CRM 系统中进行。
+              售前询盘主要用于查看接入 WhatsApp 的询盘客户名单及售前机器人的交互聊天记录，支持按询盘时间筛选与一键批量导出。
             </p>
           </div>
         </div>
@@ -459,7 +459,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                   <CheckSquare className="w-4 h-4 text-emerald-600" />
                   <span>已勾选 {selectedRows.length} 位客户</span>
                   <span className="text-[11px] text-emerald-700 font-normal">
-                    （可一键批量导出到本地 Excel，或在 CRM 中统一录入对接）
+                    （可一键批量导出到本地 Excel）
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
