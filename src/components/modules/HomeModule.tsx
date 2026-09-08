@@ -31,7 +31,6 @@ import {
   TrainingCourse,
   initialTrainingCourses
 } from '../../data/trainingData';
-import { TrainingWorkbench } from './training/TrainingWorkbench';
 import { useVoiceToText } from '../../hooks/useVoiceToText';
 import { VoiceInputBanner } from '../common/VoiceInputBanner';
 
@@ -336,9 +335,8 @@ export const HomeModule: React.FC = () => {
     }
   };
 
-  // Training state: progress, quizzes, efficiency tracking
+  // Training state: progress & efficiency tracking
   const [trainingCourses, setTrainingCourses] = useState<Record<string, TrainingCourse>>(initialTrainingCourses);
-  const [isGradingQuiz, setIsGradingQuiz] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -516,192 +514,6 @@ export const HomeModule: React.FC = () => {
       );
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Advance to next lesson after studying and confirming
-  const handleAdvanceLesson = () => {
-    if (!currentCourse) return;
-    const nextIdx = currentCourse.currentLessonIndex + 1;
-    if (nextIdx >= currentCourse.lessons.length) return;
-
-    const nextLesson = currentCourse.lessons[nextIdx];
-
-    // Update course lessons status
-    const updatedLessons = currentCourse.lessons.map((l, i) => {
-      if (i === currentCourse.currentLessonIndex) {
-        return { ...l, status: 'completed' as const };
-      }
-      if (i === nextIdx) {
-        return { ...l, status: 'in_progress' as const };
-      }
-      return l;
-    });
-
-    const updatedCourse: TrainingCourse = {
-      ...currentCourse,
-      currentLessonIndex: nextIdx,
-      lessons: updatedLessons,
-      studyMinutes: currentCourse.studyMinutes + 15,
-      efficiencyScore: Math.min(99, currentCourse.efficiencyScore + 1)
-    };
-
-    setTrainingCourses((prev) => ({
-      ...prev,
-      [activeSessionId]: updatedCourse
-    }));
-
-    // Send next lesson training material from the Mentor into the chat stream!
-    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const mentorLessonMsg: ChatMessage = {
-      id: `mentor-lesson-${Date.now()}`,
-      sender: 'assistant',
-      content: `【${currentCourse.mentorName}·岗位培训第 ${nextIdx + 1} 节资料推送】
-《${nextLesson.title}》
-
-${nextLesson.materialContent}
-
-💡 **核心要点速记**：
-${nextLesson.keyTakeaways.map((item, idx) => `${idx + 1}. ${item}`).join('\n')}
-
----
-**导师指导寄语**：
-新员工请仔细研读上述讲义要点。在实际跟进客户或实操过程中，有任何不理解的步骤或话术，欢迎在下方输入框直接向我提问！
-${nextLesson.quiz ? '研读完毕且无疑问后，可点击上方【进入本节考题测验】完成课后考核通关。' : '研读完毕且无疑问后，可点击上方【确认已掌握，进入下一节】继续进阶！'}`,
-      timestamp: currentTime,
-      sources: [
-        { title: `《品爱家居${currentCourse.courseTitle}·岗位讲义》`, code: `TRAIN-${nextLesson.id.toUpperCase()}` }
-      ],
-      confidence: 0.99
-    };
-
-    setSessions((prev) =>
-      prev.map((s) => {
-        if (s.id === activeSessionId) {
-          return {
-            ...s,
-            lastMessage: `【新课程推送】第${nextIdx + 1}节：${nextLesson.title}`,
-            lastTime: currentTime,
-            messages: [...s.messages, mentorLessonMsg]
-          };
-        }
-        return s;
-      })
-    );
-  };
-
-  // Submit quiz answer and get AI mentor grading
-  const handleSubmitQuiz = async (lessonId: string, answer: string) => {
-    if (!currentCourse) return;
-    const currentLesson = currentCourse.lessons.find((l) => l.id === lessonId);
-    if (!currentLesson || !currentLesson.quiz) return;
-
-    setIsGradingQuiz(true);
-    try {
-      const res = await fetch('/api/training/grade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          courseTitle: currentCourse.courseTitle,
-          lessonTitle: currentLesson.title,
-          question: currentLesson.quiz.question,
-          studentAnswer: answer,
-          standardKeyPoints: currentLesson.quiz.standardKeyPoints,
-          mentorName: currentCourse.mentorName
-        })
-      });
-
-      const data = await res.json();
-      const { score, grade, passed, mentorReview } = data;
-
-      // Update quiz state in course
-      const updatedLessons = currentCourse.lessons.map((l) => {
-        if (l.id === lessonId && l.quiz) {
-          return {
-            ...l,
-            quiz: {
-              ...l.quiz,
-              submittedAnswer: answer,
-              score: score || 92,
-              grade: grade || 'A (良好)',
-              passed: passed !== undefined ? passed : true,
-              mentorReview: mentorReview || '作答符合规范，准予通过！'
-            }
-          };
-        }
-        return l;
-      });
-
-      const gradedScores = updatedLessons
-        .map((l) => l.quiz?.score)
-        .filter((s): s is number => typeof s === 'number');
-      const avgScore = gradedScores.length
-        ? Math.round(gradedScores.reduce((a, b) => a + b, 0) / gradedScores.length)
-        : 90;
-
-      const newEfficiency = Math.min(99, Math.round(85 + (avgScore - 80) * 0.5 + currentCourse.interactiveCount * 1.5));
-
-      const updatedCourse: TrainingCourse = {
-        ...currentCourse,
-        lessons: updatedLessons,
-        averageQuizScore: avgScore,
-        efficiencyScore: newEfficiency
-      };
-
-      setTrainingCourses((prev) => ({
-        ...prev,
-        [activeSessionId]: updatedCourse
-      }));
-
-      // Output user submission and mentor grading report into chat
-      const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
-      const userAnsMsg: ChatMessage = {
-        id: `usr-quiz-${Date.now()}`,
-        sender: 'user',
-        content: `【课后考核作答提交】\n考核题目："${currentLesson.quiz.question}"\n\n我的答案：\n${answer}`,
-        timestamp: currentTime
-      };
-
-      const mentorGradingMsg: ChatMessage = {
-        id: `mentor-grade-${Date.now() + 1}`,
-        sender: 'assistant',
-        content: `【${currentCourse.mentorName}·课后考核阅卷报告】
-
-📝 **考核章节**：第 ${currentLesson.lessonNumber} 节 · ${currentLesson.title}
-🏆 **最终得分**：${score || 92} 分 (${grade || 'A (良好)'})
-🎯 **考核结论**：${passed ? '✅ 考核达标（达到品爱家居岗位实战标准）' : '⚠️ 未达到80分及格线，建议复习讲义后重新作答'}
-
-📋 **导师详细点评**：
-${mentorReview}
-
-${passed ? '👉 本节考核已通关！请点击上方【确认已掌握，进入下一节】继续进阶！' : '👉 请对照导师点评强化薄弱点后再次进入考核。'}`,
-        timestamp: currentTime,
-        sources: [
-          { title: `《品爱家居新员工考评体系·${currentCourse.mentorName}阅卷》`, code: 'TRAIN-EVAL-SCORE' }
-        ],
-        confidence: 0.99
-      };
-
-      setSessions((prev) =>
-        prev.map((s) => {
-          if (s.id === activeSessionId) {
-            return {
-              ...s,
-              lastMessage: `【考核阅卷】得分: ${score || 92}分 (${grade || '良好'})`,
-              lastTime: currentTime,
-              messages: [...s.messages, userAnsMsg, mentorGradingMsg]
-            };
-          }
-          return s;
-        })
-      );
-
-      return data;
-    } catch (err) {
-      console.error('Quiz grading error:', err);
-    } finally {
-      setIsGradingQuiz(false);
     }
   };
 
@@ -893,17 +705,6 @@ ${passed ? '👉 本节考核已通关！请点击上方【确认已掌握，进
             </div>
           )}
         </div>
-
-        {/* Interactive Training Workbench: Progress, Efficiency & Checkpoint Quizzes */}
-        {isTrainingSession && currentCourse && (
-          <TrainingWorkbench
-            course={currentCourse}
-            onAdvanceLesson={handleAdvanceLesson}
-            onSubmitQuiz={handleSubmitQuiz}
-            onAskMentorQuestion={(q) => handleSendMessage(q)}
-            isGrading={isGradingQuiz}
-          />
-        )}
 
         {/* Right Chat Messages Scrollable Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">

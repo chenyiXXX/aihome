@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { ModuleType } from './types';
 import { PrimarySidebar } from './components/layout/PrimarySidebar';
 import { TopHeader } from './components/layout/TopHeader';
-import { MultiTabBar, TabItem } from './components/layout/MultiTabBar';
+import { TabItem } from './components/layout/MultiTabBar';
 import { HomeModule } from './components/modules/HomeModule';
 import { PreSalesModule } from './components/modules/PreSalesModule';
 import { InSalesModule } from './components/modules/InSalesModule';
@@ -14,6 +15,10 @@ import { StaffModule } from './components/modules/StaffModule';
 import { SystemConfigModule } from './components/modules/SystemConfigModule';
 import { AuditLogsModule } from './components/modules/AuditLogsModule';
 import { DrawerContainer } from './components/common/DrawerContainer';
+import {
+  getPathByModuleAndSubView,
+  parseRoute
+} from './routes/routeConfig';
 
 import {
   initialInquiries,
@@ -33,87 +38,36 @@ import {
   initialOperationLogs
 } from './data/mockData';
 
-const getModuleTitleById = (mod: ModuleType): string => {
-  switch (mod) {
-    case 'home':
-      return '通用知识问答';
-    case 'pre_sales':
-      return '售前询盘助手';
-    case 'in_sales':
-      return '销售助手';
-    case 'marketing':
-      return '运营助手';
-    case 'knowledge_base':
-      return '知识库管理';
-    case 'pricing_maintenance':
-      return '产品价格维护';
-    case 'analytics':
-      return '数据统计';
-    case 'employee':
-      return '员工权限';
-    case 'sys_config':
-      return '智能体基础设置';
-    case 'audit_logs':
-      return '日志与审计';
-    default:
-      return '售前询盘助手';
-  }
-};
-
-const getDefaultSubViewByModule = (mod: ModuleType): string => {
-  switch (mod) {
-    case 'home':
-      return '通用知识问答';
-    case 'pre_sales':
-      return '售前询盘列表';
-    case 'in_sales':
-      return '会话列表';
-    case 'marketing':
-      return '视频剪辑';
-    case 'knowledge_base':
-      return '内容上传';
-    case 'pricing_maintenance':
-      return '面价设置';
-    case 'analytics':
-      return '销售智能体统计';
-    case 'employee':
-      return '员工列表';
-    case 'sys_config':
-      return 'Agent 配置';
-    case 'audit_logs':
-      return '操作日志';
-    default:
-      return '售前询盘列表';
-  }
-};
-
 export function App() {
-  const [activeModule, setActiveModule] = useState<ModuleType>('pre_sales');
-  const [subView, setSubView] = useState<string>('售前询盘列表');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Current route resolved from browser URL
+  const currentRoute = parseRoute(location.pathname);
+  const activeModule = currentRoute.moduleId;
+  const subView = currentRoute.subView;
+
   const [isScriptDrawerOpen, setIsScriptDrawerOpen] = useState(false);
 
   // Active composite tab key
   const activeTabKey = `${activeModule}__${subView}`;
 
-  // Multi-tab windows list: allows simultaneous distinct subview tabs
+  // Multi-tab windows list: synced with browser navigation
   const [openTabs, setOpenTabs] = useState<TabItem[]>([
     {
-      id: 'pre_sales__售前询盘列表',
-      moduleId: 'pre_sales',
-      moduleTitle: '售前询盘助手',
-      subView: '售前询盘列表',
-      title: '售前询盘助手',
+      id: `${currentRoute.moduleId}__${currentRoute.subView}`,
+      moduleId: currentRoute.moduleId,
+      moduleTitle: currentRoute.moduleTitle,
+      subView: currentRoute.subView,
+      title: currentRoute.pageTitle,
       closable: true
     }
   ]);
 
-  // When selecting a module/subview from sidebar
-  const handleSelectModule = (mod: ModuleType, targetSubView?: string) => {
-    const finalSubView = targetSubView || getDefaultSubViewByModule(mod);
-    const tabKey = `${mod}__${finalSubView}`;
-
-    setActiveModule(mod);
-    setSubView(finalSubView);
+  // Whenever URL changes, ensure current route tab is present in openTabs
+  useEffect(() => {
+    const route = parseRoute(location.pathname);
+    const tabKey = `${route.moduleId}__${route.subView}`;
 
     setOpenTabs((prev) => {
       const exists = prev.some((tab) => tab.id === tabKey);
@@ -124,45 +78,32 @@ export function App() {
         ...prev,
         {
           id: tabKey,
-          moduleId: mod,
-          moduleTitle: getModuleTitleById(mod),
-          subView: finalSubView,
-          title: finalSubView,
+          moduleId: route.moduleId,
+          moduleTitle: route.moduleTitle,
+          subView: route.subView,
+          title: route.pageTitle,
           closable: true
         }
       ];
     });
+  }, [location.pathname]);
+
+  // When selecting a module/subview from sidebar
+  const handleSelectModule = (mod: ModuleType, targetSubView?: string) => {
+    const targetPath = getPathByModuleAndSubView(mod, targetSubView);
+    navigate(targetPath);
   };
 
   // When switching subview within page or sidebar
   const handleSelectSubView = (newSubView: string) => {
-    const tabKey = `${activeModule}__${newSubView}`;
-
-    setSubView(newSubView);
-
-    setOpenTabs((prev) => {
-      const exists = prev.some((tab) => tab.id === tabKey);
-      if (exists) {
-        return prev;
-      }
-      return [
-        ...prev,
-        {
-          id: tabKey,
-          moduleId: activeModule,
-          moduleTitle: getModuleTitleById(activeModule),
-          subView: newSubView,
-          title: newSubView,
-          closable: true
-        }
-      ];
-    });
+    const targetPath = getPathByModuleAndSubView(activeModule, newSubView);
+    navigate(targetPath);
   };
 
   // Clicking an open tab in the MultiTabBar
   const handleSelectTab = (tab: TabItem) => {
-    setActiveModule(tab.moduleId);
-    setSubView(tab.subView);
+    const targetPath = getPathByModuleAndSubView(tab.moduleId, tab.subView);
+    navigate(targetPath);
   };
 
   // Closing a tab
@@ -180,67 +121,9 @@ export function App() {
       const nextTab =
         remainingTabs[Math.max(0, closingIndex - 1)] || remainingTabs[0];
       if (nextTab) {
-        setActiveModule(nextTab.moduleId);
-        setSubView(nextTab.subView);
+        const targetPath = getPathByModuleAndSubView(nextTab.moduleId, nextTab.subView);
+        navigate(targetPath);
       }
-    }
-  };
-
-  const getModuleTitle = () => {
-    return getModuleTitleById(activeModule);
-  };
-
-  const renderActiveModule = () => {
-    switch (activeModule) {
-      case 'home':
-        return <HomeModule />;
-      case 'pre_sales':
-        return <PreSalesModule inquiries={initialInquiries} subView={subView} />;
-      case 'in_sales':
-        return (
-          <InSalesModule
-            sessions={initialSessions}
-            chatMessages={mockChatMessages}
-            scripts={initialScripts}
-            subView={subView}
-            onOpenAddScriptDrawer={() => setIsScriptDrawerOpen(true)}
-          />
-        );
-      case 'marketing':
-        return (
-          <MarketingModule
-            videoClips={initialVideoClips}
-            posts={initialPosts}
-            subView={subView}
-          />
-        );
-      case 'knowledge_base':
-        return (
-          <KnowledgeModule
-            articles={initialKBArticles}
-            categories={initialKBCategories}
-            tags={initialKBTags}
-            versions={initialKBVersions}
-            subView={subView}
-          />
-        );
-      case 'pricing_maintenance':
-        return (
-          <PricingMaintenanceModule
-            subView={subView}
-            onSelectSubView={handleSelectSubView}
-          />
-        );
-      case 'analytics':
-        return <AnalyticsModule statsData={initialAgentStats} subView={subView} />;
-      case 'employee':
-        return <StaffModule employees={initialEmployees} roles={initialRoles} subView={subView} />;
-      case 'sys_config':
-        return <SystemConfigModule config={initialSystemConfig} subView={subView} onSelectSubView={handleSelectSubView} />;
-      case 'audit_logs':
-        return <AuditLogsModule logs={initialOperationLogs as any} subView={subView} />;
-      default:
-        return <PreSalesModule inquiries={initialInquiries} subView={subView} />;
     }
   };
 
@@ -272,9 +155,278 @@ export function App() {
           }}
         />
 
-        {/* Dynamic Module Workspace */}
+        {/* Dynamic Module Workspace via React Router */}
         <main className="flex-1 min-h-0 overflow-hidden flex flex-col pt-1">
-          {renderActiveModule()}
+          <Routes>
+            {/* Root redirect */}
+            <Route path="/" element={<Navigate to="/pre-sales" replace />} />
+
+            {/* 1. 通用知识问答 */}
+            <Route path="/home" element={<HomeModule />} />
+
+            {/* 2. 售前询盘助手 */}
+            <Route
+              path="/pre-sales"
+              element={<PreSalesModule inquiries={initialInquiries} subView="售前询盘列表" />}
+            />
+
+            {/* 3. 销售助手 */}
+            <Route
+              path="/in-sales"
+              element={
+                <InSalesModule
+                  sessions={initialSessions}
+                  chatMessages={mockChatMessages}
+                  scripts={initialScripts}
+                  subView="会话列表"
+                  onOpenAddScriptDrawer={() => setIsScriptDrawerOpen(true)}
+                />
+              }
+            />
+
+            {/* 4. 运营助手 */}
+            <Route path="/marketing" element={<Navigate to="/marketing/video" replace />} />
+            <Route
+              path="/marketing/video"
+              element={
+                <MarketingModule
+                  videoClips={initialVideoClips}
+                  posts={initialPosts}
+                  subView="视频剪辑"
+                />
+              }
+            />
+            <Route
+              path="/marketing/article"
+              element={
+                <MarketingModule
+                  videoClips={initialVideoClips}
+                  posts={initialPosts}
+                  subView="图文生成"
+                />
+              }
+            />
+            <Route
+              path="/marketing/audit"
+              element={
+                <MarketingModule
+                  videoClips={initialVideoClips}
+                  posts={initialPosts}
+                  subView="发布审核"
+                />
+              }
+            />
+            <Route
+              path="/marketing/schedule"
+              element={
+                <MarketingModule
+                  videoClips={initialVideoClips}
+                  posts={initialPosts}
+                  subView="发布计划"
+                />
+              }
+            />
+            <Route
+              path="/marketing/accounts"
+              element={
+                <MarketingModule
+                  videoClips={initialVideoClips}
+                  posts={initialPosts}
+                  subView="账号管理"
+                />
+              }
+            />
+
+            {/* 5. 知识库管理 */}
+            <Route path="/knowledge" element={<Navigate to="/knowledge/upload" replace />} />
+            <Route
+              path="/knowledge/upload"
+              element={
+                <KnowledgeModule
+                  articles={initialKBArticles}
+                  categories={initialKBCategories}
+                  tags={initialKBTags}
+                  versions={initialKBVersions}
+                  subView="内容上传"
+                />
+              }
+            />
+            <Route
+              path="/knowledge/review"
+              element={
+                <KnowledgeModule
+                  articles={initialKBArticles}
+                  categories={initialKBCategories}
+                  tags={initialKBTags}
+                  versions={initialKBVersions}
+                  subView="知识复核"
+                />
+              }
+            />
+            <Route
+              path="/knowledge/categories"
+              element={
+                <KnowledgeModule
+                  articles={initialKBArticles}
+                  categories={initialKBCategories}
+                  tags={initialKBTags}
+                  versions={initialKBVersions}
+                  subView="分类管理"
+                />
+              }
+            />
+            <Route
+              path="/knowledge/tags"
+              element={
+                <KnowledgeModule
+                  articles={initialKBArticles}
+                  categories={initialKBCategories}
+                  tags={initialKBTags}
+                  versions={initialKBVersions}
+                  subView="标签管理"
+                />
+              }
+            />
+
+            {/* 6. 产品价格维护 */}
+            <Route path="/pricing" element={<Navigate to="/pricing/list" replace />} />
+            <Route
+              path="/pricing/list"
+              element={
+                <PricingMaintenanceModule
+                  subView="面价设置"
+                  onSelectSubView={handleSelectSubView}
+                />
+              }
+            />
+            <Route
+              path="/pricing/exchange-rates"
+              element={
+                <PricingMaintenanceModule
+                  subView="汇率管理"
+                  onSelectSubView={handleSelectSubView}
+                />
+              }
+            />
+
+            {/* 7. 数据统计 */}
+            <Route path="/analytics" element={<Navigate to="/analytics/sales" replace />} />
+            <Route
+              path="/analytics/sales"
+              element={
+                <AnalyticsModule
+                  statsData={initialAgentStats}
+                  subView="销售智能体统计"
+                />
+              }
+            />
+            <Route
+              path="/analytics/marketing"
+              element={
+                <AnalyticsModule
+                  statsData={initialAgentStats}
+                  subView="推广智能体统计"
+                />
+              }
+            />
+            <Route
+              path="/analytics/training"
+              element={
+                <AnalyticsModule
+                  statsData={initialAgentStats}
+                  subView="员工培训统计"
+                />
+              }
+            />
+            <Route
+              path="/analytics/qa"
+              element={
+                <AnalyticsModule
+                  statsData={initialAgentStats}
+                  subView="通用知识库问答统计"
+                />
+              }
+            />
+
+            {/* 8. 员工权限 */}
+            <Route path="/employee" element={<Navigate to="/employee/list" replace />} />
+            <Route
+              path="/employee/list"
+              element={
+                <StaffModule
+                  employees={initialEmployees}
+                  roles={initialRoles}
+                  subView="员工列表"
+                />
+              }
+            />
+            <Route
+              path="/employee/roles"
+              element={
+                <StaffModule
+                  employees={initialEmployees}
+                  roles={initialRoles}
+                  subView="角色配置"
+                />
+              }
+            />
+
+            {/* 9. 智能体基础设置 */}
+            <Route path="/system" element={<Navigate to="/system/agent" replace />} />
+            <Route
+              path="/system/agent"
+              element={
+                <SystemConfigModule
+                  config={initialSystemConfig}
+                  subView="Agent 配置"
+                  onSelectSubView={handleSelectSubView}
+                />
+              }
+            />
+            <Route
+              path="/system/skill"
+              element={
+                <SystemConfigModule
+                  config={initialSystemConfig}
+                  subView="Skill 配置"
+                  onSelectSubView={handleSelectSubView}
+                />
+              }
+            />
+
+            {/* 10. 日志与审计 */}
+            <Route path="/audit" element={<Navigate to="/audit/operations" replace />} />
+            <Route
+              path="/audit/operations"
+              element={
+                <AuditLogsModule
+                  logs={initialOperationLogs as any}
+                  subView="操作日志"
+                />
+              }
+            />
+            <Route
+              path="/audit/qa"
+              element={
+                <AuditLogsModule
+                  logs={initialOperationLogs as any}
+                  subView="问答记录"
+                />
+              }
+            />
+            <Route
+              path="/audit/generation"
+              element={
+                <AuditLogsModule
+                  logs={initialOperationLogs as any}
+                  subView="内容生成记录"
+                />
+              }
+            />
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/pre-sales" replace />} />
+          </Routes>
         </main>
 
       </div>

@@ -1,119 +1,37 @@
 import React, { useState } from 'react';
 import {
   GraduationCap,
-  Award,
   CheckCircle2,
   Clock,
   MessageSquare,
-  ChevronRight,
   TrendingUp,
-  AlertCircle,
-  HelpCircle,
   ArrowRight,
   Sparkles,
   BookOpen,
-  Send,
-  Loader2,
   Lock,
   ChevronDown,
-  ChevronUp,
-  Mic,
-  MicOff,
-  Keyboard
+  ChevronUp
 } from 'lucide-react';
-import { TrainingCourse, TrainingLesson, QuizData } from '../../../data/trainingData';
-import { useVoiceToText } from '../../../hooks/useVoiceToText';
-import { VoiceInputBanner } from '../../common/VoiceInputBanner';
+import { TrainingCourse, TrainingLesson } from '../../../data/trainingData';
 
 interface TrainingWorkbenchProps {
   course: TrainingCourse;
   onAdvanceLesson: () => void;
-  onSubmitQuiz: (lessonId: string, answer: string) => Promise<any>;
   onAskMentorQuestion: (question: string) => void;
-  isGrading: boolean;
 }
 
 export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
   course,
   onAdvanceLesson,
-  onSubmitQuiz,
-  onAskMentorQuestion,
-  isGrading
+  onAskMentorQuestion
 }) => {
   const [showOutline, setShowOutline] = useState(false);
-  const [activeQuizModal, setActiveQuizModal] = useState<boolean>(false);
-  const [selectedOption, setSelectedOption] = useState<string>('');
-  const [textAnswer, setTextAnswer] = useState<string>('');
-  const [lastGradeResult, setLastGradeResult] = useState<any>(null);
-  const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
-
-  // Voice to text integration for Training open-ended practice
-  const {
-    isListening,
-    transcript,
-    interimTranscript,
-    audioLevel,
-    lang,
-    setLang,
-    errorMsg,
-    startListening,
-    stopListening
-  } = useVoiceToText({
-    contextHint: 'training',
-    defaultLang: 'zh-CN'
-  });
-
-  const handleVoiceConfirm = () => {
-    const textToInsert = transcript || interimTranscript;
-    if (textToInsert) {
-      setTextAnswer((prev) => (prev ? `${prev} ${textToInsert}` : textToInsert));
-    }
-    stopListening();
-  };
-
-  const handleVoiceCancel = () => {
-    stopListening();
-  };
-
-  const handleToggleVoice = () => {
-    if (isListening) {
-      handleVoiceConfirm();
-    } else {
-      setInputMode('voice');
-      startListening((text) => {
-        setTextAnswer((prev) => (prev ? `${prev} ${text}` : text));
-      });
-    }
-  };
+  const [showKeyPoints, setShowKeyPoints] = useState(false);
 
   const currentLesson = course.lessons[course.currentLessonIndex] || course.lessons[0];
   const completedCount = course.lessons.filter((l) => l.status === 'completed').length;
   const progressPercent = Math.round((completedCount / course.lessons.length) * 100);
   const nextLesson = course.lessons[course.currentLessonIndex + 1];
-
-  const hasActiveQuiz = currentLesson && currentLesson.quiz;
-  const isCurrentQuizPassed = currentLesson?.quiz?.passed;
-
-  const handleOpenQuiz = () => {
-    setActiveQuizModal(true);
-    if (currentLesson?.quiz?.submittedAnswer) {
-      if (currentLesson.quiz.type === 'choice') {
-        setSelectedOption(currentLesson.quiz.submittedAnswer);
-      } else {
-        setTextAnswer(currentLesson.quiz.submittedAnswer);
-      }
-    }
-  };
-
-  const handleSubmitQuiz = async () => {
-    const answer = currentLesson?.quiz?.type === 'choice' ? selectedOption : textAnswer;
-    if (!answer.trim()) return;
-
-    const result = await onSubmitQuiz(currentLesson.id, answer);
-    if (result) {
-      setLastGradeResult(result);
-    }
-  };
 
   return (
     <div className="bg-white border-b border-slate-200">
@@ -147,7 +65,7 @@ export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
           </div>
         </div>
 
-        {/* Progress & Efficiency KPIs */}
+        {/* Progress & Learning Metrics */}
         <div className="flex items-center gap-6 text-xs">
           {/* Progress Bar */}
           <div className="min-w-[150px] space-y-1">
@@ -175,13 +93,12 @@ export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
             </div>
           </div>
 
-          {/* Interaction & Quiz Score */}
+          {/* Interaction Count */}
           <div className="border-l border-white/10 pl-4 py-0.5 text-right hidden lg:block">
-            <div className="text-[10px] text-slate-400">互动 / 测验均分</div>
-            <div className="font-mono font-bold text-slate-200">
-              <span className="text-emerald-400">{course.interactiveCount}次互动</span>
-              <span className="mx-1 text-slate-500">|</span>
-              <span className="text-amber-300">{course.averageQuizScore}分</span>
+            <div className="text-[10px] text-slate-400">问答互动次数</div>
+            <div className="font-mono font-bold text-emerald-400 flex items-center justify-end gap-1">
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>{course.interactiveCount} 次答疑</span>
             </div>
           </div>
         </div>
@@ -193,7 +110,6 @@ export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
           {course.lessons.map((lesson, idx) => {
             const isCurr = idx === course.currentLessonIndex;
             const isDone = lesson.status === 'completed';
-            const isLock = lesson.status === 'locked';
 
             return (
               <div
@@ -236,11 +152,10 @@ export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
                   >
                     {isDone ? '已掌握并通关' : isCurr ? '正在学习与答疑' : '待解锁'}
                   </span>
-                  {lesson.quiz && (
-                    <span className="text-slate-500">
-                      {lesson.quiz.passed ? `考分: ${lesson.quiz.score}分` : '含实战考题'}
-                    </span>
-                  )}
+                  <span className="text-slate-400 flex items-center gap-0.5">
+                    <Clock className="w-3 h-3" />
+                    <span>预计耗时 {lesson.duration}</span>
+                  </span>
                 </div>
               </div>
             );
@@ -256,33 +171,26 @@ export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
             当前学习：第 {course.currentLessonIndex + 1} 节 · {currentLesson.title}
           </span>
           <span className="text-slate-400">|</span>
-          <span className="text-slate-500 text-[11px]">
-            请充分阅读导师资料，有疑问可直接向导师提问。学完后点击确认推进。
+          <span className="text-slate-500 text-[11px] hidden sm:inline">
+            请仔细研读讲义与实战要点，有疑问可随时向导师提问。学完后点击确认推进。
           </span>
         </div>
 
-        {/* Action Buttons: Quiz & Next Lesson */}
+        {/* Action Buttons: Key Points & Next Lesson */}
         <div className="flex items-center gap-2">
-          {hasActiveQuiz && (
+          {currentLesson.keyTakeaways && currentLesson.keyTakeaways.length > 0 && (
             <button
               type="button"
-              onClick={handleOpenQuiz}
-              className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-2xs ${
-                isCurrentQuizPassed
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
-                  : 'bg-amber-600 text-white hover:bg-amber-700 ring-2 ring-amber-400/30'
-              }`}
+              onClick={() => setShowKeyPoints(!showKeyPoints)}
+              className="px-3 py-1.5 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-xl font-medium flex items-center gap-1.5 cursor-pointer transition-all shadow-2xs"
             >
-              <Award className="w-3.5 h-3.5" />
-              <span>
-                {isCurrentQuizPassed
-                  ? `课后考核已通过 (${currentLesson.quiz?.score}分)`
-                  : '进入本节考题测验'}
-              </span>
+              <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+              <span>本节要点速览</span>
+              {showKeyPoints ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
           )}
 
-          {(!hasActiveQuiz || isCurrentQuizPassed) && nextLesson && (
+          {nextLesson ? (
             <button
               type="button"
               onClick={onAdvanceLesson}
@@ -291,234 +199,35 @@ export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
               <span>确认已掌握，进入下一节</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
-          )}
-
-          {progressPercent === 100 && (
+          ) : (
             <div className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-xl font-bold flex items-center gap-1 border border-emerald-200">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>全课程考核圆满结业</span>
+              <span>全部课程已圆满学成</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* Quiz Modal / Floating Drawer */}
-      {activeQuizModal && currentLesson.quiz && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full border border-slate-200 shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold">
-                  <Award className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm">
-                    第 {currentLesson.lessonNumber} 节课后实战考核
-                  </h3>
-                  <p className="text-[11px] text-slate-300">
-                    岗位导师：{course.mentorName} 阅卷评审
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveQuizModal(false)}
-                className="text-slate-400 hover:text-white text-sm cursor-pointer p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Modal Body: Question & Input */}
-            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
-              {/* Question Text */}
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-medium leading-relaxed">
-                <span className="font-bold text-amber-700 mr-1.5">[考核题目]</span>
-                {currentLesson.quiz.question}
-              </div>
-
-              {/* Multiple Choice Options */}
-              {currentLesson.quiz.type === 'choice' && currentLesson.quiz.options && (
-                <div className="space-y-2">
-                  <div className="text-xs font-bold text-slate-700">请选择最符合外贸定制业务规范的选项：</div>
-                  {currentLesson.quiz.options.map((opt) => (
-                    <label
-                      key={opt.key}
-                      onClick={() => setSelectedOption(opt.key)}
-                      className={`flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
-                        selectedOption === opt.key
-                          ? 'bg-red-50/60 border-[#EA3A20] text-slate-900 shadow-2xs font-medium'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="quiz-opt"
-                        checked={selectedOption === opt.key}
-                        onChange={() => setSelectedOption(opt.key)}
-                        className="mt-0.5 text-[#EA3A20] focus:ring-[#EA3A20]"
-                      />
-                      <div className="flex-1">
-                        <span className="font-bold mr-1">{opt.key}.</span>
-                        <span>{opt.label}</span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              )}
-
-              {/* Text Input for Open-ended scenarios */}
-              {currentLesson.quiz.type === 'text' && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-700">请写出你的作答策略与话术：</span>
-
-                    {/* Mode Selector */}
-                    <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-xl text-[11px] font-bold">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (isListening) stopListening();
-                          setInputMode('keyboard');
-                        }}
-                        className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                          inputMode === 'keyboard' && !isListening
-                            ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                            : 'text-slate-500 hover:text-slate-800'
-                        }`}
-                      >
-                        <Keyboard className="w-3 h-3 text-slate-600" />
-                        <span>键盘输入</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleToggleVoice}
-                        className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                          isListening || inputMode === 'voice'
-                            ? 'bg-[#EA3A20] text-white shadow-2xs font-bold animate-pulse'
-                            : 'text-slate-500 hover:text-[#EA3A20]'
-                        }`}
-                      >
-                        <Mic className="w-3 h-3" />
-                        <span>{isListening ? '语音录制中...' : '语音口述作答'}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Voice Input Banner */}
-                  <VoiceInputBanner
-                    isListening={isListening}
-                    transcript={transcript}
-                    interimTranscript={interimTranscript}
-                    audioLevel={audioLevel}
-                    lang={lang}
-                    onToggleLang={() => setLang(lang === 'zh-CN' ? 'en-US' : 'zh-CN')}
-                    onConfirm={handleVoiceConfirm}
-                    onCancel={handleVoiceCancel}
-                    errorMsg={errorMsg}
-                  />
-
-                  <div className="relative">
-                    <textarea
-                      rows={4}
-                      value={textAnswer}
-                      onChange={(e) => setTextAnswer(e.target.value)}
-                      placeholder={
-                        isListening
-                          ? '正在倾听您的对练口述并转写文字... 亦可随时使用键盘修改完善...'
-                          : '支持键盘打字作答，或点击右下角麦克风通过语音口述实战话术（自动转文字）...'
-                      }
-                      className="w-full p-3 pr-12 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] resize-none"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={handleToggleVoice}
-                      className={`absolute right-2.5 bottom-2.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0 cursor-pointer transition-all ${
-                        isListening
-                          ? 'bg-red-600 text-white shadow-xs animate-pulse ring-2 ring-red-300'
-                          : 'bg-white hover:bg-slate-200/80 text-slate-600 border border-slate-200 shadow-2xs hover:text-[#EA3A20]'
-                      }`}
-                      title={isListening ? '点击完成语音录入' : '点击开启语音口述对练'}
-                    >
-                      {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <div className="flex items-center gap-1">
-                      <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-                      <span>考察要点：{currentLesson.quiz.standardKeyPoints.join('、')}</span>
-                    </div>
-                    <span>支持键盘输入与语音口述转文字</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Grading Feedback Results if already submitted */}
-              {currentLesson.quiz.mentorReview && (
-                <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-amber-900 flex items-center gap-1.5">
-                      <Award className="w-4 h-4 text-amber-600" />
-                      <span>导师阅卷结果：{currentLesson.quiz.grade}</span>
-                    </span>
-                    <span className="font-mono font-bold text-base text-amber-700">
-                      {currentLesson.quiz.score} 分
-                    </span>
-                  </div>
-                  <p className="text-slate-700 whitespace-pre-line leading-relaxed">
-                    {currentLesson.quiz.mentorReview}
-                  </p>
-                  {currentLesson.quiz.passed && (
-                    <div className="pt-2 border-t border-amber-200/60 flex items-center gap-1 text-emerald-700 font-bold">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>考核达标！已准予进入下一章节。</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-[11px] text-slate-400">
-                满分 100 分，80 分及以上视为合格通过
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveQuizModal(false)}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800 font-medium cursor-pointer"
-                >
-                  暂存稍后
-                </button>
-                <button
-                  type="button"
-                  disabled={
-                    isGrading ||
-                    (currentLesson.quiz.type === 'choice' ? !selectedOption : !textAnswer.trim())
-                  }
-                  onClick={handleSubmitQuiz}
-                  className="px-4 py-1.5 bg-[#EA3A20] text-white rounded-xl text-xs font-bold hover:bg-[#d0321a] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                >
-                  {isGrading ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>导师智能评分中...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-3.5 h-3.5" />
-                      <span>提交导师阅卷打分</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+      {/* Expandable Key Takeaways Panel */}
+      {showKeyPoints && currentLesson.keyTakeaways && (
+        <div className="px-6 py-3 bg-amber-50/90 border-t border-amber-200/60 animate-in fade-in duration-200">
+          <div className="text-xs font-bold text-amber-900 mb-1.5 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <span>第 {course.currentLessonIndex + 1} 节核心掌握要点：</span>
           </div>
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            {currentLesson.keyTakeaways.map((point, idx) => (
+              <li
+                key={idx}
+                className="bg-white/90 p-2.5 rounded-lg border border-amber-200 text-xs text-slate-800 flex items-start gap-2"
+              >
+                <span className="w-4 h-4 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  {idx + 1}
+                </span>
+                <span className="leading-relaxed">{point}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

@@ -20,7 +20,7 @@ import { BrandLogo } from '../common/BrandLogo';
 interface PrimarySidebarProps {
   activeModule: ModuleType;
   subView: string;
-  onSelectModule: (module: ModuleType) => void;
+  onSelectModule: (module: ModuleType, targetSubView?: string) => void;
   onSelectSubView: (subView: string) => void;
   unreadInquiriesCount?: number;
 }
@@ -77,13 +77,13 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
         });
       } else {
         // Switch module, navigate to default subview and expand
-        onSelectModule(modId);
+        onSelectModule(modId, defaultSubView);
         onSelectSubView(defaultSubView);
         setExpandedModules((prev) => new Set(prev).add(modId));
       }
     } else {
       // Direct single-level module click
-      onSelectModule(modId);
+      onSelectModule(modId, defaultSubView);
       if (activeModule !== modId) {
         onSelectSubView(defaultSubView);
       }
@@ -318,7 +318,7 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
                       <button
                         key={svName}
                         onClick={() => {
-                          onSelectModule(item.id);
+                          onSelectModule(item.id, svName);
                           onSelectSubView(svName);
                         }}
                         className={`relative group w-full h-11 pl-14 pr-6 flex items-center justify-between text-left text-xs cursor-pointer transition-all duration-150 ${
@@ -371,7 +371,7 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
                   <button
                     key={svName}
                     onClick={() => {
-                      onSelectModule(hoveredMenu.id);
+                      onSelectModule(hoveredMenu.id, svName);
                       onSelectSubView(svName);
                       setHoveredMenu(null);
                     }}
