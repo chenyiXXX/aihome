@@ -124,6 +124,25 @@ export const PhoneMockupArticle: React.FC<PhoneMockupArticleProps> = ({
             <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 text-xs font-bold">
               原创
             </span>
+            <span
+              className={`px-2 py-0.5 rounded text-xs font-bold ${
+                article.status === '已发布'
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : article.status === '已同步到微信'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : article.status === '计划发布'
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : article.status === '审核不通过'
+                  ? 'bg-rose-50 text-rose-700'
+                  : article.status === '发布审核中'
+                  ? 'bg-amber-50 text-amber-700'
+                  : article.status === '回收站'
+                  ? 'bg-slate-100 text-slate-700'
+                  : 'bg-sky-50 text-sky-700'
+              }`}
+            >
+              {article.status}
+            </span>
             <span>{article.createdAt}</span>
             <span>广东 · 高定外贸发布</span>
           </div>

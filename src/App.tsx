@@ -162,7 +162,7 @@ export function App() {
             {/* Root redirect */}
             <Route path="/" element={<Navigate to="/pre-sales" replace />} />
 
-            {/* 1. 通用知识问答 */}
+            {/* 1. 知识问答 */}
             <Route path="/home" element={<HomeModule />} />
 
             {/* 2. 售前询盘助手 */}

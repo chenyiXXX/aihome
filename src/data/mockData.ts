@@ -2901,6 +2901,7 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-BASE',
     itemCount: 48,
     isBuiltin: true,
+    applicableRoles: ['外贸销售岗', '内容推广岗', '方案设计师'],
     requireReview: true,
     reviewTriggers: {
       onUpload: true,
@@ -2914,6 +2915,7 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-BRAND',
         itemCount: 14,
         isBuiltin: true,
+        applicableRoles: ['外贸销售岗', '内容推广岗'],
         requireReview: true
       },
       {
@@ -2922,21 +2924,16 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-PROD-TECH',
         itemCount: 22,
         isBuiltin: true,
+        applicableRoles: ['外贸销售岗', '方案设计师', '安装技术岗'],
         requireReview: true,
         children: [
-          {
-            id: 'CAT-BASE-PROD-ENCY',
-            name: '产品百科',
-            code: 'KB-PROD-ENCY',
-            itemCount: 14,
-            isBuiltin: true,
-            requireReview: true,
+          { id: 'CAT-BASE-PROD-ENCY', name: '产品百科', code: 'KB-PROD-ENCY', itemCount: 14, isBuiltin: true, applicableRoles: ['外贸销售岗', '方案设计师'], requireReview: true,
             children: [
-              { id: 'CAT-PROD-CABINET', name: '柜类', code: 'KB-ITEM-CABINET', itemCount: 5, isBuiltin: true, requireReview: true },
-              { id: 'CAT-PROD-WALL', name: '门墙', code: 'KB-ITEM-WALL', itemCount: 3, isBuiltin: true, requireReview: true },
-              { id: 'CAT-PROD-WINDOW', name: '门窗', code: 'KB-ITEM-WINDOW', itemCount: 2, isBuiltin: true, requireReview: false },
-              { id: 'CAT-PROD-BATH', name: '全卫', code: 'KB-ITEM-BATH', itemCount: 2, isBuiltin: true, requireReview: true },
-              { id: 'CAT-PROD-SMART', name: '智能对接', code: 'KB-ITEM-SMART', itemCount: 2, isBuiltin: true, requireReview: false }
+              { id: 'CAT-PROD-CABINET', name: '柜类', code: 'KB-ITEM-CABINET', itemCount: 5, isBuiltin: true, applicableRoles: ['方案设计师', '外贸销售岗'], requireReview: true },
+              { id: 'CAT-PROD-WALL', name: '门墙', code: 'KB-ITEM-WALL', itemCount: 3, isBuiltin: true, applicableRoles: ['方案设计师', '安装技术岗'], requireReview: true },
+              { id: 'CAT-PROD-WINDOW', name: '门窗', code: 'KB-ITEM-WINDOW', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师', '安装技术岗'], requireReview: false },
+              { id: 'CAT-PROD-BATH', name: '全卫', code: 'KB-ITEM-BATH', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师', '外贸销售岗'], requireReview: true },
+              { id: 'CAT-PROD-SMART', name: '智能对接', code: 'KB-ITEM-SMART', itemCount: 2, isBuiltin: true, applicableRoles: ['安装技术岗', '海外项目管家'], requireReview: false }
             ]
           },
           {
@@ -2945,19 +2942,21 @@ export const initialKBCategories: KBCategory[] = [
             code: 'KB-PROD-COMBO',
             itemCount: 8,
             isBuiltin: true,
+            applicableRoles: ['外贸销售岗', '方案设计师'],
             requireReview: false,
             children: [
-              { id: 'CAT-PROD-TIER', name: '按低中高端', code: 'KB-COMBO-TIER', itemCount: 2, isBuiltin: true },
-              { id: 'CAT-PROD-STYLE', name: '按风格', code: 'KB-COMBO-STYLE', itemCount: 2, isBuiltin: true },
-              { id: 'CAT-PROD-BUDGET', name: '按预算', code: 'KB-COMBO-BUDGET', itemCount: 2, isBuiltin: true },
+              { id: 'CAT-PROD-TIER', name: '按低中高端', code: 'KB-COMBO-TIER', itemCount: 2, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
+              { id: 'CAT-PROD-STYLE', name: '按风格', code: 'KB-COMBO-STYLE', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师', '外贸销售岗'] },
+              { id: 'CAT-PROD-BUDGET', name: '按预算', code: 'KB-COMBO-BUDGET', itemCount: 2, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
               {
                 id: 'CAT-PROD-LAYOUT',
                 name: '按户型分类',
                 code: 'KB-COMBO-LAYOUT',
                 itemCount: 2,
                 isBuiltin: true,
+                applicableRoles: ['方案设计师'],
                 children: [
-                  { id: 'CAT-PROD-COLOR', name: '按色系', code: 'KB-COMBO-COLOR', itemCount: 2, isBuiltin: true }
+                  { id: 'CAT-PROD-COLOR', name: '按色系', code: 'KB-COMBO-COLOR', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师'] }
                 ]
               }
             ]
@@ -2970,12 +2969,13 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-SPACE-AESTHETICS',
         itemCount: 12,
         isBuiltin: true,
+        applicableRoles: ['方案设计师', '外贸销售岗'],
         requireReview: false,
         children: [
-          { id: 'CAT-SPACE-LAYOUT', name: '按户型', code: 'KB-SPACE-LAYOUT', itemCount: 3, isBuiltin: true },
-          { id: 'CAT-SPACE-STYLE', name: '按风格', code: 'KB-SPACE-STYLE', itemCount: 3, isBuiltin: true },
-          { id: 'CAT-SPACE-COLOR', name: '按色系', code: 'KB-SPACE-COLOR', itemCount: 2, isBuiltin: true },
-          { id: 'CAT-SPACE-REAL-CASES', name: '业主真实案例', code: 'KB-SPACE-CASES', itemCount: 4, isBuiltin: true }
+          { id: 'CAT-SPACE-LAYOUT', name: '按户型', code: 'KB-SPACE-LAYOUT', itemCount: 3, isBuiltin: true, applicableRoles: ['方案设计师'] },
+          { id: 'CAT-SPACE-STYLE', name: '按风格', code: 'KB-SPACE-STYLE', itemCount: 3, isBuiltin: true, applicableRoles: ['方案设计师'] },
+          { id: 'CAT-SPACE-COLOR', name: '按色系', code: 'KB-SPACE-COLOR', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师'] },
+          { id: 'CAT-SPACE-REAL-CASES', name: '业主真实案例', code: 'KB-SPACE-CASES', itemCount: 4, isBuiltin: true, applicableRoles: ['外贸销售岗', '方案设计师'] }
         ]
       }
     ]
@@ -2987,6 +2987,7 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-SALES-SCRIPTS',
     itemCount: 36,
     isBuiltin: true,
+    applicableRoles: ['外贸销售岗', '海外项目管家'],
     requireReview: true,
     reviewTriggers: {
       onUpload: true,
@@ -3000,12 +3001,13 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-STAGE-SCRIPTS',
         itemCount: 24,
         isBuiltin: true,
+        applicableRoles: ['外贸销售岗'],
         children: [
-          { id: 'CAT-STAGE-1', name: '第一阶段：首次进店/咨询（破冰建信）', code: 'KB-STAGE-01', itemCount: 5, isBuiltin: true },
-          { id: 'CAT-STAGE-2', name: '第二阶段：上门初测/复尺（痛点挖掘）', code: 'KB-STAGE-02', itemCount: 5, isBuiltin: true },
-          { id: 'CAT-STAGE-3', name: '第三阶段：方案讲解/出图（美学引导）', code: 'KB-STAGE-03', itemCount: 6, isBuiltin: true },
-          { id: 'CAT-STAGE-4', name: '第四阶段：逼单与谈判（临门一脚）', code: 'KB-STAGE-04', itemCount: 5, isBuiltin: true },
-          { id: 'CAT-STAGE-5', name: '第五阶段：沉寂客户激活（长尾唤醒）', code: 'KB-STAGE-05', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-STAGE-1', name: '第一阶段：首次进店/咨询（破冰建信）', code: 'KB-STAGE-01', itemCount: 5, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-STAGE-2', name: '第二阶段：上门初测/复尺（痛点挖掘）', code: 'KB-STAGE-02', itemCount: 5, isBuiltin: true, applicableRoles: ['外贸销售岗', '方案设计师'] },
+          { id: 'CAT-STAGE-3', name: '第三阶段：方案讲解/出图（美学引导）', code: 'KB-STAGE-03', itemCount: 6, isBuiltin: true, applicableRoles: ['外贸销售岗', '方案设计师'] },
+          { id: 'CAT-STAGE-4', name: '第四阶段：逼单与谈判（临门一脚）', code: 'KB-STAGE-04', itemCount: 5, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-STAGE-5', name: '第五阶段：沉寂客户激活（长尾唤醒）', code: 'KB-STAGE-05', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗'] }
         ]
       },
       {
@@ -3014,10 +3016,11 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-COMBAT-SCRIPTS',
         itemCount: 12,
         isBuiltin: true,
+        applicableRoles: ['外贸销售岗', '海外项目管家'],
         children: [
-          { id: 'CAT-COMBAT-COMPETITOR', name: '竞争对手话术', code: 'KB-COMBAT-RIVAL', itemCount: 4, isBuiltin: true },
-          { id: 'CAT-COMBAT-PRICING-LEGAL', name: '算价公式、权限与合同法务', code: 'KB-COMBAT-LEGAL', itemCount: 5, isBuiltin: true },
-          { id: 'CAT-COMBAT-DECISION-CHAIN', name: '决策链攻防策略', code: 'KB-COMBAT-STRATEGY', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-COMBAT-COMPETITOR', name: '竞争对手话术', code: 'KB-COMBAT-RIVAL', itemCount: 4, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-COMBAT-PRICING-LEGAL', name: '算价公式、权限与合同法务', code: 'KB-COMBAT-LEGAL', itemCount: 5, isBuiltin: true, applicableRoles: ['外贸销售岗', '关务跟单岗'] },
+          { id: 'CAT-COMBAT-DECISION-CHAIN', name: '决策链攻防策略', code: 'KB-COMBAT-STRATEGY', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗'] }
         ]
       }
     ]
@@ -3029,6 +3032,7 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-MARKETING-CAMPAIGNS',
     itemCount: 18,
     isBuiltin: true,
+    applicableRoles: ['内容推广岗', '外贸销售岗'],
     children: [
       {
         id: 'CAT-MKT-PROMO-POLICY',
@@ -3036,9 +3040,10 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-MKT-PROMO',
         itemCount: 6,
         isBuiltin: true,
+        applicableRoles: ['外贸销售岗', '内容推广岗'],
         children: [
-          { id: 'CAT-MKT-PROMO-CABINET', name: '全屋柜体首单定金膨胀方案', code: 'KB-MKT-PROMO-01', itemCount: 3, isBuiltin: true },
-          { id: 'CAT-MKT-PROMO-SAMPLE', name: '海外样板房/展厅上样补贴政策', code: 'KB-MKT-PROMO-02', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-MKT-PROMO-CABINET', name: '全屋柜体首单定金膨胀方案', code: 'KB-MKT-PROMO-01', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-MKT-PROMO-SAMPLE', name: '海外样板房/展厅上样补贴政策', code: 'KB-MKT-PROMO-02', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗'] }
         ]
       },
       {
@@ -3047,9 +3052,10 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-MKT-EXPO',
         itemCount: 6,
         isBuiltin: true,
+        applicableRoles: ['内容推广岗', '外贸销售岗'],
         children: [
-          { id: 'CAT-MKT-EXPO-CANTON', name: '广交会 / 广州建博会专属邀约案', code: 'KB-MKT-EXPO-01', itemCount: 3, isBuiltin: true },
-          { id: 'CAT-MKT-EXPO-OVERSEAS', name: '中东五大行业展 (Big 5 Dubai) 获客案', code: 'KB-MKT-EXPO-02', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-MKT-EXPO-CANTON', name: '广交会 / 广州建博会专属邀约案', code: 'KB-MKT-EXPO-01', itemCount: 3, isBuiltin: true, applicableRoles: ['内容推广岗', '外贸销售岗'] },
+          { id: 'CAT-MKT-EXPO-OVERSEAS', name: '中东五大行业展 (Big 5 Dubai) 获客案', code: 'KB-MKT-EXPO-02', itemCount: 3, isBuiltin: true, applicableRoles: ['内容推广岗', '外贸销售岗'] }
         ]
       },
       {
@@ -3058,9 +3064,10 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-MKT-SEASONAL',
         itemCount: 6,
         isBuiltin: true,
+        applicableRoles: ['内容推广岗', '外贸销售岗'],
         children: [
-          { id: 'CAT-MKT-SEASON-RAMADAN', name: '中东斋月与开斋节 (Ramadan) 专享方案', code: 'KB-MKT-SEASON-01', itemCount: 3, isBuiltin: true },
-          { id: 'CAT-MKT-SEASON-BLACKFRIDAY', name: '欧美黑五/圣诞年终筑家焕新季', code: 'KB-MKT-SEASON-02', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-MKT-SEASON-RAMADAN', name: '中东斋月与开斋节 (Ramadan) 专享方案', code: 'KB-MKT-SEASON-01', itemCount: 3, isBuiltin: true, applicableRoles: ['内容推广岗', '外贸销售岗'] },
+          { id: 'CAT-MKT-SEASON-BLACKFRIDAY', name: '欧美黑五/圣诞年终筑家焕新季', code: 'KB-MKT-SEASON-02', itemCount: 3, isBuiltin: true, applicableRoles: ['内容推广岗', '外贸销售岗'] }
         ]
       }
     ]
@@ -3072,13 +3079,15 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-FORBIDDEN-SCRIPTS',
     itemCount: 15,
     isBuiltin: true,
+    applicableRoles: ['全员通用'],
     children: [
       {
         id: 'CAT-FORBIDDEN-LAWS',
         name: '法律法规与通用禁用词表',
         code: 'KB-FORBIDDEN-LAWS',
         itemCount: 6,
-        isBuiltin: true
+        isBuiltin: true,
+        applicableRoles: ['全员通用']
       },
       {
         id: 'CAT-FORBIDDEN-CULTURE-RELIGION',
@@ -3086,10 +3095,11 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-FORBIDDEN-REGIONS',
         itemCount: 9,
         isBuiltin: true,
+        applicableRoles: ['全员通用'],
         children: [
-          { id: 'CAT-FORBIDDEN-MIDEAST', name: '中东/伊斯兰市场', code: 'KB-FORBIDDEN-MIDEAST', itemCount: 3, isBuiltin: true },
-          { id: 'CAT-FORBIDDEN-WEST', name: '欧美/北美市场', code: 'KB-FORBIDDEN-WEST', itemCount: 3, isBuiltin: true },
-          { id: 'CAT-FORBIDDEN-ASIA', name: '东南亚/东亚市场', code: 'KB-FORBIDDEN-ASIA', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-FORBIDDEN-MIDEAST', name: '中东/伊斯兰市场', code: 'KB-FORBIDDEN-MIDEAST', itemCount: 3, isBuiltin: true, applicableRoles: ['全员通用'] },
+          { id: 'CAT-FORBIDDEN-WEST', name: '欧美/北美市场', code: 'KB-FORBIDDEN-WEST', itemCount: 3, isBuiltin: true, applicableRoles: ['全员通用'] },
+          { id: 'CAT-FORBIDDEN-ASIA', name: '东南亚/东亚市场', code: 'KB-FORBIDDEN-ASIA', itemCount: 3, isBuiltin: true, applicableRoles: ['全员通用'] }
         ]
       }
     ]
@@ -3101,41 +3111,47 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-GLOSSARY',
     itemCount: 32,
     isBuiltin: true,
+    applicableRoles: ['全员通用'],
     children: [
       {
         id: 'CAT-GLOSSARY-TRADE',
         name: '国际贸易与海运交付术语 (Incoterms & Shipping)',
         code: 'KB-GLOSSARY-TRADE',
         itemCount: 8,
-        isBuiltin: true
+        isBuiltin: true,
+        applicableRoles: ['外贸销售岗', '关务跟单岗']
       },
       {
         id: 'CAT-GLOSSARY-FURNITURE',
         name: '家具定制、材质与五金工艺术语 (Materials & Craft)',
         code: 'KB-GLOSSARY-FURNITURE',
         itemCount: 8,
-        isBuiltin: true
+        isBuiltin: true,
+        applicableRoles: ['方案设计师', '安装技术岗', '外贸采购岗']
       },
       {
         id: 'CAT-GLOSSARY-PAYMENT',
         name: '国际支付、外汇与信用证术语 (Payment & Financial)',
         code: 'KB-GLOSSARY-PAYMENT',
         itemCount: 6,
-        isBuiltin: true
+        isBuiltin: true,
+        applicableRoles: ['外贸销售岗', '关务跟单岗']
       },
       {
         id: 'CAT-GLOSSARY-CERT',
         name: '国际质量认证与绿色环保术语 (Certifications & Eco)',
         code: 'KB-GLOSSARY-CERT',
         itemCount: 5,
-        isBuiltin: true
+        isBuiltin: true,
+        applicableRoles: ['外贸销售岗', '方案设计师']
       },
       {
         id: 'CAT-GLOSSARY-COMM',
         name: '外贸商务沟通与询盘报价术语 (Business Inquiry & RFQ)',
         code: 'KB-GLOSSARY-COMM',
         itemCount: 5,
-        isBuiltin: true
+        isBuiltin: true,
+        applicableRoles: ['外贸销售岗', '内容推广岗']
       }
     ]
   },
@@ -3146,6 +3162,7 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-INTERNAL-TRAINING',
     itemCount: 22,
     isBuiltin: true,
+    applicableRoles: ['外贸销售岗', '方案设计师', '安装技术岗'],
     children: [
       {
         id: 'CAT-TRAIN-ONBOARDING',
@@ -3153,9 +3170,10 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-TRAIN-ONBOARD',
         itemCount: 7,
         isBuiltin: true,
+        applicableRoles: ['全员通用'],
         children: [
-          { id: 'CAT-TRAIN-SOP-FLOW', name: '外贸定制大单全流程跟进 SOP', code: 'KB-TRAIN-SOP-01', itemCount: 4, isBuiltin: true },
-          { id: 'CAT-TRAIN-CORP-CULTURE', name: '品牌历史、产能优势与全案能力', code: 'KB-TRAIN-SOP-02', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-TRAIN-SOP-FLOW', name: '外贸定制大单全流程跟进 SOP', code: 'KB-TRAIN-SOP-01', itemCount: 4, isBuiltin: true, applicableRoles: ['外贸销售岗', '关务跟单岗'] },
+          { id: 'CAT-TRAIN-CORP-CULTURE', name: '品牌历史、产能优势与全案能力', code: 'KB-TRAIN-SOP-02', itemCount: 3, isBuiltin: true, applicableRoles: ['全员通用'] }
         ]
       },
       {
@@ -3164,9 +3182,10 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-TRAIN-PROD-DESIGN',
         itemCount: 8,
         isBuiltin: true,
+        applicableRoles: ['方案设计师', '安装技术岗'],
         children: [
-          { id: 'CAT-TRAIN-CAD-STANDARD', name: 'CAD 平面拆图与 3D 云渲染出图规范', code: 'KB-TRAIN-CAD-01', itemCount: 4, isBuiltin: true },
-          { id: 'CAT-TRAIN-HARDWARE-PRACTICE', name: '五金受力计算与激光无缝封边实操', code: 'KB-TRAIN-CAD-02', itemCount: 4, isBuiltin: true }
+          { id: 'CAT-TRAIN-CAD-STANDARD', name: 'CAD 平面拆图与 3D 云渲染出图规范', code: 'KB-TRAIN-CAD-01', itemCount: 4, isBuiltin: true, applicableRoles: ['方案设计师'] },
+          { id: 'CAT-TRAIN-HARDWARE-PRACTICE', name: '五金受力计算与激光无缝封边实操', code: 'KB-TRAIN-CAD-02', itemCount: 4, isBuiltin: true, applicableRoles: ['方案设计师', '安装技术岗'] }
         ]
       },
       {
@@ -3175,9 +3194,10 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-TRAIN-SALES',
         itemCount: 7,
         isBuiltin: true,
+        applicableRoles: ['外贸销售岗', '海外项目管家'],
         children: [
-          { id: 'CAT-TRAIN-NEGOTIATION', name: '高净值客户异议化解与心理博弈', code: 'KB-TRAIN-SALES-01', itemCount: 4, isBuiltin: true },
-          { id: 'CAT-TRAIN-CROSS-CULTURE', name: '跨文化商务礼仪与多语种洽谈演练', code: 'KB-TRAIN-SALES-02', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-TRAIN-NEGOTIATION', name: '高净值客户异议化解与心理博弈', code: 'KB-TRAIN-SALES-01', itemCount: 4, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-TRAIN-CROSS-CULTURE', name: '跨文化商务礼仪与多语种洽谈演练', code: 'KB-TRAIN-SALES-02', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗', '海外项目管家'] }
         ]
       }
     ]
@@ -3189,6 +3209,7 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-OPERATIONS-ASSETS',
     itemCount: 26,
     isBuiltin: true,
+    applicableRoles: ['内容推广岗', '外贸销售岗'],
     requireReview: false,
     reviewTriggers: {
       onUpload: true,

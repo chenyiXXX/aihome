@@ -1,9 +1,7 @@
 import React from 'react';
 import {
   SlidersHorizontal,
-  Users,
   Globe,
-  ShieldCheck,
   Calendar,
   Link2,
   ChevronDown,
@@ -16,13 +14,6 @@ import {
 import { KBArticle } from '../../../types';
 
 interface ArticlePermissionsTabProps {
-  articleFormRoles: string[];
-  setArticleFormRoles: React.Dispatch<React.SetStateAction<string[]>>;
-  isRolesDropdownOpen: boolean;
-  setIsRolesDropdownOpen: (val: boolean) => void;
-  customRoleInput: string;
-  setCustomRoleInput: (val: string) => void;
-  PRESET_ROLES: string[];
   articleFormRegions: string[];
   setArticleFormRegions: React.Dispatch<React.SetStateAction<string[]>>;
   isRegionsDropdownOpen: boolean;
@@ -30,8 +21,6 @@ interface ArticlePermissionsTabProps {
   customRegionInput: string;
   setCustomRegionInput: (val: string) => void;
   PRESET_REGIONS: string[];
-  articleFormSecurityLevel: '公开' | '内部' | '机密';
-  setArticleFormSecurityLevel: (val: '公开' | '内部' | '机密') => void;
   articleFormExpiryType: 'permanent' | 'custom';
   setArticleFormExpiryType: (val: 'permanent' | 'custom') => void;
   articleFormStartDate?: string;
@@ -51,13 +40,6 @@ interface ArticlePermissionsTabProps {
 }
 
 export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
-  articleFormRoles,
-  setArticleFormRoles,
-  isRolesDropdownOpen,
-  setIsRolesDropdownOpen,
-  customRoleInput,
-  setCustomRoleInput,
-  PRESET_ROLES,
   articleFormRegions,
   setArticleFormRegions,
   isRegionsDropdownOpen,
@@ -65,8 +47,6 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
   customRegionInput,
   setCustomRegionInput,
   PRESET_REGIONS,
-  articleFormSecurityLevel,
-  setArticleFormSecurityLevel,
   articleFormExpiryType,
   setArticleFormExpiryType,
   articleFormStartDate = '',
@@ -82,7 +62,7 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
   isRelatedDropdownOpen,
   setIsRelatedDropdownOpen,
   contentList,
-  editingArticle
+  editingArticle: _editingArticle
 }) => {
   const todayStr = new Date().toISOString().split('T')[0];
   const currentStartDate = articleFormStartDate || todayStr;
@@ -115,9 +95,10 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
       setArticleFormExpiryDate(newEnd);
     }
   };
+
   return (
     <div className="space-y-4 animate-in fade-in duration-150 text-xs">
-      {/* 业务适用与权限管控配置面板 */}
+      {/* 业务适用与有效期限配置面板 */}
       <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/90 space-y-4 shadow-2xs">
         <div className="flex items-center justify-between border-b border-slate-200/70 pb-2.5">
           <div className="flex items-center gap-2">
@@ -125,153 +106,17 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
               <SlidersHorizontal className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-bold text-slate-800 text-xs">业务适用与权限管控配置</span>
+              <span className="font-bold text-slate-800 text-xs">业务适用与有效期限配置</span>
               <span className="text-[11px] text-slate-400 ml-2">
-                设置岗位分权、适用区域、保密等级、有效期与关联知识
+                设置适用地区/语种、知识有效期限与关联知识条目（岗位权限已由所属分类统一部署）
               </span>
             </div>
           </div>
         </div>
 
-        {/* Grid 1: 适用岗位* & 适用地区/语种* */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          {/* 1. 适用岗位* (多选下拉框) */}
-          <div className="space-y-1.5 relative">
-            <div className="flex items-center justify-between">
-              <label className="font-bold text-slate-700 flex items-center gap-1">
-                <Users className="w-3.5 h-3.5 text-blue-600" />
-                <span className="text-red-500 mr-0.5">*</span>适用岗位 (多选)
-              </label>
-              <span className="text-[11px] text-blue-600 font-medium">
-                已选 {articleFormRoles.length} 个
-              </span>
-            </div>
-
-            {/* Trigger Dropdown Button */}
-            <div
-              onClick={() => setIsRolesDropdownOpen(!isRolesDropdownOpen)}
-              className="w-full min-h-[38px] p-2 bg-white border border-slate-200 rounded-xl text-slate-800 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-colors shadow-2xs"
-            >
-              <div className="flex flex-wrap gap-1 items-center max-w-[88%]">
-                {articleFormRoles.length === 0 ? (
-                  <span className="text-slate-400 text-xs">请选择适用岗位...</span>
-                ) : (
-                  articleFormRoles.map((role) => (
-                    <span
-                      key={role}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/80 text-[11px] font-medium"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setArticleFormRoles(articleFormRoles.filter((r) => r !== role));
-                      }}
-                    >
-                      {role}
-                      <X className="w-2.5 h-2.5 hover:text-red-600" />
-                    </span>
-                  ))
-                )}
-              </div>
-              <ChevronDown
-                className={`w-4 h-4 text-slate-400 transition-transform ${
-                  isRolesDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </div>
-
-            {/* Roles Dropdown Menu */}
-            {isRolesDropdownOpen && (
-              <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-2.5 space-y-2 animate-in fade-in zoom-in-95 duration-100">
-                <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 text-[11px]">
-                  <span className="text-slate-400">选择适用岗位：</span>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setArticleFormRoles([...PRESET_ROLES])}
-                      className="text-blue-600 hover:underline cursor-pointer"
-                    >
-                      全选
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setArticleFormRoles([])}
-                      className="text-slate-400 hover:text-red-500 cursor-pointer"
-                    >
-                      清空
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto custom-scrollbar">
-                  {PRESET_ROLES.map((role) => {
-                    const isChecked = articleFormRoles.includes(role);
-                    return (
-                      <button
-                        key={role}
-                        type="button"
-                        onClick={() => {
-                          if (isChecked) {
-                            setArticleFormRoles(articleFormRoles.filter((r) => r !== role));
-                          } else {
-                            setArticleFormRoles([...articleFormRoles, role]);
-                          }
-                        }}
-                        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-left text-xs transition-colors cursor-pointer ${
-                          isChecked
-                            ? 'bg-blue-50 text-blue-800 font-medium'
-                            : 'hover:bg-slate-50 text-slate-700'
-                        }`}
-                      >
-                        <div
-                          className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${
-                            isChecked
-                              ? 'bg-blue-600 border-blue-600 text-white'
-                              : 'border-slate-300'
-                          }`}
-                        >
-                          {isChecked && <Check className="w-2.5 h-2.5" />}
-                        </div>
-                        <span className="truncate">{role}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Custom role input */}
-                <div className="flex gap-1.5 pt-1.5 border-t border-slate-100">
-                  <input
-                    type="text"
-                    placeholder="自定义其他岗位..."
-                    value={customRoleInput}
-                    onChange={(e) => setCustomRoleInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && customRoleInput.trim()) {
-                        e.preventDefault();
-                        if (!articleFormRoles.includes(customRoleInput.trim())) {
-                          setArticleFormRoles([...articleFormRoles, customRoleInput.trim()]);
-                        }
-                        setCustomRoleInput('');
-                      }
-                    }}
-                    className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (customRoleInput.trim() && !articleFormRoles.includes(customRoleInput.trim())) {
-                        setArticleFormRoles([...articleFormRoles, customRoleInput.trim()]);
-                        setCustomRoleInput('');
-                      }
-                    }}
-                    className="px-2.5 py-1 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 cursor-pointer"
-                  >
-                    添加
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 2. 适用地区/语种* (多选下拉框) */}
+        {/* 2-Column Grid: 适用地区/语种* & 有效期限 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+          {/* 1. 适用地区/语种* (多选下拉框) */}
           <div className="space-y-1.5 relative">
             <div className="flex items-center justify-between">
               <label className="font-bold text-slate-700 flex items-center gap-1">
@@ -406,71 +251,15 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
               </div>
             )}
           </div>
-        </div>
 
-        {/* Grid 2: 知识密级 (单选按钮) & 有效期限 (日期选择器) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1 border-t border-slate-200/60">
-          {/* 3. 知识密级 (单选按钮: 公开 / 内部 / 机密) */}
-          <div className="space-y-1.5">
-            <label className="font-bold text-slate-700 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-              知识密级 (单选)
-            </label>
-
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                {
-                  level: '公开' as const,
-                  desc: '对客户公开',
-                  color: 'text-emerald-700 bg-emerald-50 border-emerald-300'
-                },
-                {
-                  level: '内部' as const,
-                  desc: '仅员工可见',
-                  color: 'text-blue-700 bg-blue-50 border-blue-300'
-                },
-                {
-                  level: '机密' as const,
-                  desc: '特权授权',
-                  color: 'text-rose-700 bg-rose-50 border-rose-300'
-                }
-              ].map((item) => {
-                const isSelected = articleFormSecurityLevel === item.level;
-                return (
-                  <label
-                    key={item.level}
-                    onClick={() => setArticleFormSecurityLevel(item.level)}
-                    className={`flex flex-col items-center justify-center p-2 rounded-xl border cursor-pointer transition-all ${
-                      isSelected
-                        ? `${item.color} font-bold ring-2 ring-offset-1 ring-slate-400 shadow-xs`
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        name="securityLevel"
-                        checked={isSelected}
-                        onChange={() => setArticleFormSecurityLevel(item.level)}
-                        className="w-3 h-3 text-[#EA3A20] focus:ring-[#EA3A20]"
-                      />
-                      <span className="text-xs">{item.level}</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 mt-0.5">{item.desc}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 4. 有效期限 (日期选择器: 永久有效 或 设置有效期) */}
+          {/* 2. 有效期限 (日期选择器: 永久有效 或 设置有效期) */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="font-bold text-slate-700 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-amber-600" />
                 有效期限
               </label>
-              <span className="text-[10px] text-slate-400">适用于限时政策、促销话术或阶段性规范</span>
+              <span className="text-[10px] text-slate-400">适用于限时政策或阶段性规范</span>
             </div>
 
             <div className="space-y-2.5">
@@ -479,9 +268,9 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
                 <button
                   type="button"
                   onClick={() => setArticleFormExpiryType('permanent')}
-                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium border flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                     articleFormExpiryType === 'permanent'
-                      ? 'bg-amber-50 text-amber-900 border-amber-300 font-bold shadow-2xs'
+                      ? 'bg-amber-50 text-amber-900 border-amber-300 shadow-2xs font-bold'
                       : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
@@ -506,17 +295,17 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
                     if (!articleFormStartDate && setArticleFormStartDate) {
                       setArticleFormStartDate(todayStr);
                     }
-                    if (!currentEndDate) {
-                      const d = new Date(currentStartDate || todayStr);
-                      d.setMonth(d.getMonth() + 3);
-                      const defaultEnd = d.toISOString().split('T')[0];
-                      if (setArticleFormEndDate) setArticleFormEndDate(defaultEnd);
+                    if (!articleFormEndDate && setArticleFormEndDate) {
+                      const nextYear = new Date();
+                      nextYear.setFullYear(nextYear.getFullYear() + 1);
+                      const defaultEnd = nextYear.toISOString().split('T')[0];
+                      setArticleFormEndDate(defaultEnd);
                       if (setArticleFormExpiryDate) setArticleFormExpiryDate(defaultEnd);
                     }
                   }}
-                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium border flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                     articleFormExpiryType === 'custom'
-                      ? 'bg-amber-50 text-amber-900 border-amber-300 font-bold shadow-2xs'
+                      ? 'bg-amber-50 text-amber-900 border-amber-300 shadow-2xs font-bold'
                       : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
@@ -552,7 +341,6 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
                           if (setArticleFormStartDate) {
                             setArticleFormStartDate(newStart);
                           }
-                          // If current end date is earlier than new start date, auto advance end date
                           if (currentEndDate && currentEndDate < newStart) {
                             const newEndObj = new Date(newStart);
                             newEndObj.setMonth(newEndObj.getMonth() + 3);
@@ -598,68 +386,52 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
                       <span>结束日期（{currentEndDate}）不能小于开始日期（{currentStartDate}），请重新选择！</span>
                     </div>
                   ) : (
-                    currentStartDate &&
-                    currentEndDate && (
-                      <div className="flex items-center justify-between text-[11px] bg-amber-50/80 px-2.5 py-1.5 rounded-lg border border-amber-200/80 text-amber-900">
-                        <span className="flex items-center gap-1">
-                          <span>📅 有效期限：</span>
-                          <strong className="font-mono text-slate-800">{currentStartDate}</strong>
-                          <span className="text-slate-400 mx-0.5">至</span>
-                          <strong className="font-mono text-slate-800">{currentEndDate}</strong>
+                    <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 border-t border-slate-100 text-[11px] text-slate-500">
+                      <div className="flex items-center gap-1 font-medium text-amber-800">
+                        <span>有效期跨度:</span>
+                        <span className="font-bold font-mono text-amber-900 bg-amber-100/80 px-1.5 py-0.5 rounded">
+                          {durationDays} 天
                         </span>
-                        <span className="font-bold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded text-[10px]">
-                          共 {durationDays} 天有效
-                        </span>
+                        {currentStartDate && currentEndDate && (
+                          <span className="text-[10px] text-slate-400 hidden sm:inline">
+                            ({currentStartDate} <ArrowRight className="inline w-2.5 h-2.5" /> {currentEndDate})
+                          </span>
+                        )}
                       </div>
-                    )
-                  )}
 
-                  {/* Quick Duration Preset Buttons (calculated from Start Date) */}
-                  <div className="pt-1 border-t border-slate-100 flex items-center justify-between gap-1 flex-wrap">
-                    <span className="text-[10px] text-slate-400 font-medium shrink-0">快捷延展区间:</span>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <button
-                        type="button"
-                        onClick={() => handleSetQuickDuration(30)}
-                        className="px-2 py-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 rounded-md text-[10px] font-medium cursor-pointer transition-colors"
-                      >
-                        +30天 (1个月)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSetQuickDuration(90)}
-                        className="px-2 py-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 rounded-md text-[10px] font-medium cursor-pointer transition-colors"
-                      >
-                        +90天 (1季度)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSetQuickDuration(180)}
-                        className="px-2 py-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 rounded-md text-[10px] font-medium cursor-pointer transition-colors"
-                      >
-                        +180天 (半年)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSetQuickDuration(365)}
-                        className="px-2 py-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 rounded-md text-[10px] font-medium cursor-pointer transition-colors"
-                      >
-                        +1年 (12个月)
-                      </button>
+                      {/* Quick Duration Preset Buttons */}
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400">快捷:</span>
+                        {[
+                          { label: '30天', days: 30 },
+                          { label: '90天', days: 90 },
+                          { label: '半年', days: 180 },
+                          { label: '1年', days: 365 }
+                        ].map((btn) => (
+                          <button
+                            key={btn.label}
+                            type="button"
+                            onClick={() => handleSetQuickDuration(btn.days)}
+                            className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-[10px] text-slate-600 transition-colors cursor-pointer"
+                          >
+                            {btn.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* 5. 关联条目 (搜索选择框，关联知识库中的其他相关条目) */}
-        <div className="pt-2 border-t border-slate-200/60 space-y-2">
+        {/* 3. 关联条目 (搜索选择框) */}
+        <div className="space-y-1.5 pt-3 border-t border-slate-200/60">
           <div className="flex items-center justify-between">
             <label className="font-bold text-slate-700 flex items-center gap-1">
               <Link2 className="w-3.5 h-3.5 text-indigo-600" />
-              关联条目 (搜索选择框)
+              关联知识条目 (搜索选择框)
             </label>
             <span className="text-[11px] text-indigo-600 font-medium">
               已关联 {articleFormRelatedIds.length} 篇知识
@@ -708,15 +480,24 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
                     setIsRelatedDropdownOpen(true);
                   }}
                   onFocus={() => setIsRelatedDropdownOpen(true)}
-                  className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-2xs"
+                  className="w-full pl-8 pr-8 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-2xs"
                 />
+                {relatedSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setRelatedSearchQuery('')}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => setIsRelatedDropdownOpen(!isRelatedDropdownOpen)}
-                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl font-medium hover:bg-indigo-100 flex items-center gap-1 cursor-pointer transition-colors shadow-2xs text-xs"
               >
-                <span>{isRelatedDropdownOpen ? '收起列表' : '浏览选择'}</span>
+                <span>浏览全部</span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 transition-transform ${
                     isRelatedDropdownOpen ? 'rotate-180' : ''
@@ -725,22 +506,24 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
               </button>
             </div>
 
-            {/* Dropdown list of articles */}
+            {/* Related Articles Dropdown Selection */}
             {isRelatedDropdownOpen && (
               <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-2 space-y-1 max-h-56 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-2 py-1 text-[11px] text-slate-400 flex justify-between">
-                  <span>知识库条目列表 (点击关联/取消)</span>
+                <div className="flex items-center justify-between pb-1.5 px-2 border-b border-slate-100 text-[11px] text-slate-400">
+                  <span>点击条目加入关联知识</span>
                   <button
                     type="button"
                     onClick={() => setIsRelatedDropdownOpen(false)}
-                    className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="text-slate-400 hover:text-slate-600 font-medium cursor-pointer"
                   >
                     关闭
                   </button>
                 </div>
+
                 {contentList
-                  .filter((art) => !editingArticle || art.id !== editingArticle.id)
                   .filter((art) => {
+                    // Filter out current article being edited
+                    if (_editingArticle && art.id === _editingArticle.id) return false;
                     if (!relatedSearchQuery.trim()) return true;
                     const q = relatedSearchQuery.toLowerCase();
                     return (

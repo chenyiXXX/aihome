@@ -1,3 +1,12 @@
+export type GraphicTextStatus = 
+  | '编辑中'
+  | '已同步到微信'
+  | '发布审核中'
+  | '审核不通过'
+  | '计划发布'
+  | '已发布'
+  | '回收站';
+
 export interface GraphicTextItem {
   id: string;
   topic: string;
@@ -14,7 +23,9 @@ export interface GraphicTextItem {
   };
   author: string;
   publishPlatform: '微信公众号' | '多平台矩阵';
-  status: '已同步微信草稿箱' | '本地草稿' | '待审核';
+  status: GraphicTextStatus;
+  auditRejectReason?: string;
+  scheduledPublishTime?: string;
   wechatDraftId?: string;
   createdAt: string;
   readCount?: number;
@@ -185,7 +196,7 @@ export const INITIAL_GRAPHIC_ARTICLES: GraphicTextItem[] = [
     },
     author: 'HomeCraft 高定工法组',
     publishPlatform: '微信公众号',
-    status: '已同步微信草稿箱',
+    status: '编辑中',
     wechatDraftId: 'WX-DRAFT-20260907-8821',
     createdAt: '2026-09-07 14:30',
     readCount: 4210,
@@ -247,7 +258,7 @@ export const INITIAL_GRAPHIC_ARTICLES: GraphicTextItem[] = [
     },
     author: 'HomeCraft 外贸交付工程院',
     publishPlatform: '微信公众号',
-    status: '已同步微信草稿箱',
+    status: '已同步到微信',
     wechatDraftId: 'WX-DRAFT-20260905-1042',
     createdAt: '2026-09-05 18:20',
     readCount: 3890,
@@ -282,7 +293,7 @@ export const INITIAL_GRAPHIC_ARTICLES: GraphicTextItem[] = [
     },
     author: 'HomeCraft 研发中心',
     publishPlatform: '微信公众号',
-    status: '本地草稿',
+    status: '发布审核中',
     createdAt: '2026-09-02 11:15',
     readCount: 1850,
     wordCount: 1760,
@@ -315,7 +326,8 @@ export const INITIAL_GRAPHIC_ARTICLES: GraphicTextItem[] = [
     },
     author: 'HomeCraft 品牌部',
     publishPlatform: '微信公众号',
-    status: '待审核',
+    status: '计划发布',
+    scheduledPublishTime: '2026-09-12 18:00 (自动定时群发)',
     createdAt: '2026-08-28 16:40',
     readCount: 2920,
     wordCount: 2400,
@@ -327,6 +339,100 @@ export const INITIAL_GRAPHIC_ARTICLES: GraphicTextItem[] = [
       {
         title: '01 / 设计语言：从横平竖直走向立体微雕',
         paragraphs: ['现代高定不再执着于复杂的雕花，而是通过 45 度倒角斜切和毫米级收边...']
+      }
+    ]
+  },
+  {
+    id: 'art-005',
+    topic: '大平层静音门窗与五金选型指南',
+    title: '大平层静音门窗与重型阻尼五金选型实操指南',
+    summary: '高定住宅对隔音与五金承重的高标准要求，本方案系统分析三轨推拉与磁吸静音锁体应用。',
+    coverImage: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&auto=format&fit=crop&q=80',
+    linkedProducts: ['意式极简铝框玻璃门', '德国进口阻尼五金系列'],
+    linkedCase: {
+      id: 'case-sydney',
+      name: '悉尼滨海独栋全套木作案例 (共12张)',
+      photoCount: 12,
+      description: '悉尼双湾滨海独栋住宅静音工程',
+      images: ['https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&auto=format&fit=crop&q=80']
+    },
+    author: 'HomeCraft 质检合规组',
+    publishPlatform: '微信公众号',
+    status: '审核不通过',
+    auditRejectReason: '微信公众号官方违禁词检测：第1段内容提及“行业首创绝对静音”表述过于绝对，涉嫌广告法极限词，请在编辑中调整用词为“最高降噪达42dB”后重新提交审核。',
+    createdAt: '2026-08-25 10:20',
+    readCount: 1120,
+    wordCount: 1680,
+    themeStyle: 'dark',
+    materialsParameters: [
+      { name: '隔音阻尼', spec: 'EPDM三元乙丙密封胶条', standard: '气密等级达到8级' }
+    ],
+    contentSections: [
+      {
+        title: '01 / 静音系统设计要点',
+        paragraphs: ['门窗的声学密封离不开三道密封胶条与气压平衡孔的精密配合...']
+      }
+    ]
+  },
+  {
+    id: 'art-006',
+    topic: '2026高端全屋定制流行色彩趋势发布',
+    title: '2026高端全屋定制流行色彩趋势：低饱和大地色与自然质感的回归',
+    summary: '色彩不再只是视觉装饰，而是空间情绪与居住者心境的映射。发布2026年度三大经典配色体系。',
+    coverImage: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&auto=format&fit=crop&q=80',
+    linkedProducts: ['PET肤感板系列', '岩板岛台台面系统'],
+    linkedCase: {
+      id: 'case-london',
+      name: '伦敦肯辛顿豪宅全屋定制案例 (共10张)',
+      photoCount: 10,
+      description: '全屋低饱和大地色系落地交付实景',
+      images: ['https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&auto=format&fit=crop&q=80']
+    },
+    author: 'HomeCraft 品牌设计部',
+    publishPlatform: '微信公众号',
+    status: '已发布',
+    createdAt: '2026-08-20 09:30',
+    readCount: 6850,
+    wordCount: 2800,
+    themeStyle: 'emerald',
+    materialsParameters: [
+      { name: '表面色彩光泽', spec: '进口水性抗黄变哑光色漆', standard: '耐光老化测试达5级' }
+    ],
+    contentSections: [
+      {
+        title: '01 / 大地色系的治愈力量',
+        paragraphs: ['在现代快节奏都市生活中，低饱和大地色为归家者营造平缓舒适的心灵庇护所...']
+      }
+    ]
+  },
+  {
+    id: 'art-007',
+    topic: '废弃草案：旧版欧式雕花衣帽间工艺说明（已归档）',
+    title: '【归档草案】旧版欧式复古雕花实木衣帽间工艺说明',
+    summary: '该方案已根据最新现代轻奢品牌定位废弃，归档于回收站备查。',
+    coverImage: 'https://images.unsplash.com/photo-1558997519-83ea9252def8?w=800&auto=format&fit=crop&q=80',
+    linkedProducts: ['德国进口阻尼五金系列'],
+    linkedCase: {
+      id: 'case-london',
+      name: '早期古典全屋项目图 (共4张)',
+      photoCount: 4,
+      description: '早期欧式雕花木作方案',
+      images: ['https://images.unsplash.com/photo-1558997519-83ea9252def8?w=800&auto=format&fit=crop&q=80']
+    },
+    author: 'HomeCraft 归档组',
+    publishPlatform: '微信公众号',
+    status: '回收站',
+    createdAt: '2026-08-01 14:00',
+    readCount: 320,
+    wordCount: 1100,
+    themeStyle: 'warm',
+    materialsParameters: [
+      { name: '木材材质', spec: '美国红橡实木拼板', standard: '传统榫卯结构' }
+    ],
+    contentSections: [
+      {
+        title: '01 / 传统工法历史记录',
+        paragraphs: ['本篇作为技术储备归档，供后续复古定制项目查阅参考...']
       }
     ]
   }

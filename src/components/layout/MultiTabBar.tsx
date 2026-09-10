@@ -89,6 +89,7 @@ export const MultiTabBar: React.FC<MultiTabBarProps> = ({
               <span className="whitespace-nowrap font-bold">{tab.moduleTitle}</span>
               {tab.subView &&
                 tab.subView !== tab.moduleTitle &&
+                tab.subView !== '知识问答' &&
                 tab.subView !== '通用知识问答' &&
                 tab.subView !== '售前询盘列表' &&
                 tab.subView !== '会话列表' &&

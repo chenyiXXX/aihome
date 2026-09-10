@@ -20,6 +20,7 @@ import {
 import { VideoClipItem, MarketingPost } from '../../types';
 import { GraphicTextModule } from './marketing/GraphicTextModule';
 import { MaterialLibraryModule } from './marketing/MaterialLibraryModule';
+import { VideoClipModule } from './marketing/VideoClipModule';
 
 interface MarketingModuleProps {
   videoClips: VideoClipItem[];
@@ -156,6 +157,10 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
     return <MaterialLibraryModule onNavigateToClip={() => setActiveTab('视频剪辑')} />;
   }
 
+  if (activeTab === '视频剪辑') {
+    return <VideoClipModule onNavigateToPlan={() => setActiveTab('发布计划')} />;
+  }
+
   if (activeTab === '图文生成') {
     return <GraphicTextModule />;
   }
@@ -164,57 +169,6 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
     <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pt-6 pb-8">
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        {activeTab === '视频剪辑' && (
-          <div className="space-y-6">
-            <div className="p-6 bg-[#0F4A47] text-white rounded-3xl shadow-[0_4px_25px_rgba(0,0,0,0.03)] flex items-center justify-between">
-              <div>
-                <span className="px-3 py-1 text-xs font-bold bg-white/10 text-white rounded-full border border-white/20">
-                  AI 智能视频剪辑与分镜生成
-                </span>
-                <h2 className="text-lg font-bold mt-2">家居展厅 & 制造工厂 15秒/30秒 爆款短视频模板</h2>
-                <p className="text-xs text-slate-200 mt-1 max-w-xl">
-                  输入家具产品或生产工艺主题，AI 将自动剪辑展厅镜头、自动配音英文旁白并匹配 9:16 Shorts/Reels 比例。
-                </p>
-              </div>
-              <button
-                onClick={() => handleGenerateContent('video_script')}
-                disabled={loading}
-                className="px-6 py-3 bg-[#EA3A20] hover:bg-[#c42810] text-white font-bold text-xs rounded-full shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-              >
-                <Sparkles className="w-4 h-4" /> {loading ? '脚本智能生成中...' : '生成短视频分镜脚本'}
-              </button>
-            </div>
-
-            {/* Video Clips Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {videoClips.map((clip) => (
-                <div key={clip.id} className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-3">
-                  <div className="relative h-48 bg-slate-900">
-                    <img src={clip.previewCover} alt={clip.title} className="w-full h-full object-cover opacity-80" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-transparent to-transparent" />
-                    <button className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-white/90 text-slate-900 flex items-center justify-center shadow-xl hover:scale-110 transition-transform cursor-pointer">
-                      <Play className="w-5 h-5 fill-slate-900 ml-0.5" />
-                    </button>
-                    <span className="absolute bottom-3 left-3 px-2.5 py-0.5 text-[10px] bg-slate-900/80 text-white rounded-full font-mono">
-                      {clip.duration} | {clip.aiAspect}
-                    </span>
-                    <span className="absolute top-3 right-3 px-2.5 py-0.5 text-[10px] bg-[#DDECE8] text-[#2D6A5D] rounded-full font-bold">
-                      {clip.status}
-                    </span>
-                  </div>
-
-                  <div className="p-5 space-y-2">
-                    <h3 className="font-bold text-sm text-slate-900">{clip.title}</h3>
-                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                      {clip.scriptText}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {activeTab === '发布审核' && (
           <div className="bg-white border border-slate-100 rounded-3xl p-6 space-y-4 shadow-[0_4px_25px_rgba(0,0,0,0.03)]">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">

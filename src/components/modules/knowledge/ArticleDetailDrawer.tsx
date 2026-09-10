@@ -9,7 +9,6 @@ import {
   Clock,
   CheckCircle2,
   SlidersHorizontal,
-  Users,
   Globe,
   ShieldCheck,
   Calendar,
@@ -839,10 +838,10 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
         operatorRole: '平台管理员',
         timestamp: '2026-08-12 17:30:00',
         action: 'edit',
-        actionLabel: '变更归属分类与适用岗位权限',
+        actionLabel: '变更归属分类与适用权限',
         version: currentV,
         wasPublished: true,
-        diffSummary: `归属分类调整为【${article.category}】；新增【关务跟单岗】、【外贸销售岗】和【财务审计岗】查阅与检索权限`,
+        diffSummary: `归属分类调整为【${article.category}】，继承所属分类的权限与安全管控配置`,
       },
       {
         id: `LOG-${article.id}-07-AI-CHUNK`,
@@ -924,7 +923,7 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
         actionLabel: '创建知识条目 (初始立项)',
         version: 'v0.1.0-init',
         wasPublished: false,
-        diffSummary: `初始化知识条目，录入编码 ${article.code}，配置外贸全屋定制业务属性与密级`,
+        diffSummary: `初始化知识条目，录入编码 ${article.code}，配置外贸全屋定制业务属性与有效期`,
       }
     ];
 
@@ -2016,33 +2015,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
               
               {/* 1. Core Dimension Cards in Bento Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                
-                {/* 适用岗位 */}
-                <div className="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-slate-500" /> 适用业务岗位
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-medium">访问与问答权限</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 pt-0.5">
-                    {article.applicableRoles && article.applicableRoles.length > 0 ? (
-                      article.applicableRoles.map((role) => (
-                        <span
-                          key={role}
-                          className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium"
-                        >
-                          {role}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-50 text-slate-500 border border-slate-200 text-xs font-medium">
-                        全员通用
-                      </span>
-                    )}
-                  </div>
-                </div>
-
                 {/* 适用地区/语种 */}
                 <div className="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5">
                   <div className="flex items-center justify-between">
@@ -2066,30 +2038,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                         全球通用
                       </span>
                     )}
-                  </div>
-                </div>
-
-                {/* 知识密级 */}
-                <div className="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-slate-500" /> 知识安全密级
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-medium">外泄管控级别</span>
-                  </div>
-                  <div className="pt-0.5">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${
-                        article.securityLevel === '机密'
-                          ? 'bg-rose-50 text-rose-700 border-rose-200'
-                          : article.securityLevel === '内部'
-                          ? 'bg-slate-100 text-slate-700 border-slate-200'
-                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      }`}
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                      <span>{article.securityLevel || '内部'}（受组织权限管控）</span>
-                    </span>
                   </div>
                 </div>
 
@@ -2540,8 +2488,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                               sparseBM25Keywords: rawVectorModalChunk.tags.map((t) => t.split(':')[1]?.trim() || t),
                               metadata: {
                                 category: article.category,
-                                securityLevel: article.securityLevel || '内部',
-                                applicableRoles: article.applicableRoles || ['外贸销售岗'],
                                 lastIndexedAt: rawVectorModalChunk.lastIndexedAt
                               },
                               content: rawVectorModalChunk.text

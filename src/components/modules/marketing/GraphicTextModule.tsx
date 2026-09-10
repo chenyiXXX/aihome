@@ -53,10 +53,12 @@ import {
   FileText,
   ArrowLeft,
   LayoutGrid,
-  List
+  List,
+  Paperclip
 } from 'lucide-react';
 import {
   GraphicTextItem,
+  GraphicTextStatus,
   INITIAL_GRAPHIC_ARTICLES,
   AVAILABLE_PRODUCTS,
   AVAILABLE_CASES,
@@ -67,6 +69,9 @@ import { GraphicTextList } from './GraphicTextList';
 import { CreateGraphicTextModal } from './CreateGraphicTextModal';
 import { useVoiceToText } from '../../../hooks/useVoiceToText';
 import { VoiceInputBanner } from '../../common/VoiceInputBanner';
+import { useChatAttachment } from '../../../hooks/useChatAttachment';
+import { ChatAttachmentDropZone } from '../../common/ChatAttachmentDropZone';
+import { ImagePreviewModal } from '../../common/ImagePreviewModal';
 
 // --------------------------------------------------------------------------
 // Types for Media Assets & Chat Messages
@@ -104,6 +109,7 @@ export interface MarketingChatMessage {
   modifiedSummary?: string[];
   appliedTheme?: 'emerald' | 'dark' | 'warm';
   attachedMaterials?: MediaMaterialItem[];
+  attachments?: ChatAttachment[];
 }
 
 // --------------------------------------------------------------------------
@@ -275,6 +281,21 @@ export const GraphicTextModule: React.FC = () => {
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isAiThinking, setIsAiThinking] = useState<boolean>(false);
   const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
+  const [previewModalImage, setPreviewModalImage] = useState<{ url: string; name: string } | null>(null);
+
+  // Chat attachments: Ctrl+V clipboard paste & Drag-and-drop
+  const {
+    pendingAttachments,
+    isDragOver,
+    handlePaste,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+    removeAttachment,
+    clearAttachments,
+    processFiles
+  } = useChatAttachment();
 
   // Preview & Sync State
   const [displayDeviceMode, setDisplayDeviceMode] = useState<'phone' | 'wide'>('phone');
@@ -374,13 +395,40 @@ export const GraphicTextModule: React.FC = () => {
   };
 
   const handleDeleteArticle = (id: string) => {
-    setArticlesList((prev) => prev.filter((a) => a.id !== id));
+    setArticlesList((prev) => {
+      const target = prev.find((a) => a.id === id);
+      if (!target) return prev;
+      if (target.status === '回收站') {
+        // 彻底删除
+        return prev.filter((a) => a.id !== id);
+      } else {
+        // 移入回收站
+        return prev.map((a) => (a.id === id ? { ...a, status: '回收站' as const } : a));
+      }
+    });
     if (currentArticle.id === id) {
       const remaining = articlesList.filter((a) => a.id !== id);
       if (remaining.length > 0) {
         setCurrentArticle(remaining[0]);
       }
     }
+  };
+
+  const handleRestoreArticle = (id: string) => {
+    setArticlesList((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status: '编辑中' as const } : a))
+    );
+  };
+
+  const handleUpdateStatus = (newStatus: GraphicTextStatus) => {
+    setCurrentArticle((prev) => {
+      const updated: GraphicTextItem = {
+        ...prev,
+        status: newStatus
+      };
+      setArticlesList((list) => list.map((a) => (a.id === updated.id ? updated : a)));
+      return updated;
+    });
   };
 
   const handlePreviewArticle = (article: GraphicTextItem) => {
@@ -393,10 +441,28 @@ export const GraphicTextModule: React.FC = () => {
   // --------------------------------------------------------------------------
   const handleSendMessage = (textToSend?: string) => {
     const rawText = textToSend || inputMessage;
-    if (!rawText.trim() && !selectedMaterialToAttach) return;
+    const hasAttachments = pendingAttachments.length > 0;
+    if (!rawText.trim() && !selectedMaterialToAttach && !hasAttachments) return;
 
-    const userText = rawText.trim() || (selectedMaterialToAttach ? `请在正文中引用并排版此素材：【${selectedMaterialToAttach.title}】` : '');
     const attachedMat = selectedMaterialToAttach;
+    const attachmentsToSend: ChatAttachment[] = pendingAttachments.map((att) => ({
+      id: att.id,
+      name: att.name,
+      type: att.type,
+      url: att.previewUrl,
+      size: att.size
+    }));
+
+    let userText = rawText.trim();
+    if (!userText) {
+      if (attachedMat) {
+        userText = `请在正文中引用并排版此素材：【${attachedMat.title}】`;
+      } else if (attachmentsToSend.length > 0) {
+        userText = attachmentsToSend.some((a) => a.type === 'image')
+          ? '请将我上传的配图/素材进行分析，并排版至当前微信图文推文中。'
+          : '已上传相关产品资料文件，请提取亮点补充至文章中。';
+      }
+    }
 
     // 1. Append User Message
     const userMsg: MarketingChatMessage = {
@@ -404,12 +470,14 @@ export const GraphicTextModule: React.FC = () => {
       sender: 'user',
       content: userText,
       timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-      attachedMaterials: attachedMat ? [attachedMat] : undefined
+      attachedMaterials: attachedMat ? [attachedMat] : undefined,
+      attachments: attachmentsToSend.length > 0 ? attachmentsToSend : undefined
     };
 
     setMessages((prev) => [...prev, userMsg]);
     setInputMessage('');
     setSelectedMaterialToAttach(null);
+    clearAttachments();
     setIsAiThinking(true);
 
     // 2. Simulate AI Processing & Modifying Article State
@@ -420,6 +488,18 @@ export const GraphicTextModule: React.FC = () => {
       // State clones for updates
       let updatedArticle = { ...currentArticle };
       let modifications: string[] = [];
+
+      // Check for uploaded attachments
+      if (attachmentsToSend.length > 0) {
+        const attNames = attachmentsToSend.map((a) => `【${a.name}】`).join('、');
+        const imgAtt = attachmentsToSend.find((a) => a.type === 'image');
+        if (imgAtt) {
+          updatedArticle.coverImage = imgAtt.url;
+          modifications.push(`已将您上传的图片素材${attNames}设为文章候选大封面并提取色彩基调`);
+        } else {
+          modifications.push(`已解析您上传的文件${attNames}，提取技术参数与规格补充至正文`);
+        }
+      }
 
       // Check for theme color changes
       if (lower.includes('墨绿') || lower.includes('高奢')) {
@@ -567,9 +647,9 @@ export const GraphicTextModule: React.FC = () => {
       const generatedId = `draft_${Math.random().toString(36).substring(2, 9)}_2026`;
       setSyncedDraftId(generatedId);
       setCurrentArticle((prev) => {
-        const updated = {
+        const updated: GraphicTextItem = {
           ...prev,
-          status: '已同步微信草稿箱' as const,
+          status: '已同步到微信',
           wechatDraftId: generatedId
         };
         setArticlesList((list) => list.map((a) => (a.id === updated.id ? updated : a)));
@@ -587,6 +667,7 @@ export const GraphicTextModule: React.FC = () => {
           onSelectArticle={handleSelectArticle}
           onCreateNew={() => setIsCreateModalOpen(true)}
           onDeleteArticle={handleDeleteArticle}
+          onRestoreArticle={handleRestoreArticle}
           onPreviewArticle={handlePreviewArticle}
         />
       ) : (
@@ -623,7 +704,7 @@ export const GraphicTextModule: React.FC = () => {
                 <ImageIcon className="w-3.5 h-3.5" />
               </div>
               <div className="text-right">
-                <h3 className="text-xs font-bold text-slate-900 tracking-tight leading-tight">图文素材库</h3>
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight leading-tight">素材库</h3>
                 <p className="text-[10px] text-slate-400 font-mono leading-none mt-0.5">共 {MARKETING_MATERIALS.length} 项资产</p>
               </div>
             </div>
@@ -913,7 +994,7 @@ export const GraphicTextModule: React.FC = () => {
                 type="button"
                 onClick={() => setIsLeftCollapsed(!isLeftCollapsed)}
                 className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer shrink-0"
-                title={isLeftCollapsed ? '展开图文素材库' : '收起素材库'}
+                title={isLeftCollapsed ? '展开素材库' : '收起素材库'}
               >
                 {isLeftCollapsed ? <PanelLeftOpen className="w-4 h-4 text-[#0F4A47]" /> : <PanelLeftClose className="w-4 h-4" />}
               </button>
@@ -929,8 +1010,41 @@ export const GraphicTextModule: React.FC = () => {
                     实时联动预览
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 truncate max-w-md mt-0.5">
-                  正在编辑：<strong className="text-slate-700 font-medium">{currentArticle.title}</strong>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="text-[11px] text-slate-400 truncate max-w-xs">
+                    正在编辑：<strong className="text-slate-700 font-medium">{currentArticle.title}</strong>
+                  </div>
+                  {/* Status Dropdown Selector */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="text-[10px] text-slate-400 font-medium">状态:</span>
+                    <select
+                      value={currentArticle.status}
+                      onChange={(e) => handleUpdateStatus(e.target.value as GraphicTextStatus)}
+                      className={`h-6 px-2 rounded-lg text-[10px] font-bold border cursor-pointer focus:outline-none focus:ring-1 transition-colors ${
+                        currentArticle.status === '编辑中'
+                          ? 'bg-sky-50 text-sky-700 border-sky-200 focus:ring-sky-500'
+                          : currentArticle.status === '已同步到微信'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 focus:ring-emerald-500'
+                          : currentArticle.status === '发布审核中'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500'
+                          : currentArticle.status === '审核不通过'
+                          ? 'bg-rose-50 text-rose-700 border-rose-200 focus:ring-rose-500'
+                          : currentArticle.status === '计划发布'
+                          ? 'bg-indigo-50 text-indigo-700 border-indigo-200 focus:ring-indigo-500'
+                          : currentArticle.status === '已发布'
+                          ? 'bg-[#0F4A47]/10 text-[#0F4A47] border-[#0F4A47]/30 focus:ring-[#0F4A47]'
+                          : 'bg-slate-100 text-slate-700 border-slate-300 focus:ring-slate-500'
+                      }`}
+                    >
+                      <option value="编辑中">编辑中</option>
+                      <option value="已同步到微信">已同步到微信</option>
+                      <option value="发布审核中">发布审核中</option>
+                      <option value="审核不通过">审核不通过</option>
+                      <option value="计划发布">计划发布</option>
+                      <option value="已发布">已发布</option>
+                      <option value="回收站">回收站</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -974,6 +1088,39 @@ export const GraphicTextModule: React.FC = () => {
             ref={chatScrollRef}
             className="flex-1 overflow-y-auto p-4 lg:p-5 space-y-4 custom-scrollbar bg-slate-50/40"
           >
+            {/* Audit Rejected Notice Banner */}
+            {currentArticle.status === '审核不通过' && currentArticle.auditRejectReason && (
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5 shadow-2xs">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <div className="space-y-1 flex-1">
+                  <div className="font-bold flex items-center justify-between">
+                    <span>发布审核未通过</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSendMessage('请根据审核驳回意见，自动帮我定位违规用词并完成合规修改')}
+                      className="px-2.5 py-0.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold cursor-pointer transition-colors shadow-2xs"
+                    >
+                      AI 一键合规修改
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-rose-700 leading-relaxed">
+                    {currentArticle.auditRejectReason}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Scheduled Publish Notice Banner */}
+            {currentArticle.status === '计划发布' && currentArticle.scheduledPublishTime && (
+              <div className="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs flex items-center gap-2.5 shadow-2xs">
+                <Clock className="w-4 h-4 text-indigo-600 shrink-0" />
+                <div className="flex-1">
+                  <span className="font-bold">已设定计划自动发布：</span>
+                  <span className="text-indigo-700">{currentArticle.scheduledPublishTime}</span>
+                </div>
+              </div>
+            )}
+
             {messages.map((m) => (
               <div
                 key={m.id}
@@ -1019,6 +1166,43 @@ export const GraphicTextModule: React.FC = () => {
                           <div className="font-bold truncate">{m.attachedMaterials[0].title}</div>
                           <div className="opacity-75 text-[10px]">{m.attachedMaterials[0].resolution}</div>
                         </div>
+                      </div>
+                    )}
+
+                    {/* Attachments if any (Pasted or Drag-dropped files/images) */}
+                    {m.attachments && m.attachments.length > 0 && (
+                      <div className="mb-2.5 flex flex-wrap gap-2">
+                        {m.attachments.map((att) => (
+                          <div key={att.id} className="inline-block">
+                            {att.type === 'image' ? (
+                              <div
+                                onClick={() => setPreviewModalImage({ url: att.url, name: att.name })}
+                                className="group relative rounded-xl overflow-hidden border border-white/30 cursor-pointer shadow-xs max-w-[200px]"
+                              >
+                                <img
+                                  src={att.url}
+                                  alt={att.name}
+                                  className="w-full max-h-40 object-cover group-hover:scale-105 transition-transform"
+                                />
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <ZoomIn className="w-5 h-5 text-white drop-shadow" />
+                                </div>
+                              </div>
+                            ) : (
+                              <div
+                                className={`flex items-center gap-2 p-2 rounded-xl border text-[11px] ${
+                                  m.sender === 'user'
+                                    ? 'bg-white/15 border-white/30 text-white'
+                                    : 'bg-slate-50 border-slate-200 text-slate-700'
+                                }`}
+                              >
+                                <FileText className="w-4 h-4 text-[#EA3A20] shrink-0" />
+                                <span className="font-medium truncate max-w-[140px]">{att.name}</span>
+                                {att.size && <span className="text-[10px] opacity-75 font-mono">{att.size}</span>}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     )}
 
@@ -1129,8 +1313,22 @@ export const GraphicTextModule: React.FC = () => {
           </div>
 
           {/* Bottom Chat Input Bar (Aligned with InSalesModule) */}
-          <div className="p-4 bg-white border-t border-slate-100 space-y-2 shrink-0">
-            
+          <div
+            className="relative p-4 bg-white border-t border-slate-100 space-y-2 shrink-0"
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {/* Drag & Drop Visual Overlay & Pending Attachments Chips */}
+            <ChatAttachmentDropZone
+              isDragOver={isDragOver}
+              pendingAttachments={pendingAttachments}
+              onRemoveAttachment={removeAttachment}
+              onClearAll={clearAttachments}
+              onPreviewImage={(url, name) => setPreviewModalImage({ url, name })}
+            />
+
             {/* Voice Input Banner */}
             <VoiceInputBanner
               isListening={isListening}
@@ -1174,39 +1372,57 @@ export const GraphicTextModule: React.FC = () => {
             {/* Input Toolbar: Mode switch */}
             <div className="flex items-center justify-between text-xs text-slate-500 pb-1">
               <span className="text-[11px] text-slate-400">
-                向运营 AI 发送任何修改指令，右侧手机样式将即时无缝联动
+                向运营 AI 发送任何修改指令，支持 Ctrl+V 粘贴与拖拉图片/文件
               </span>
 
-              {/* Input Method Switcher */}
-              <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-xl text-[11px] font-bold">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isListening) stopListening();
-                    setInputMode('keyboard');
-                  }}
-                  className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                    inputMode === 'keyboard' && !isListening
-                      ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <Keyboard className="w-3 h-3 text-slate-600" />
-                  <span>键盘输入</span>
-                </button>
+              {/* Input Method Switcher & Attachment Button */}
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold text-slate-600 hover:text-[#EA3A20] hover:bg-red-50 border border-slate-200 transition-colors cursor-pointer">
+                  <Paperclip className="w-3 h-3 text-slate-400" />
+                  <span>上传附件</span>
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        processFiles(e.target.files);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                </label>
 
-                <button
-                  type="button"
-                  onClick={handleToggleVoice}
-                  className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                    isListening || inputMode === 'voice'
-                      ? 'bg-[#EA3A20] text-white shadow-2xs font-bold animate-pulse'
-                      : 'text-slate-500 hover:text-[#EA3A20]'
-                  }`}
-                >
-                  <Mic className="w-3 h-3" />
-                  <span>{isListening ? '录音中...' : '语音转文字'}</span>
-                </button>
+                <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-xl text-[11px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isListening) stopListening();
+                      setInputMode('keyboard');
+                    }}
+                    className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                      inputMode === 'keyboard' && !isListening
+                        ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <Keyboard className="w-3 h-3 text-slate-600" />
+                    <span>键盘输入</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleToggleVoice}
+                    className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                      isListening || inputMode === 'voice'
+                        ? 'bg-[#EA3A20] text-white shadow-2xs font-bold animate-pulse'
+                        : 'text-slate-500 hover:text-[#EA3A20]'
+                    }`}
+                  >
+                    <Mic className="w-3 h-3" />
+                    <span>{isListening ? '录音中...' : '语音转文字'}</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1216,20 +1432,21 @@ export const GraphicTextModule: React.FC = () => {
                 rows={2}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
+                onPaste={handlePaste}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     handleSendMessage();
                   }
                 }}
-                placeholder="在此向运营 AI 发送修改指令，例如：'把标题改成更具极简质感的语句'，'把第二段加上耐磨测试'..."
+                placeholder="在此向运营 AI 发送修改指令，支持 Ctrl+V 粘贴图片/文件、直接拖拉素材文件发送..."
                 className="flex-1 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] focus:border-[#EA3A20] resize-none"
               />
 
               <button
                 type="button"
                 onClick={() => handleSendMessage()}
-                disabled={isAiThinking || (!inputMessage.trim() && !selectedMaterialToAttach)}
+                disabled={isAiThinking || (!inputMessage.trim() && !selectedMaterialToAttach && pendingAttachments.length === 0)}
                 className="h-10 px-4 rounded-2xl bg-[#EA3A20] hover:bg-[#d6341c] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               >
                 <Send className="w-4 h-4" />
@@ -1493,6 +1710,16 @@ export const GraphicTextModule: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Image Preview Modal for Pasted / Dropped Images */}
+      {previewModalImage && (
+        <ImagePreviewModal
+          isOpen={!!previewModalImage}
+          imageUrl={previewModalImage.url}
+          imageName={previewModalImage.name}
+          onClose={() => setPreviewModalImage(null)}
+        />
       )}
 
     </div>

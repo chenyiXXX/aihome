@@ -150,7 +150,7 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
       },
       author: 'HomeCraft 高定工法组',
       publishPlatform: '微信公众号',
-      status: '本地草稿',
+      status: '编辑中',
       createdAt: new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
       readCount: 0,
       wordCount: 2260,

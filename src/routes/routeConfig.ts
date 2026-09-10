@@ -9,13 +9,13 @@ export interface RouteDefinition {
 }
 
 export const ROUTE_DEFINITIONS: RouteDefinition[] = [
-  // 1. 通用知识问答
+  // 1. 知识问答
   {
     path: '/home',
     moduleId: 'home',
-    subView: '通用知识问答',
-    moduleTitle: '通用知识问答',
-    pageTitle: '通用知识问答'
+    subView: '知识问答',
+    moduleTitle: '知识问答',
+    pageTitle: '知识问答'
   },
   // 2. 售前询盘助手
   {

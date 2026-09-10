@@ -120,9 +120,9 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
   const navItems = [
     {
       id: 'home' as ModuleType,
-      label: '通用知识问答',
+      label: '知识问答',
       icon: LayoutDashboard,
-      defaultSubView: '通用知识问答',
+      defaultSubView: '知识问答',
       subViews: []
     },
     {

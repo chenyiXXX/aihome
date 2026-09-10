@@ -17,11 +17,15 @@ import {
   DollarSign,
   Package,
   Layers,
-  Bot
+  Bot,
+  ZoomIn
 } from 'lucide-react';
 import { InquiryItem, InquiryChatMessage } from '../../../types';
 import { getInquiryChatHistory } from '../../../data/inquiryChatData';
 import { exportInquiriesToExcel } from '../../../utils/exportInquiries';
+import { useChatAttachment } from '../../../hooks/useChatAttachment';
+import { ChatAttachmentDropZone } from '../../common/ChatAttachmentDropZone';
+import { ImagePreviewModal } from '../../common/ImagePreviewModal';
 
 interface InquiryChatDetailViewProps {
   inquiry: InquiryItem;
@@ -39,6 +43,21 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
   );
   const [simulatedInput, setSimulatedInput] = useState<string>('');
   const [isBotReplying, setIsBotReplying] = useState<boolean>(false);
+  const [previewModalImage, setPreviewModalImage] = useState<{ url: string; name: string } | null>(null);
+
+  // Attachment handling: Ctrl+V clipboard paste & Drag-and-drop
+  const {
+    pendingAttachments,
+    isDragOver,
+    handlePaste,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+    removeAttachment,
+    clearAttachments,
+    processFiles
+  } = useChatAttachment();
 
   const handleCopyPhone = (phone?: string) => {
     if (!phone) return;
@@ -53,7 +72,17 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
 
   const handleSendSimulatedMessage = (textToSend?: string) => {
     const content = textToSend || simulatedInput;
-    if (!content.trim()) return;
+    const hasAttachments = pendingAttachments.length > 0;
+    if (!content.trim() && !hasAttachments) return;
+
+    const attachmentsToSend = pendingAttachments.map((att) => ({
+      name: att.name,
+      size: att.size || '未知大小',
+      type: att.type === 'image' ? ('image' as const) : ('pdf' as const),
+      url: att.previewUrl
+    }));
+
+    const finalContent = content.trim() || (attachmentsToSend.length > 0 ? `[发送了 ${attachmentsToSend.length} 个附件文件/图样]` : '');
 
     const now = new Date();
     const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -63,23 +92,32 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
       sender: 'customer',
       senderName: inquiry.buyerName,
       time: timeStr,
-      content: content.trim(),
-      translatedContent: `（客户新消息）${content.trim()}`
+      content: finalContent,
+      translatedContent: `（客户新消息）${finalContent}`,
+      attachments: attachmentsToSend.length > 0 ? attachmentsToSend : undefined
     };
 
     setMessages((prev) => [...prev, newCustMsg]);
     setSimulatedInput('');
+    clearAttachments();
     setIsBotReplying(true);
 
     // AI bot simulated response in 1s
     setTimeout(() => {
+      const attInfo = attachmentsToSend.length > 0
+        ? ` We have received your uploaded files/drawings (${attachmentsToSend.map(a => a.name).join(', ')}). Our engineering department will cross-check the specifications with our CNC production lines.`
+        : '';
+      const attInfoZh = attachmentsToSend.length > 0
+        ? ` 已成功接收您传输的图纸与文件（${attachmentsToSend.map(a => a.name).join('、')}），工程工艺部已纳入面价测算。`
+        : '';
+
       const botResponse: InquiryChatMessage = {
         id: `sim-bot-${Date.now()}`,
         sender: 'bot',
         senderName: 'HomeCraft 售前AI机器人 (Foshan Millwork Bot)',
         time: timeStr,
-        content: `Thank you for your message, ${inquiry.buyerName}! 🤖\n\nOur engineering team has noted your question: "${content.trim()}". All millwork specifications comply with high-end export standards (E0/CARB Phase 2). We have updated the technical parameters in your project file and our senior sales director will follow up with the formal quote!`,
-        translatedContent: `感谢您的沟通，${inquiry.buyerName}！🤖\n已针对您提出的问题更新技术备忘。我厂工艺全系符合E0/CARB Phase 2环保与出口高规。客户档案与诉求已同步至 CRM 待业务主管跟进。`
+        content: `Thank you for your message, ${inquiry.buyerName}! 🤖\n\nOur engineering team has noted your question: "${finalContent}".${attInfo} All millwork specifications comply with high-end export standards (E0/CARB Phase 2). We have updated the technical parameters in your project file and our senior sales director will follow up with the formal quote!`,
+        translatedContent: `感谢您的沟通，${inquiry.buyerName}！🤖\n已针对您提出的问题更新技术备忘。${attInfoZh}我厂工艺全系符合E0/CARB Phase 2环保与出口高规。客户档案与诉求已同步至 CRM 待业务主管跟进。`
       };
       setMessages((prev) => [...prev, botResponse]);
       setIsBotReplying(false);
@@ -238,19 +276,34 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
                     {msg.attachments && msg.attachments.length > 0 && (
                       <div className="pt-2 space-y-1.5">
                         <span className="text-[10px] font-bold text-slate-500 block">
-                          📎 买家发送的文件与图纸 ({msg.attachments.length}个):
+                          📎 发送的文件与图纸 ({msg.attachments.length}个):
                         </span>
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           {msg.attachments.map((att, idx) => (
-                            <div
-                              key={idx}
-                              className="bg-white p-2 rounded-xl border border-slate-200 flex items-center justify-between text-[11px]"
-                            >
-                              <div className="flex items-center gap-2 truncate">
-                                <Paperclip className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                <span className="font-semibold text-slate-800 truncate">{att.name}</span>
-                              </div>
-                              <span className="text-[10px] font-mono text-slate-400 ml-2 shrink-0">{att.size}</span>
+                            <div key={idx}>
+                              {att.type === 'image' && att.url ? (
+                                <div
+                                  onClick={() => setPreviewModalImage({ url: att.url!, name: att.name })}
+                                  className="group relative inline-block rounded-xl overflow-hidden border border-slate-200 cursor-pointer shadow-2xs max-w-[220px]"
+                                >
+                                  <img
+                                    src={att.url}
+                                    alt={att.name}
+                                    className="w-full max-h-36 object-cover group-hover:scale-105 transition-transform"
+                                  />
+                                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <ZoomIn className="w-5 h-5 text-white drop-shadow" />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="bg-white p-2 rounded-xl border border-slate-200 flex items-center justify-between text-[11px]">
+                                  <div className="flex items-center gap-2 truncate">
+                                    <Paperclip className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                    <span className="font-semibold text-slate-800 truncate">{att.name}</span>
+                                  </div>
+                                  <span className="text-[10px] font-mono text-slate-400 ml-2 shrink-0">{att.size}</span>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -272,13 +325,28 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
           </div>
 
           {/* Interactive Simulation Sandbox (Allows testing bot reception) */}
-          <div className="pt-2 border-t border-slate-100 shrink-0 space-y-2">
+          <div
+            className="relative pt-2 border-t border-slate-100 shrink-0 space-y-2"
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {/* Drag & Drop Visual Overlay & Pending Attachments Chips */}
+            <ChatAttachmentDropZone
+              isDragOver={isDragOver}
+              pendingAttachments={pendingAttachments}
+              onRemoveAttachment={removeAttachment}
+              onClearAll={clearAttachments}
+              onPreviewImage={(url, name) => setPreviewModalImage({ url, name })}
+            />
+
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                 <span>模拟买家与售前机器人问答（测试接待效果）</span>
               </span>
-              <span className="text-[10px] text-slate-400">仅用于接待效果演练，不影响买家真实会话</span>
+              <span className="text-[10px] text-slate-400">支持 Ctrl+V 粘贴与拖拽文件/图纸</span>
             </div>
 
             {/* Quick Prompts */}
@@ -300,21 +368,40 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
 
             {/* Text Input */}
             <div className="flex items-center gap-2">
+              <label
+                title="上传图纸或文件附件"
+                className="p-2 rounded-2xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-500 border border-slate-200 transition-colors cursor-pointer shrink-0"
+              >
+                <Paperclip className="w-4 h-4" />
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      processFiles(e.target.files);
+                      e.target.value = '';
+                    }
+                  }}
+                />
+              </label>
+
               <input
                 type="text"
                 value={simulatedInput}
                 onChange={(e) => setSimulatedInput(e.target.value)}
+                onPaste={handlePaste}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSendSimulatedMessage();
                 }}
-                placeholder="以买家身份输入英文/中文问题，测试售前机器人自动解答..."
+                placeholder="以买家身份输入英文/中文问题，支持 Ctrl+V 粘贴图片/CAD图纸、拖拉文件..."
                 className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-emerald-500"
               />
               <button
                 onClick={() => handleSendSimulatedMessage()}
-                disabled={!simulatedInput.trim() || isBotReplying}
+                disabled={(!simulatedInput.trim() && pendingAttachments.length === 0) || isBotReplying}
                 className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
-                  simulatedInput.trim() && !isBotReplying
+                  (simulatedInput.trim() || pendingAttachments.length > 0) && !isBotReplying
                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
                     : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 }`}
@@ -447,6 +534,15 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
         </div>
 
       </div>
+      {/* Image Preview Modal */}
+      {previewModalImage && (
+        <ImagePreviewModal
+          isOpen={!!previewModalImage}
+          imageUrl={previewModalImage.url}
+          imageName={previewModalImage.name}
+          onClose={() => setPreviewModalImage(null)}
+        />
+      )}
     </div>
   );
 };

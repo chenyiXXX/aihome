@@ -51,7 +51,7 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
 
   const getModuleTitle = () => {
     switch (activeModule) {
-      case 'home': return '通用知识问答';
+      case 'home': return '知识问答';
       case 'pre_sales': return '售前询盘助手';
       case 'in_sales': return '客户';
       case 'marketing': return '营销推广';
@@ -71,12 +71,12 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
         return (
           <div className="space-y-1">
             <button
-              onClick={() => onSelectSubView('通用知识问答')}
+              onClick={() => onSelectSubView('知识问答')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '通用知识问答' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+                subView === '知识问答' || subView === '通用知识问答' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              通用知识问答
+              知识问答
             </button>
           </div>
         );
@@ -237,28 +237,6 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
                 素材库
               </button>
             </div>
-          </div>
-        );
-
-      case 'home':
-        return (
-          <div className="space-y-1">
-            <button
-              onClick={() => onSelectSubView('通用知识问答')}
-              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '通用知识问答' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              通用知识问答
-            </button>
-            <button
-              onClick={() => onSelectSubView('热门定制提问')}
-              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '热门定制提问' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              热门定制提问
-            </button>
           </div>
         );
 

@@ -300,7 +300,7 @@ export interface KBArticle {
   // 变更与审计历史
   auditLogs?: KBAuditLog[];
   // 业务适用与权限管控配置
-  applicableRoles?: string[]; // 适用岗位* (多选，如：外贸销售岗、内容推广岗、方案设计师等)
+  applicableRoles?: string[]; // 适用角色* (多选，如：外贸销售岗、内容推广岗、方案设计师等)
   applicableRegions?: string[]; // 适用地区/语种* (多选，如：GCC中东六国、英文/阿拉伯语等)
   securityLevel?: '公开' | '内部' | '机密'; // 知识密级：公开 / 内部 / 机密
   expiryType?: 'permanent' | 'custom'; // 有效期限类型：永久有效 / 设置有效期
@@ -333,6 +333,7 @@ export interface KBCategory {
   code: string;
   itemCount: number;
   isBuiltin?: boolean;
+  applicableRoles?: string[]; // 适用角色 (多选，如：外贸销售岗、内容推广岗、方案设计师等)
   requireReview?: boolean; // 该分类下上传/编辑/删除是否需要平台管理员复核
   reviewTriggers?: {
     onUpload?: boolean; // 上传新知识需复核

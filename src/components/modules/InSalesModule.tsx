@@ -54,11 +54,15 @@ import {
   Clock,
   Quote,
   CheckSquare,
-  Square
+  Square,
+  Paperclip
 } from 'lucide-react';
 import { SessionItem, ChatMessage, ScriptItem } from '../../types';
 import { useVoiceToText } from '../../hooks/useVoiceToText';
 import { VoiceInputBanner } from '../common/VoiceInputBanner';
+import { useChatAttachment } from '../../hooks/useChatAttachment';
+import { ChatAttachmentDropZone } from '../common/ChatAttachmentDropZone';
+import { ImagePreviewModal } from '../common/ImagePreviewModal';
 
 // External WeCom / WhatsApp Chat Model
 export interface ExternalSocialChat {
@@ -524,6 +528,21 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   const [expandedCitations, setExpandedCitations] = useState<string[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
+  const [previewModalImage, setPreviewModalImage] = useState<{ url: string; name: string } | null>(null);
+
+  // Chat attachments: Ctrl+V clipboard paste & Drag-and-drop
+  const {
+    pendingAttachments,
+    isDragOver,
+    handlePaste,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+    removeAttachment,
+    clearAttachments,
+    processFiles
+  } = useChatAttachment();
 
   // Voice to text integration for AI Sales Assistant chat
   const {
@@ -699,22 +718,35 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
 
   const handleSendMessage = (textToSend?: string) => {
     const text = textToSend || inputMessage;
-    if (!text.trim() || !activeSession) return;
+    const hasAttachments = pendingAttachments.length > 0;
+    if ((!text.trim() && !hasAttachments) || !activeSession) return;
 
     // Capture current pending quotes
     const quotesForThisMsg = pendingQuotedMessages.length > 0 ? [...pendingQuotedMessages] : undefined;
+
+    // Capture attachments to send
+    const attachmentsToSend: ChatMessage['attachments'] = pendingAttachments.map(att => ({
+      id: att.id,
+      type: att.type,
+      url: att.previewUrl,
+      name: att.name,
+      size: att.size
+    }));
 
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       sessionId: activeSession.id,
       sender: 'sales',
-      content: text,
+      content: text.trim() || (attachmentsToSend.length > 0 ? (attachmentsToSend.some(a => a.type === 'image') ? '【已发送图片】' : '【已发送附件/图纸】') : ''),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      quotedMessages: quotesForThisMsg
+      quotedMessages: quotesForThisMsg,
+      attachments: attachmentsToSend.length > 0 ? attachmentsToSend : undefined,
+      messageType: attachmentsToSend.length > 0 ? (attachmentsToSend.some(a => a.type === 'image') ? 'text_image' : 'text_file') : 'text'
     };
 
     setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) setInputMessage('');
+    clearAttachments();
     // Clear pending quotes after sending
     setSelectedQuoteIds([]);
     setPendingQuotedMessages([]);
@@ -756,8 +788,16 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
               }
             ];
 
-            // If user quoted specific chat messages, generate deeply contextual analysis!
-            if (quotesForThisMsg && quotesForThisMsg.length > 0) {
+            // If user attached images or files, recognize them with dedicated AI analysis
+            if (attachmentsToSend && attachmentsToSend.length > 0) {
+              const attNames = attachmentsToSend.map(a => `【${a.name}】`).join('、');
+              const isImage = attachmentsToSend.some(a => a.type === 'image');
+              if (isImage) {
+                aiReplyContent = `### 🎯 AI 视觉图样与方案识别分析\n\n已成功接收您发送的图片：${attNames}。\n\n1. **图样与工艺特征解析**：\n   - 经视觉模型特征比对，该图纸/实景包含现代高定极简木作元素，门板推荐选用 **PET 零度超亚肤感板** 与 **PUR 激光封边工艺**，防潮耐黄变性能优异。\n   - 识别到内嵌式隐形拉手与铝合金框玻璃门搭配方案，质感高级。\n2. **设计与安装建议**：\n   - 如该方案属于通顶一门到顶设计（超过 2.4 米），强烈建议每扇门板加装 **内嵌式金属拉直器**（2 根/扇）以防板材因温湿度变化变形。\n3. **建议对客专业回复话术**：\n> "客户您好！您发送的设计效果图已收到并转交海外设计部深化。我们拥有同类高定落地的成熟案例与整套五金方案，稍后为您提供同等色号的板材切片实物视频与 3D 节点大样图！"`;
+              } else {
+                aiReplyContent = `### 🎯 AI 附件/工程图纸解析反馈\n\n已成功接收您发送的文件：${attNames}。\n\n1. **文件结构化归档**：\n   - 文件已自动纳入当前客户档案《${activeSession.customerName}》，提取到尺寸标注与工艺参数清单。\n2. **拆单与报价支持**：\n   - 已联动系统工程模块，可直接导出装箱体积 (CBM) 与海运估算，支持出具标准 Proforma Invoice (PI)。\n3. **建议对客专业回复话术**：\n> "工程图纸/清单已收到！技术部门正在进行精确拆单核算，稍后即可出具包含五金品牌配置与出厂工期的详细报价单供您审阅。"`;
+              }
+            } else if (quotesForThisMsg && quotesForThisMsg.length > 0) {
               const quoteSnippet = quotesForThisMsg.map(q => q.content).join(' ');
               const hasColorOrIsland = quoteSnippet.toLowerCase().includes('color') || quoteSnippet.toLowerCase().includes('island') || quoteSnippet.toLowerCase().includes('navy') || quoteSnippet.includes('颜色') || quoteSnippet.includes('岛台');
               const hasPriceOrQuote = quoteSnippet.toLowerCase().includes('quotation') || quoteSnippet.toLowerCase().includes('price') || quoteSnippet.includes('报价') || quoteSnippet.includes('78,500');
@@ -857,15 +897,14 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     if (chat.defaultCompany) setNewCompanyName(chat.defaultCompany);
     if (chat.defaultPhone) setNewContactInfo(chat.defaultPhone);
 
-    // Merge recommended tags
-    const combinedTags = Array.from(new Set([...selectedTags, ...chat.recommendedTags, chat.type === 'group' ? '客户群聊' : '个人对话']));
-    setSelectedTags(combinedTags);
+    // 创建AI会话时，先不填写客户标签
+    setSelectedTags([]);
 
-    // Prepopulate chat conversation for upload / AI analysis
-    setRecordInputMode('chat_upload');
-    setUploadedFileName(`社媒实时对话导录_${chat.channel}_${chat.name}.txt`);
-    setUploadedFileSize('48 KB');
-    setRawRecordText(chat.chatHistorySnippet);
+    // 企微和 WhatsApp 仅保留手动输入
+    setRecordInputMode('manual');
+    setUploadedFileName(null);
+    setUploadedFileSize(null);
+    setRawRecordText('');
     setInitialNote(`【从${chat.channel}${chat.type === 'group' ? '客户群聊' : '个人私聊'}「${chat.name}」同步】\n最新沟通摘要：${chat.lastMessage}\n${chat.subtitle}`);
   };
 
@@ -898,7 +937,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
       unreadCount: 0,
       lastMessage: initialNote.trim() || (isExternalSync ? '已关联同步社媒对话，等待AI深化...' : '销售手动发起建联，等待沟通...'),
       lastTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      tags: selectedTags,
+      tags: [], // 创建AI会话时，先不填写客户标签
       assignedStaff: newAssignedStaff,
       status: '跟进中'
     };
@@ -1023,9 +1062,8 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
         setNewContactInfo(extracted.contactInfo);
       }
 
-      // Auto Merge & Select extracted tags into Tag List
-      const newTagSet = Array.from(new Set([...selectedTags, ...extracted.tags]));
-      setSelectedTags(newTagSet);
+      // 创建AI会话时，先不填写客户标签，保持为空
+      setSelectedTags([]);
 
       // Set Structured Demand into Note Textarea
       setInitialNote(extracted.structuredDemand);
@@ -1509,7 +1547,22 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   </div>
 
                   {/* Input Bar */}
-                  <div className="p-4 bg-white border-t border-slate-100 space-y-2 shrink-0">
+                  <div
+                    className="relative p-4 bg-white border-t border-slate-100 space-y-2 shrink-0"
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    {/* Drag & Drop Visual Overlay & Pending Attachments Chips */}
+                    <ChatAttachmentDropZone
+                      isDragOver={isDragOver}
+                      pendingAttachments={pendingAttachments}
+                      onRemoveAttachment={removeAttachment}
+                      onClearAll={clearAttachments}
+                      onPreviewImage={(url, name) => setPreviewModalImage({ url, name })}
+                    />
+
                     {/* Voice Input Banner */}
                     <VoiceInputBanner
                       isListening={isListening}
@@ -1531,6 +1584,20 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         >
                           <Calculator className="w-3.5 h-3.5 text-amber-500" /> 生成报价单
                         </button>
+
+                        <label className="flex items-center gap-1 hover:text-[#EA3A20] text-slate-500 cursor-pointer font-bold transition-colors">
+                          <Paperclip className="w-3.5 h-3.5 text-indigo-500" />
+                          <span>上传图片/文件</span>
+                          <input
+                            type="file"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => {
+                              if (e.target.files) processFiles(e.target.files);
+                              e.target.value = '';
+                            }}
+                          />
+                        </label>
                       </div>
 
                       {/* Input Method Switcher */}
@@ -1645,12 +1712,13 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         rows={2}
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
+                        onPaste={handlePaste}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
                             if (!inputMessage.trim() && pendingQuotedMessages.length > 0) {
                               handleSendMessage('请针对以上引用的社媒客户对话，分析客户需求并给出专业回复建议与话术。');
-                            } else if (inputMessage.trim()) {
+                            } else if (inputMessage.trim() || pendingAttachments.length > 0) {
                               handleSendMessage();
                             }
                           }
@@ -1658,7 +1726,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         placeholder={
                           isListening
                             ? '正在倾听语音转文字中... 也可以直接在键盘打字输入...'
-                            : '向 AI 销售助手提问，支持键盘打字或点击麦克风语音转文字...'
+                            : '向 AI 销售助手提问，支持键盘打字、Ctrl+V 粘贴图片/文件、直接拖拽文件或点击麦克风语音转文字...'
                         }
                         className="flex-1 p-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20] resize-none"
                       />
@@ -1684,7 +1752,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                             handleSendMessage();
                           }
                         }}
-                        disabled={!inputMessage.trim() && pendingQuotedMessages.length === 0}
+                        disabled={!inputMessage.trim() && pendingQuotedMessages.length === 0 && pendingAttachments.length === 0}
                         className="h-11 px-5 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-2xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                       >
                         <Send className="w-3.5 h-3.5" /> 发送
@@ -1692,7 +1760,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     </div>
 
                     <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-0.5">
-                      <span>支持键盘输入（Enter 发送，Shift+Enter 换行）或语音实时转文字</span>
+                      <span>支持 Enter 发送、Shift+Enter 换行、快捷键 Ctrl+V 粘贴图片/文件，或直接鼠标拖拉文件至此发送</span>
                       <span className="flex items-center gap-1">
                         <ShieldCheck className="w-3 h-3 text-emerald-600" />
                         <span>AI 销售实战辅助 & 合规保密保障</span>
@@ -2852,48 +2920,50 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     初始需求 / 建联记录
                   </label>
 
-                  {/* 录入模式切换 Tab（企微和 WhatsApp 仅保留手动录入，线下对接才显示上传聊天记录和上传面谈录音） */}
-                  <div className="bg-slate-100 p-0.5 rounded-xl flex items-center gap-1 text-[11px] font-bold">
-                    <button
-                      type="button"
-                      onClick={() => setRecordInputMode('manual')}
-                      className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
-                        recordInputMode === 'manual'
-                          ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                          : 'text-slate-500 hover:text-slate-800'
-                      }`}
-                    >
-                      <span>手动录入</span>
-                    </button>
-                    {newChannel === '线下对接' && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setRecordInputMode('chat_upload')}
-                          className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
-                            recordInputMode === 'chat_upload'
-                              ? 'bg-white text-indigo-700 shadow-2xs font-bold'
-                              : 'text-slate-500 hover:text-indigo-600'
-                          }`}
-                        >
-                          <MessageSquare className="w-3 h-3" />
-                          <span>上传聊天记录</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRecordInputMode('audio_upload')}
-                          className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
-                            recordInputMode === 'audio_upload'
-                              ? 'bg-white text-emerald-700 shadow-2xs font-bold'
-                              : 'text-slate-500 hover:text-emerald-600'
-                          }`}
-                        >
-                          <Mic className="w-3 h-3" />
-                          <span>上传面谈录音</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  {/* 录入模式切换 Tab（企微和 WhatsApp 仅保留手动输入，线下对接才显示另外两项） */}
+                  {newChannel === '线下对接' ? (
+                    <div className="bg-slate-100 p-0.5 rounded-xl flex items-center gap-1 text-[11px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setRecordInputMode('manual')}
+                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                          recordInputMode === 'manual'
+                            ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                            : 'text-slate-500 hover:text-slate-800'
+                        }`}
+                      >
+                        <span>手动输入</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRecordInputMode('chat_upload')}
+                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                          recordInputMode === 'chat_upload'
+                            ? 'bg-white text-indigo-700 shadow-2xs font-bold'
+                            : 'text-slate-500 hover:text-indigo-600'
+                        }`}
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        <span>上传聊天记录</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRecordInputMode('audio_upload')}
+                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                          recordInputMode === 'audio_upload'
+                            ? 'bg-white text-emerald-700 shadow-2xs font-bold'
+                            : 'text-slate-500 hover:text-emerald-600'
+                        }`}
+                      >
+                        <Mic className="w-3 h-3" />
+                        <span>上传面谈录音</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-100 px-3 py-1 rounded-xl text-[11px] font-bold text-slate-700 flex items-center gap-1 shadow-2xs">
+                      <span>手动输入</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* 上传聊天记录视图（仅线下对接模式可选择并展示） */}
@@ -3173,20 +3243,11 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     <div className="flex items-center justify-between text-xs font-bold text-slate-900">
                       <div className="flex items-center gap-1.5 text-amber-800">
                         <Sparkles className="w-4 h-4 text-[#EA3A20]" />
-                        <span>AI 智能解析成功！已提取客户标签并整理结构化需求</span>
+                        <span>AI 智能解析成功！已提取客户核心意向并整理结构化需求</span>
                       </div>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
                         意向度: {aiExtractedSummary.urgencyLevel}
                       </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-1 text-[11px] text-slate-600 pt-1">
-                      <span className="font-bold text-slate-700">AI 推荐并已自动勾选标签：</span>
-                      {aiExtractedSummary.tags.map((t) => (
-                        <span key={t} className="px-2 py-0.5 bg-white text-[#EA3A20] rounded-md font-bold border border-rose-200 text-[10px]">
-                          +{t}
-                        </span>
-                      ))}
                     </div>
                   </div>
                 )}
@@ -3334,6 +3395,14 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
           </div>
         </div>
       )}
+
+      {/* Image Preview Lightbox Modal */}
+      <ImagePreviewModal
+        isOpen={!!previewModalImage}
+        imageUrl={previewModalImage?.url || ''}
+        imageName={previewModalImage?.name}
+        onClose={() => setPreviewModalImage(null)}
+      />
 
     </div>
   );

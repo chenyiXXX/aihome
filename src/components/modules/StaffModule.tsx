@@ -125,7 +125,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       description: '自定义外贸业务权限角色',
       userCount: 0,
       permissions: [
-        { module: '通用知识问答', view: true, edit: false, delete: false, export: false },
+        { module: '知识问答', view: true, edit: false, delete: false, export: false },
         { module: '售前询盘助手', view: true, edit: false, delete: false, export: false },
         { module: '销售助手', view: true, edit: false, delete: false, export: false },
         { module: '运营助手', view: false, edit: false, delete: false, export: false },

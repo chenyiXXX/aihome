@@ -74,7 +74,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
   });
 
   const availableModules = [
-    '通用知识问答',
+    '知识问答',
     '售前询盘助手',
     '销售助手',
     '运营助手',

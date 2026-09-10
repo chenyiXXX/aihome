@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   FolderTree,
   Save,
@@ -22,6 +22,7 @@ import {
   Edit3,
   ArrowUp,
   ArrowDown,
+  GripVertical,
   X,
   Lock,
   Eye,
@@ -187,26 +188,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   // ============================================================================
   // Article Configuration Options (业务配置与权限管控字段)
   // ============================================================================
-  // 1. 适用岗位* (多选下拉)
-  const [articleFormRoles, setArticleFormRoles] = useState<string[]>(['外贸销售岗', '内容推广岗']);
-  const [isRolesDropdownOpen, setIsRolesDropdownOpen] = useState(false);
-  const [customRoleInput, setCustomRoleInput] = useState('');
-
-  // 2. 适用地区/语种* (多选下拉)
+  // 1. 适用地区/语种* (多选下拉)
   const [articleFormRegions, setArticleFormRegions] = useState<string[]>(['GCC中东六国', '英文/阿拉伯语']);
   const [isRegionsDropdownOpen, setIsRegionsDropdownOpen] = useState(false);
   const [customRegionInput, setCustomRegionInput] = useState('');
 
-  // 3. 知识密级 (单选: 公开 / 内部 / 机密)
-  const [articleFormSecurityLevel, setArticleFormSecurityLevel] = useState<'公开' | '内部' | '机密'>('内部');
-
-  // 4. 有效期限 (永久有效 或 设置有效期：开始日期与结束日期)
+  // 2. 有效期限 (永久有效 或 设置有效期：开始日期与结束日期)
   const [articleFormExpiryType, setArticleFormExpiryType] = useState<'permanent' | 'custom'>('permanent');
   const [articleFormStartDate, setArticleFormStartDate] = useState<string>('');
   const [articleFormEndDate, setArticleFormEndDate] = useState<string>('');
   const [articleFormExpiryDate, setArticleFormExpiryDate] = useState<string>('');
 
-  // 5. 关联条目 (搜索多选选择框)
+  // 3. 关联条目 (搜索多选选择框)
   const [articleFormRelatedIds, setArticleFormRelatedIds] = useState<string[]>([]);
   const [relatedSearchQuery, setRelatedSearchQuery] = useState('');
   const [isRelatedDropdownOpen, setIsRelatedDropdownOpen] = useState(false);
@@ -220,6 +213,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const [modalParentNode, setModalParentNode] = useState<KBCategory | null>(null);
   const [newCatName, setNewCatName] = useState('');
   const [newCatCode, setNewCatCode] = useState('');
+  const [newCatRoles, setNewCatRoles] = useState<string[]>(['全员通用']);
+  const [isNewCatRolesDropdownOpen, setIsNewCatRolesDropdownOpen] = useState(false);
+  const [newCatCustomRoleInput, setNewCatCustomRoleInput] = useState('');
   const [newCatRequireReview, setNewCatRequireReview] = useState<boolean>(false);
   const [newCatReviewTriggers, setNewCatReviewTriggers] = useState<{ onUpload: boolean; onEdit: boolean; onDelete: boolean }>({
     onUpload: true,
@@ -231,12 +227,30 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const [editingCatNode, setEditingCatNode] = useState<KBCategory | null>(null);
   const [editCatName, setEditCatName] = useState('');
   const [editCatCode, setEditCatCode] = useState('');
+  const [editCatRoles, setEditCatRoles] = useState<string[]>([]);
+  const [isEditCatRolesDropdownOpen, setIsEditCatRolesDropdownOpen] = useState(false);
+  const [editCatCustomRoleInput, setEditCatCustomRoleInput] = useState('');
   const [editCatRequireReview, setEditCatRequireReview] = useState<boolean>(false);
   const [editCatReviewTriggers, setEditCatReviewTriggers] = useState<{ onUpload: boolean; onEdit: boolean; onDelete: boolean }>({
     onUpload: true,
     onEdit: true,
     onDelete: true
   });
+
+  // 分类管理同级拖动排序状态
+  const [draggedCatInfo, setDraggedCatInfo] = useState<{ id: string; name: string; parentId: string | null } | null>(null);
+  const [dragOverCatInfo, setDragOverCatInfo] = useState<{ id: string; position: 'before' | 'after' } | null>(null);
+  // 分类适用角色展开查看所有浮层状态
+  const [activeRolesPopoverNode, setActiveRolesPopoverNode] = useState<KBCategory | null>(null);
+
+  // 点击外部自动关闭适用角色全览浮层
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setActiveRolesPopoverNode(null);
+    };
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   // ============================================================================
   // User Role for Tag Operations (平台管理员 admin vs 普通人员 staff)
@@ -943,9 +957,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setArticleFormContent('');
 
     // Reset Configuration Fields
-    setArticleFormRoles(['外贸销售岗', '内容推广岗']);
-    setIsRolesDropdownOpen(false);
-    setCustomRoleInput('');
     setArticleFormRegions(['GCC中东六国', '英文/阿拉伯语']);
     setIsRegionsDropdownOpen(false);
     setCustomRegionInput('');
@@ -954,7 +965,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     defaultEnd.setMonth(defaultEnd.getMonth() + 3);
     const endStr = defaultEnd.toISOString().split('T')[0];
 
-    setArticleFormSecurityLevel('内部');
     setArticleFormExpiryType('permanent');
     setArticleFormStartDate(todayStr);
     setArticleFormEndDate(endStr);
@@ -1004,9 +1014,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setArticleFormContent(art.content);
 
     // Populate Configuration Fields
-    setArticleFormRoles(art.applicableRoles && art.applicableRoles.length > 0 ? art.applicableRoles : ['外贸销售岗', '内容推广岗']);
-    setIsRolesDropdownOpen(false);
-    setCustomRoleInput('');
     setArticleFormRegions(art.applicableRegions && art.applicableRegions.length > 0 ? art.applicableRegions : ['GCC中东六国', '英文/阿拉伯语']);
     setIsRegionsDropdownOpen(false);
     setCustomRegionInput('');
@@ -1015,7 +1022,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     defaultEnd.setMonth(defaultEnd.getMonth() + 3);
     const endStr = defaultEnd.toISOString().split('T')[0];
 
-    setArticleFormSecurityLevel(art.securityLevel || '内部');
     setArticleFormExpiryType(art.expiryType || 'permanent');
     setArticleFormStartDate(art.validityStartDate || todayStr);
     setArticleFormEndDate(art.validityEndDate || art.expiryDate || endStr);
@@ -1319,11 +1325,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       return;
     }
 
-    if (articleFormRoles.length === 0) {
-      showToast('请至少选择一个适用岗位！');
-      return;
-    }
-
     if (articleFormRegions.length === 0) {
       showToast('请至少选择一个适用地区/语种！');
       return;
@@ -1456,9 +1457,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 fileSize: finalSize,
                 chunksCount: finalChunks,
                 content: articleFormContent,
-                applicableRoles: articleFormRoles,
+                applicableRoles: targetCatObj?.applicableRoles || editingArticle.applicableRoles || ['全员通用'],
                 applicableRegions: articleFormRegions,
-                securityLevel: articleFormSecurityLevel,
+                securityLevel: editingArticle.securityLevel || '内部',
                 expiryType: articleFormExpiryType,
                 validityStartDate: articleFormExpiryType === 'custom' ? articleFormStartDate : undefined,
                 validityEndDate: articleFormExpiryType === 'custom' ? articleFormEndDate : undefined,
@@ -1527,9 +1528,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
         fileSize: finalSize,
         chunksCount: finalChunks,
         tags: tagsArray,
-        applicableRoles: articleFormRoles,
+        applicableRoles: targetCatObj?.applicableRoles || ['全员通用'],
         applicableRegions: articleFormRegions,
-        securityLevel: articleFormSecurityLevel,
+        securityLevel: '内部',
         expiryType: articleFormExpiryType,
         validityStartDate: articleFormExpiryType === 'custom' ? articleFormStartDate : undefined,
         validityEndDate: articleFormExpiryType === 'custom' ? articleFormEndDate : undefined,
@@ -1746,6 +1747,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setModalParentNode(parentNode);
     setNewCatName('');
     setNewCatCode(parentNode ? `${parentNode.code}-SUB` : 'KB-CAT-NEW');
+    setNewCatRoles(parentNode?.applicableRoles && parentNode.applicableRoles.length > 0 ? [...parentNode.applicableRoles] : ['全员通用']);
+    setIsNewCatRolesDropdownOpen(false);
+    setNewCatCustomRoleInput('');
     setNewCatRequireReview(false);
     setNewCatReviewTriggers({ onUpload: true, onEdit: true, onDelete: true });
     setIsAddCatModalOpen(true);
@@ -1761,6 +1765,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       id: `CAT-CUSTOM-${Date.now()}`,
       name: newCatName.trim(),
       code: newCatCode.trim() || `KB-CAT-${Date.now().toString().slice(-4)}`,
+      applicableRoles: newCatRoles.length > 0 ? newCatRoles : ['全员通用'],
       itemCount: 0,
       isBuiltin: false,
       requireReview: newCatRequireReview,
@@ -1799,13 +1804,12 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
   const handleOpenEditCatModal = (node: KBCategory, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (node.isBuiltin) {
-      showToast('系统内置分类不可编辑！');
-      return;
-    }
     setEditingCatNode(node);
     setEditCatName(node.name);
     setEditCatCode(node.code);
+    setEditCatRoles(node.applicableRoles && node.applicableRoles.length > 0 ? [...node.applicableRoles] : ['全员通用']);
+    setIsEditCatRolesDropdownOpen(false);
+    setEditCatCustomRoleInput('');
     setEditCatRequireReview(Boolean(node.requireReview));
     setEditCatReviewTriggers({
       onUpload: node.reviewTriggers?.onUpload ?? true,
@@ -1825,6 +1829,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
             ...item,
             name: editCatName.trim(),
             code: editCatCode.trim() || item.code,
+            applicableRoles: editCatRoles.length > 0 ? editCatRoles : ['全员通用'],
             requireReview: editCatRequireReview,
             reviewTriggers: editCatRequireReview ? editCatReviewTriggers : undefined
           };
@@ -1847,7 +1852,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const handleDeleteCatNode = (id: string, name: string, isBuiltin?: boolean, e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (isBuiltin) {
-      showToast('系统内置分类不可删除！');
+      showToast('系统内置核心分类受系统基础逻辑保护不可删除！');
       return;
     }
 
@@ -1872,13 +1877,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     showToast(`分类「${name}」已删除！`);
   };
 
-  const handleMoveCatNode = (id: string, direction: 'up' | 'down', isBuiltin?: boolean, e?: React.MouseEvent) => {
+  const handleMoveCatNode = (id: string, direction: 'up' | 'down', _isBuiltin?: boolean, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (isBuiltin) {
-      showToast('系统内置分类不允许排序！');
-      return;
-    }
-
     const moveInArray = (arr: KBCategory[]): KBCategory[] => {
       const index = arr.findIndex((item) => item.id === id);
       if (index !== -1) {
@@ -1901,7 +1901,106 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     };
 
     setCategoryList((prev) => moveInArray(prev));
-    showToast(`已${direction === 'up' ? '上移' : '下移'}分类`);
+    showToast(`已${direction === 'up' ? '上移' : '下移'}同级分类`);
+  };
+
+  // 分类管理同级上下拖拽排序交互处理
+  const handleCatDragStart = (node: KBCategory, parentId: string | null, e: React.DragEvent) => {
+    e.stopPropagation();
+    setDraggedCatInfo({ id: node.id, name: node.name, parentId });
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', node.id);
+  };
+
+  const handleCatDragOver = (node: KBCategory, parentId: string | null, e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!draggedCatInfo) return;
+
+    // 仅允许在同级节点之间上下拖动排序
+    if (draggedCatInfo.parentId !== parentId || draggedCatInfo.id === node.id) {
+      e.dataTransfer.dropEffect = 'none';
+      if (dragOverCatInfo) setDragOverCatInfo(null);
+      return;
+    }
+
+    e.dataTransfer.dropEffect = 'move';
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offsetY = e.clientY - rect.top;
+    const position = offsetY < rect.height / 2 ? 'before' : 'after';
+
+    if (!dragOverCatInfo || dragOverCatInfo.id !== node.id || dragOverCatInfo.position !== position) {
+      setDragOverCatInfo({ id: node.id, position });
+    }
+  };
+
+  const handleCatDragLeave = (e: React.DragEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleCatDragEnd = () => {
+    setDraggedCatInfo(null);
+    setDragOverCatInfo(null);
+  };
+
+  const handleCatDrop = (targetNode: KBCategory, parentId: string | null, e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!draggedCatInfo || !dragOverCatInfo) {
+      handleCatDragEnd();
+      return;
+    }
+    if (draggedCatInfo.parentId !== parentId || draggedCatInfo.id === targetNode.id) {
+      handleCatDragEnd();
+      return;
+    }
+
+    const { position } = dragOverCatInfo;
+    const draggedId = draggedCatInfo.id;
+    const targetId = targetNode.id;
+
+    const reorderList = (list: KBCategory[]): KBCategory[] => {
+      if (parentId === null) {
+        const fromIdx = list.findIndex((c) => c.id === draggedId);
+        const toIdx = list.findIndex((c) => c.id === targetId);
+        if (fromIdx === -1 || toIdx === -1) return list;
+        const copy = [...list];
+        const [moved] = copy.splice(fromIdx, 1);
+        let insertIdx = copy.findIndex((c) => c.id === targetId);
+        if (position === 'after') {
+          insertIdx += 1;
+        }
+        copy.splice(insertIdx, 0, moved);
+        return copy;
+      }
+
+      return list.map((item) => {
+        if (item.id === parentId && item.children) {
+          const fromIdx = item.children.findIndex((c) => c.id === draggedId);
+          const toIdx = item.children.findIndex((c) => c.id === targetId);
+          if (fromIdx === -1 || toIdx === -1) return item;
+          const newChildren = [...item.children];
+          const [moved] = newChildren.splice(fromIdx, 1);
+          let insertIdx = newChildren.findIndex((c) => c.id === targetId);
+          if (position === 'after') {
+            insertIdx += 1;
+          }
+          newChildren.splice(insertIdx, 0, moved);
+          return { ...item, children: newChildren };
+        }
+        if (item.children && item.children.length > 0) {
+          return {
+            ...item,
+            children: reorderList(item.children)
+          };
+        }
+        return item;
+      });
+    };
+
+    setCategoryList((prev) => reorderList(prev));
+    showToast(`已成功将「${draggedCatInfo.name}」拖动完成同级排序！`);
+    handleCatDragEnd();
   };
 
   // Render left sidebar category tree row (for Content Upload view)
@@ -1975,19 +2074,42 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   };
 
   // Render Category Table Row (for 分类管理 View)
-  const renderCategoryTableRow = (node: KBCategory, depth = 0) => {
+  const renderCategoryTableRow = (node: KBCategory, depth = 0, parentId: string | null = null) => {
     const hasChildren = node.children && node.children.length > 0;
     const isExpanded = expandedNodeIds.has(node.id);
     const isBuiltin = node.isBuiltin;
 
+    const isBeingDragged = draggedCatInfo?.id === node.id;
+    const isDragOver = dragOverCatInfo?.id === node.id;
+    const isDropBefore = isDragOver && dragOverCatInfo.position === 'before';
+    const isDropAfter = isDragOver && dragOverCatInfo.position === 'after';
+
     return (
       <React.Fragment key={node.id}>
         <div
-          className="group flex items-center justify-between py-2 px-3 hover:bg-slate-50 transition-colors border-b border-slate-100/70 text-xs"
-          style={{ paddingLeft: `${depth * 20 + 12}px` }}
+          onDragOver={(e) => handleCatDragOver(node, parentId, e)}
+          onDragLeave={handleCatDragLeave}
+          onDrop={(e) => handleCatDrop(node, parentId, e)}
+          onDragEnd={handleCatDragEnd}
+          className={`group relative flex items-center justify-between py-2 px-3 hover:bg-slate-50 transition-all border-b border-slate-100/70 text-xs select-none ${
+            isBeingDragged ? 'opacity-40 bg-slate-100' : ''
+          } ${isDropBefore ? 'border-t-2 !border-t-[#EA3A20] bg-red-50/20' : ''} ${
+            isDropAfter ? 'border-b-2 !border-b-[#EA3A20] bg-red-50/20' : ''
+          }`}
+          style={{ paddingLeft: `${depth * 20 + 8}px` }}
         >
-          {/* Left: Name & Expand/Collapse */}
-          <div className="flex items-center gap-2 min-w-0 flex-1">
+          {/* Left: Drag Handle, Expand/Collapse & Name */}
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            {/* Drag Handle for Same-Level Reordering */}
+            <div
+              draggable={true}
+              onDragStart={(e) => handleCatDragStart(node, parentId, e)}
+              title="按住上下拖动，在同级分类中排序"
+              className="p-1 -ml-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing rounded hover:bg-slate-200/60 transition-colors shrink-0 flex items-center justify-center"
+            >
+              <GripVertical className="w-3.5 h-3.5" />
+            </div>
+
             {hasChildren ? (
               <button
                 type="button"
@@ -2029,9 +2151,119 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
             </div>
           </div>
 
-          {/* Right: Code, Count & CRUD Actions */}
+          {/* Right: Applicable Roles (with view-all popover), Code, Count & CRUD Actions */}
           <div className="flex items-center gap-4 shrink-0">
-            <span className="font-mono text-[11px] text-slate-400 hidden sm:inline-block">
+            {/* 适用角色展示区（可点击展开查看全部） */}
+            <div className="relative hidden lg:block">
+              <div
+                onClick={(e) => {
+                  if (node.applicableRoles && node.applicableRoles.length > 0) {
+                    e.stopPropagation();
+                    setActiveRolesPopoverNode(activeRolesPopoverNode?.id === node.id ? null : node);
+                  }
+                }}
+                title={
+                  node.applicableRoles && node.applicableRoles.length > 0
+                    ? `适用角色：${node.applicableRoles.join('、')}（点击查看全部）`
+                    : '全员通用'
+                }
+                className="flex items-center gap-1 w-44 overflow-hidden text-ellipsis flex-wrap cursor-pointer group/roles py-0.5 rounded-lg hover:bg-slate-100/70 transition-colors"
+              >
+                {node.applicableRoles && node.applicableRoles.length > 0 ? (
+                  <>
+                    {node.applicableRoles.slice(0, 2).map((role) => (
+                      <span
+                        key={role}
+                        className="text-[10px] text-blue-700 bg-blue-50 group-hover/roles:bg-blue-100/70 border border-blue-200/70 px-1.5 py-0.5 rounded font-medium shrink-0 transition-colors"
+                      >
+                        {role}
+                      </span>
+                    ))}
+                    {node.applicableRoles.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveRolesPopoverNode(activeRolesPopoverNode?.id === node.id ? null : node);
+                        }}
+                        className="text-[9px] text-[#EA3A20] bg-red-50 hover:bg-red-100 border border-red-200/80 px-1.5 py-0.5 rounded font-bold transition-colors shrink-0 shadow-2xs cursor-pointer flex items-center gap-0.5"
+                      >
+                        +{node.applicableRoles.length - 2}
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded font-medium">
+                    全员通用
+                  </span>
+                )}
+              </div>
+
+              {/* Popover Card for Viewing All Roles */}
+              {activeRolesPopoverNode?.id === node.id && (
+                <div
+                  className="absolute right-0 top-full mt-1.5 z-50 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-3.5 min-w-[260px] max-w-[340px] animate-in fade-in zoom-in-95 duration-150"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-[#EA3A20]" />
+                      <span className="text-xs font-bold text-slate-800">
+                        【{node.name}】适用角色
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        共 {node.applicableRoles?.length || 0} 个
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveRolesPopoverNode(null);
+                        }}
+                        className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-0.5 custom-scrollbar">
+                    {node.applicableRoles && node.applicableRoles.length > 0 ? (
+                      node.applicableRoles.map((role) => (
+                        <span
+                          key={role}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200/70 rounded-lg text-xs font-medium"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                          {role}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-400">全员通用</span>
+                    )}
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">分类下知识继承此角色权限</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveRolesPopoverNode(null);
+                        handleOpenEditCatModal(node, e);
+                      }}
+                      className="text-[#EA3A20] hover:underline font-bold cursor-pointer"
+                    >
+                      去编辑
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <span className="font-mono text-[11px] text-slate-400 hidden sm:inline-block w-28 truncate">
               {node.code}
             </span>
 
@@ -2039,8 +2271,10 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               {contentList.filter(c => c.category.includes(node.name)).length || node.itemCount || 0} 篇
             </span>
 
+            {/* 操作按钮区：新增、编辑、同级上下移、删除 */}
             <div className="flex items-center gap-0.5 w-28 justify-end">
               <button
+                type="button"
                 onClick={(e) => handleOpenAddCatModal(node, e)}
                 title="添加子分类"
                 className="p-1 rounded text-slate-400 hover:text-[#EA3A20] hover:bg-red-50 transition-colors cursor-pointer"
@@ -2048,40 +2282,46 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 <Plus className="w-3.5 h-3.5" />
               </button>
 
+              {/* 编辑分类操作（所有分类均可编辑） */}
+              <button
+                type="button"
+                onClick={(e) => handleOpenEditCatModal(node, e)}
+                title="编辑分类（名称、适用角色、复核策略）"
+                className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+              </button>
+
+              {/* 同级上下移辅助按钮 */}
+              <button
+                type="button"
+                onClick={(e) => handleMoveCatNode(node.id, 'up', false, e)}
+                title="同级上移"
+                className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <ArrowUp className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleMoveCatNode(node.id, 'down', false, e)}
+                title="同级下移"
+                className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <ArrowDown className="w-3.5 h-3.5" />
+              </button>
+
               {!isBuiltin ? (
-                <>
-                  <button
-                    onClick={(e) => handleOpenEditCatModal(node, e)}
-                    title="编辑分类"
-                    className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => handleMoveCatNode(node.id, 'up', node.isBuiltin, e)}
-                    title="上移"
-                    className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                  >
-                    <ArrowUp className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => handleMoveCatNode(node.id, 'down', node.isBuiltin, e)}
-                    title="下移"
-                    className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                  >
-                    <ArrowDown className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => handleDeleteCatNode(node.id, node.name, node.isBuiltin, e)}
-                    title="删除分类"
-                    className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteCatNode(node.id, node.name, node.isBuiltin, e)}
+                  title="删除分类"
+                  className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               ) : (
                 <span
-                  title="系统内置分类不可编辑、排序或删除"
+                  title="系统内置核心分类受保护不可删除（支持编辑与拖拽排序）"
                   className="p-1 text-slate-300 flex items-center justify-center cursor-not-allowed"
                 >
                   <Lock className="w-3 h-3" />
@@ -2092,7 +2332,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
         </div>
 
         {hasChildren && isExpanded && (
-          <div>{node.children!.map((child) => renderCategoryTableRow(child, depth + 1))}</div>
+          <div>{node.children!.map((child) => renderCategoryTableRow(child, depth + 1, node.id))}</div>
         )}
       </React.Fragment>
     );
@@ -3019,16 +3259,17 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               {/* Header (Fixed) */}
               <div className="shrink-0 flex items-center justify-between text-[11px] font-semibold text-slate-400 pb-2 border-b border-slate-100 px-3">
                 <span>分类名称与层级</span>
-                <div className="flex items-center gap-6">
-                  <span className="hidden sm:inline-block">编码</span>
-                  <span>关联知识</span>
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <span className="hidden lg:inline-block w-44 text-left">适用角色</span>
+                  <span className="hidden sm:inline-block w-28 text-left">编码</span>
+                  <span className="min-w-14 text-center">关联知识</span>
                   <span className="w-28 text-right">操作</span>
                 </div>
               </div>
 
               {/* Scrollable Tree Table */}
               <div className="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-100/40">
-                {categoryList.map((node) => renderCategoryTableRow(node, 0))}
+                {categoryList.map((node) => renderCategoryTableRow(node, 0, null))}
               </div>
             </div>
           </div>
@@ -3481,7 +3722,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                     <div className="space-y-0.5">
                       <p className="font-bold">当前知识条目为【草稿】状态（未发布）</p>
                       <p className="text-[11px] text-slate-600">
-                        您可以自由完善知识内容、适用岗位与标签配置，保存并提交复核。
+                        您可以自由完善知识内容、适用地区与标签配置，保存并提交复核。
                       </p>
                     </div>
                   </div>
@@ -3545,7 +3786,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                     articleModalStepTab === 'permissions' ? 'bg-[#EA3A20] text-white' : 'bg-slate-200 text-slate-600'
                   }`}>3</span>
-                  <span>配置业务范围和权限</span>
+                  <span>配置业务范围与有效期</span>
                 </button>
               </div>
             </div>
@@ -3612,13 +3853,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
               {articleModalStepTab === 'permissions' && (
                 <ArticlePermissionsTab
-                  articleFormRoles={articleFormRoles}
-                  setArticleFormRoles={setArticleFormRoles}
-                  isRolesDropdownOpen={isRolesDropdownOpen}
-                  setIsRolesDropdownOpen={setIsRolesDropdownOpen}
-                  customRoleInput={customRoleInput}
-                  setCustomRoleInput={setCustomRoleInput}
-                  PRESET_ROLES={PRESET_ROLES}
                   articleFormRegions={articleFormRegions}
                   setArticleFormRegions={setArticleFormRegions}
                   isRegionsDropdownOpen={isRegionsDropdownOpen}
@@ -3626,8 +3860,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   customRegionInput={customRegionInput}
                   setCustomRegionInput={setCustomRegionInput}
                   PRESET_REGIONS={PRESET_REGIONS}
-                  articleFormSecurityLevel={articleFormSecurityLevel}
-                  setArticleFormSecurityLevel={setArticleFormSecurityLevel}
                   articleFormExpiryType={articleFormExpiryType}
                   setArticleFormExpiryType={setArticleFormExpiryType}
                   articleFormStartDate={articleFormStartDate}
@@ -4053,6 +4285,140 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <p className="text-[11px] text-slate-400">用于系统或外部 API 对接的唯一标识码，留空自动生成</p>
                 </div>
 
+                {/* 适用角色配置 */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-slate-700 flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-slate-500" />
+                      <span>适用角色</span>
+                      <span className="text-slate-400 font-normal text-[11px]">
+                        ({newCatRoles.length} 个已选)
+                      </span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newCatRoles.includes('全员通用')) {
+                          setNewCatRoles(PRESET_ROLES.filter((r) => r !== '全员通用'));
+                        } else {
+                          setNewCatRoles(['全员通用']);
+                        }
+                      }}
+                      className="text-[11px] text-[#EA3A20] hover:underline font-medium cursor-pointer"
+                    >
+                      {newCatRoles.includes('全员通用') ? '细化指定角色' : '快速设为全员'}
+                    </button>
+                  </div>
+
+                  {/* Selected Roles Chips */}
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 min-h-[42px] items-center">
+                    {newCatRoles.length === 0 ? (
+                      <span className="text-slate-400 text-xs pl-1">未设置适用角色（默认全员可见）</span>
+                    ) : (
+                      newCatRoles.map((role) => (
+                        <span
+                          key={role}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-medium shadow-2xs"
+                        >
+                          <span>{role}</span>
+                          <button
+                            type="button"
+                            onClick={() => setNewCatRoles(newCatRoles.filter((r) => r !== role))}
+                            className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Dropdown for role selection & custom role adding */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsNewCatRolesDropdownOpen(!isNewCatRolesDropdownOpen)}
+                      className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 text-xs font-medium cursor-pointer shadow-2xs transition-colors"
+                    >
+                      <span className="text-slate-500">点击展开可选角色列表与自定义输入...</span>
+                      <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isNewCatRolesDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isNewCatRolesDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-white border border-slate-200 rounded-xl shadow-lg p-2.5 space-y-2 animate-in fade-in">
+                        <div className="flex flex-wrap gap-1.5">
+                          {PRESET_ROLES.map((role) => {
+                            const isSelected = newCatRoles.includes(role);
+                            return (
+                              <button
+                                key={role}
+                                type="button"
+                                onClick={() => {
+                                  if (role === '全员通用') {
+                                    setNewCatRoles(['全员通用']);
+                                  } else {
+                                    const withoutAll = newCatRoles.filter((r) => r !== '全员通用');
+                                    if (isSelected) {
+                                      setNewCatRoles(withoutAll.filter((r) => r !== role));
+                                    } else {
+                                      setNewCatRoles([...withoutAll, role]);
+                                    }
+                                  }
+                                }}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1 border ${
+                                  isSelected
+                                    ? 'bg-red-50 border-[#EA3A20] text-[#EA3A20] font-bold'
+                                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                                }`}
+                              >
+                                {isSelected && <Check className="w-3 h-3 text-[#EA3A20]" />}
+                                <span>{role}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Custom Role Input */}
+                        <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            placeholder="输入其他角色名称..."
+                            value={newCatCustomRoleInput}
+                            onChange={(e) => setNewCatCustomRoleInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const val = newCatCustomRoleInput.trim();
+                                if (val && !newCatRoles.includes(val)) {
+                                  setNewCatRoles([...newCatRoles.filter((r) => r !== '全员通用'), val]);
+                                  setNewCatCustomRoleInput('');
+                                }
+                              }
+                            }}
+                            className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const val = newCatCustomRoleInput.trim();
+                              if (val && !newCatRoles.includes(val)) {
+                                setNewCatRoles([...newCatRoles.filter((r) => r !== '全员通用'), val]);
+                                setNewCatCustomRoleInput('');
+                              }
+                            }}
+                            className="px-2.5 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-medium hover:bg-slate-900 cursor-pointer"
+                          >
+                            添加
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    该分类下的知识将默认继承所选角色的查阅权限
+                  </p>
+                </div>
+
                 {/* 平台管理员复核策略配置 */}
                 <div className="pt-3 border-t border-slate-100 space-y-3">
                   <div className="flex items-start justify-between gap-3 p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/70">
@@ -4191,6 +4557,140 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                     onChange={(e) => setEditCatCode(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20]"
                   />
+                </div>
+
+                {/* 适用角色配置 */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-slate-700 flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-slate-500" />
+                      <span>适用角色</span>
+                      <span className="text-slate-400 font-normal text-[11px]">
+                        ({editCatRoles.length} 个已选)
+                      </span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (editCatRoles.includes('全员通用')) {
+                          setEditCatRoles(PRESET_ROLES.filter((r) => r !== '全员通用'));
+                        } else {
+                          setEditCatRoles(['全员通用']);
+                        }
+                      }}
+                      className="text-[11px] text-[#EA3A20] hover:underline font-medium cursor-pointer"
+                    >
+                      {editCatRoles.includes('全员通用') ? '细化指定角色' : '快速设为全员'}
+                    </button>
+                  </div>
+
+                  {/* Selected Roles Chips */}
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 min-h-[42px] items-center">
+                    {editCatRoles.length === 0 ? (
+                      <span className="text-slate-400 text-xs pl-1">未设置适用角色（默认全员可见）</span>
+                    ) : (
+                      editCatRoles.map((role) => (
+                        <span
+                          key={role}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-medium shadow-2xs"
+                        >
+                          <span>{role}</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditCatRoles(editCatRoles.filter((r) => r !== role))}
+                            className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Dropdown for role selection & custom role adding */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditCatRolesDropdownOpen(!isEditCatRolesDropdownOpen)}
+                      className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 text-xs font-medium cursor-pointer shadow-2xs transition-colors"
+                    >
+                      <span className="text-slate-500">点击展开可选角色列表与自定义输入...</span>
+                      <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isEditCatRolesDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isEditCatRolesDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-white border border-slate-200 rounded-xl shadow-lg p-2.5 space-y-2 animate-in fade-in">
+                        <div className="flex flex-wrap gap-1.5">
+                          {PRESET_ROLES.map((role) => {
+                            const isSelected = editCatRoles.includes(role);
+                            return (
+                              <button
+                                key={role}
+                                type="button"
+                                onClick={() => {
+                                  if (role === '全员通用') {
+                                    setEditCatRoles(['全员通用']);
+                                  } else {
+                                    const withoutAll = editCatRoles.filter((r) => r !== '全员通用');
+                                    if (isSelected) {
+                                      setEditCatRoles(withoutAll.filter((r) => r !== role));
+                                    } else {
+                                      setEditCatRoles([...withoutAll, role]);
+                                    }
+                                  }
+                                }}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1 border ${
+                                  isSelected
+                                    ? 'bg-red-50 border-[#EA3A20] text-[#EA3A20] font-bold'
+                                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                                }`}
+                              >
+                                {isSelected && <Check className="w-3 h-3 text-[#EA3A20]" />}
+                                <span>{role}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Custom Role Input */}
+                        <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            placeholder="输入其他角色名称..."
+                            value={editCatCustomRoleInput}
+                            onChange={(e) => setEditCatCustomRoleInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const val = editCatCustomRoleInput.trim();
+                                if (val && !editCatRoles.includes(val)) {
+                                  setEditCatRoles([...editCatRoles.filter((r) => r !== '全员通用'), val]);
+                                  setEditCatCustomRoleInput('');
+                                }
+                              }
+                            }}
+                            className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const val = editCatCustomRoleInput.trim();
+                              if (val && !editCatRoles.includes(val)) {
+                                setEditCatRoles([...editCatRoles.filter((r) => r !== '全员通用'), val]);
+                                setEditCatCustomRoleInput('');
+                              }
+                            }}
+                            className="px-2.5 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-medium hover:bg-slate-900 cursor-pointer"
+                          >
+                            添加
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    该分类下的知识将默认继承所选角色的查阅权限
+                  </p>
                 </div>
 
                 {/* 平台管理员复核策略配置 */}
