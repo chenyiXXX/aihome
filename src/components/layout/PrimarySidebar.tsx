@@ -78,15 +78,11 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       } else {
         // Switch module, navigate to default subview and expand
         onSelectModule(modId, defaultSubView);
-        onSelectSubView(defaultSubView);
         setExpandedModules((prev) => new Set(prev).add(modId));
       }
     } else {
       // Direct single-level module click
       onSelectModule(modId, defaultSubView);
-      if (activeModule !== modId) {
-        onSelectSubView(defaultSubView);
-      }
     }
   };
 
@@ -141,7 +137,7 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       label: '运营助手',
       icon: Sparkles,
       defaultSubView: '视频剪辑',
-      subViews: ['视频剪辑', '图文生成', '发布审核', '发布计划', '账号管理']
+      subViews: ['视频剪辑', '图文生成', '发布审核', '发布计划', '素材库', '账号管理']
     },
     {
       id: 'pre_sales' as ModuleType,
@@ -319,7 +315,6 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
                         key={svName}
                         onClick={() => {
                           onSelectModule(item.id, svName);
-                          onSelectSubView(svName);
                         }}
                         className={`relative group w-full h-11 pl-14 pr-6 flex items-center justify-between text-left text-xs cursor-pointer transition-all duration-150 ${
                           isSubActive
@@ -372,7 +367,6 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
                     key={svName}
                     onClick={() => {
                       onSelectModule(hoveredMenu.id, svName);
-                      onSelectSubView(svName);
                       setHoveredMenu(null);
                     }}
                     className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-all cursor-pointer ${

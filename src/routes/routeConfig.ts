@@ -63,6 +63,13 @@ export const ROUTE_DEFINITIONS: RouteDefinition[] = [
     pageTitle: '发布计划'
   },
   {
+    path: '/marketing/materials',
+    moduleId: 'marketing',
+    subView: '素材库',
+    moduleTitle: '运营助手',
+    pageTitle: '素材库'
+  },
+  {
     path: '/marketing/accounts',
     moduleId: 'marketing',
     subView: '账号管理',

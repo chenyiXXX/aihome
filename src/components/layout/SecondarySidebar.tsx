@@ -113,12 +113,12 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
               {openSections['conversation'] && (
                 <div className="pl-5 space-y-0.5 mt-0.5">
                   <button
-                    onClick={() => onSelectSubView('会话列表')}
+                    onClick={() => onSelectSubView('AI会话列表')}
                     className={`w-full text-left px-3 py-1.5 rounded-lg text-xs cursor-pointer transition-colors ${
-                      subView === '会话列表' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-600 hover:bg-slate-100'
+                      subView === 'AI会话列表' || subView === '会话列表' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-600 hover:bg-slate-100'
                     }`}
                   >
-                    会话列表
+                    AI会话列表
                   </button>
                   <button
                     onClick={() => onSelectSubView('搜索聊天内容')}

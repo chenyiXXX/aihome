@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { VideoClipItem, MarketingPost } from '../../types';
 import { GraphicTextModule } from './marketing/GraphicTextModule';
+import { MaterialLibraryModule } from './marketing/MaterialLibraryModule';
 
 interface MarketingModuleProps {
   videoClips: VideoClipItem[];
@@ -96,8 +97,10 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
     }
   ]);
 
-  const [activeTab, setActiveTab] = useState<'视频剪辑' | '图文生成' | '发布审核' | '发布计划' | '账号管理'>(
-    subView === '视频剪辑'
+  const [activeTab, setActiveTab] = useState<'素材库' | '视频剪辑' | '图文生成' | '发布审核' | '发布计划' | '账号管理'>(
+    subView === '素材库'
+      ? '素材库'
+      : subView === '视频剪辑'
       ? '视频剪辑'
       : subView === '图文生成' || subView === '图文内容生成'
       ? '图文生成'
@@ -107,11 +110,13 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
       ? '发布计划'
       : subView === '账号管理'
       ? '账号管理'
-      : '视频剪辑'
+      : '素材库'
   );
 
   useEffect(() => {
-    if (subView === '视频剪辑') {
+    if (subView === '素材库') {
+      setActiveTab('素材库');
+    } else if (subView === '视频剪辑') {
       setActiveTab('视频剪辑');
     } else if (subView === '图文生成' || subView === '图文内容生成') {
       setActiveTab('图文生成');
@@ -146,6 +151,14 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
       setLoading(false);
     }
   };
+
+  if (activeTab === '素材库') {
+    return <MaterialLibraryModule onNavigateToClip={() => setActiveTab('视频剪辑')} />;
+  }
+
+  if (activeTab === '图文生成') {
+    return <GraphicTextModule />;
+  }
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pt-6 pb-8">
@@ -200,10 +213,6 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
               ))}
             </div>
           </div>
-        )}
-
-        {activeTab === '图文生成' && (
-          <GraphicTextModule />
         )}
 
         {activeTab === '发布审核' && (

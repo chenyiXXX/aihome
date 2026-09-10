@@ -99,7 +99,6 @@ export interface SessionItem {
   customerName: string;
   avatar: string;
   channel: '企微' | 'WhatsApp' | '线下对接' | '企业微信' | string;
-  sourceType?: 'api_sync' | 'manual'; // 'api_sync' (接口对接) | 'manual' (销售自建)
   contactInfo?: string; // 手机号/企微ID/WA号码
   companyName?: string; // 企业或项目名称
   unreadCount: number;
@@ -107,7 +106,7 @@ export interface SessionItem {
   lastTime: string;
   tags: string[];
   assignedStaff: string;
-  status: '跟进中' | '已报价' | '已成交' | '已流失' | '不是客户';
+  status: '跟进中' | '已报价' | '已成交' | '已流失';
 }
 
 export interface ChatMessage {
@@ -137,6 +136,14 @@ export interface ChatMessage {
     title: string;
     version: string;
   }[];
+  // 引用的社媒聊天记录 (Quoted social chat records)
+  quotedMessages?: {
+    id: string;
+    sender: 'customer' | 'sales' | string;
+    senderName?: string;
+    content: string;
+    timestamp?: string;
+  }[];
 }
 
 // 话术库 (Scripts Library - As shown in Screenshot 1!)
@@ -152,6 +159,45 @@ export interface ScriptItem {
 }
 
 // 4. Marketing Assistant Types (运营助手)
+export type MediaType = 'video' | 'image' | 'audio';
+export type AspectRatioType = '9:16' | '16:9' | '1:1' | '4:3' | 'other';
+
+export interface MediaAssetItem {
+  id: string;
+  code: string; // e.g., 'MED-2026-081'
+  title: string;
+  type: MediaType;
+  url: string;
+  thumbnail: string;
+  duration?: string; // 视频或音频时长，如 '00:15'
+  durationSec?: number; // 秒数，如 15
+  width?: number;
+  height?: number;
+  aspectRatio: AspectRatioType;
+  resolution?: string; // e.g. '4K UHD (3840x2160)', '1080P FHD'
+  fps?: number; // 60, 30
+  fileSize: string; // '34.2 MB'
+  format: string; // 'MP4', 'MOV', 'JPG', 'PNG', 'WEBP', 'WAV'
+  folderId: string; // 所属素材箱/文件夹 ID
+  folderName: string;
+  tags: string[]; // ['#极简整家', '#爱格板', '#五金铰链']
+  usageCount: number; // 混剪引用次数
+  isFavorite: boolean; // 是否星标收藏
+  uploader: string;
+  uploadedAt: string;
+  scenesDetected?: string[]; // AI 检测的分镜场景标签
+  colorPalette?: string[]; // AI 色彩分析
+  associatedProjects?: string[]; // 已关联的视频或图文项目
+}
+
+export interface MediaFolderItem {
+  id: string;
+  name: string;
+  icon?: string;
+  assetCount: number;
+  isSystem?: boolean;
+}
+
 export interface VideoClipItem {
   id: string;
   title: string;

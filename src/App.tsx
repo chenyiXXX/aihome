@@ -96,7 +96,8 @@ export function App() {
 
   // When switching subview within page or sidebar
   const handleSelectSubView = (newSubView: string) => {
-    const targetPath = getPathByModuleAndSubView(activeModule, newSubView);
+    const route = parseRoute(location.pathname);
+    const targetPath = getPathByModuleAndSubView(route.moduleId, newSubView);
     navigate(targetPath);
   };
 
@@ -223,6 +224,16 @@ export function App() {
                   videoClips={initialVideoClips}
                   posts={initialPosts}
                   subView="发布计划"
+                />
+              }
+            />
+            <Route
+              path="/marketing/materials"
+              element={
+                <MarketingModule
+                  videoClips={initialVideoClips}
+                  posts={initialPosts}
+                  subView="素材库"
                 />
               }
             />

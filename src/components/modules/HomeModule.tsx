@@ -20,6 +20,10 @@ import {
   RotateCcw,
   MessageSquare,
   ChevronRight,
+  ChevronDown,
+  UserPlus,
+  Zap,
+  X,
   HelpCircle,
   Clock,
   Sparkle,
@@ -45,6 +49,7 @@ export interface ChatMessage {
 
 export interface ChatSession {
   id: string;
+  code?: string;
   title: string;
   category: 'sales_training' | 'ops_training' | 'hr_training' | 'general';
   categoryLabel: string;
@@ -63,6 +68,7 @@ export interface ChatSession {
 const initialSessionsList: ChatSession[] = [
   {
     id: 'sess-sales',
+    code: 'SESS-101',
     title: '销售培训 · 销冠谈判与异议化解',
     category: 'sales_training',
     categoryLabel: '内部培训 · 销售',
@@ -120,6 +126,7 @@ const initialSessionsList: ChatSession[] = [
   },
   {
     id: 'sess-ops',
+    code: 'SESS-102',
     title: '运营培训 · 社媒短视频与海外获客',
     category: 'ops_training',
     categoryLabel: '内部培训 · 运营',
@@ -173,6 +180,7 @@ const initialSessionsList: ChatSession[] = [
   },
   {
     id: 'sess-hr',
+    code: 'SESS-103',
     title: '人力资源培训 · 提成激励与员工手册',
     category: 'hr_training',
     categoryLabel: '内部培训 · 人资',
@@ -234,6 +242,7 @@ const initialSessionsList: ChatSession[] = [
   },
   {
     id: 'sess-general',
+    code: 'SESS-104',
     title: '通用问答 · 欧美认证与定制工艺标准',
     category: 'general',
     categoryLabel: '产品工艺',
@@ -291,6 +300,9 @@ export const HomeModule: React.FC = () => {
   const [activeSessionId, setActiveSessionId] = useState<string>('sess-sales');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<'all' | 'training' | 'general'>('all');
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'builtin' | 'custom'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'learning' | 'completed'>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -354,16 +366,26 @@ export const HomeModule: React.FC = () => {
     const matchesSearch =
       s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase());
+      s.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (s.code && s.code.toLowerCase().includes(searchQuery.toLowerCase()));
 
     if (!matchesSearch) return false;
 
-    if (filterCategory === 'training') {
-      return s.category !== 'general';
+    if (filterCategory === 'training' && s.category === 'general') return false;
+    if (filterCategory === 'general' && s.category !== 'general') return false;
+
+    if (sourceFilter === 'builtin' && !s.isBuiltin) return false;
+    if (sourceFilter === 'custom' && s.isBuiltin) return false;
+
+    if (statusFilter === 'learning') {
+      // If learning, must be a training course with progress not 100%
+      const course = trainingCourses[s.id];
+      if (!course) return false;
+    } else if (statusFilter === 'completed') {
+      const course = trainingCourses[s.id];
+      if (course && course.currentLessonIndex + 1 < course.lessons.length) return false;
     }
-    if (filterCategory === 'general') {
-      return s.category === 'general';
-    }
+
     return true;
   });
 
@@ -372,6 +394,7 @@ export const HomeModule: React.FC = () => {
     const newId = `sess-${Date.now()}`;
     const newSession: ChatSession = {
       id: newId,
+      code: `SESS-${100 + sessions.length + 1}`,
       title: `自定义问答 · ${new Date().toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}`,
       category: 'general',
       categoryLabel: '自定义咨询',
@@ -543,148 +566,261 @@ export const HomeModule: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex h-full bg-slate-100/60 overflow-hidden">
-      
-      {/* ========================================================================= */}
-      {/* LEFT SIDEBAR: Chat / Training Sessions List                                */}
-      {/* ========================================================================= */}
-      <div className="w-80 md:w-84 bg-white border-r border-slate-200 flex flex-col shrink-0 h-full">
+    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden p-3 lg:p-4">
+      {/* Main Dual-Column Split Workspace: Left List + Right Detail */}
+      <div className="flex-1 flex gap-3.5 lg:gap-4 overflow-hidden min-h-0">
         
-        {/* Left Header */}
-        <div className="p-4 border-b border-slate-100 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
+        {/* ========================================================= */}
+        {/* 左侧：会话列表面板 (Left: Session List Panel)               */}
+        {/* ========================================================= */}
+        <div className="shrink-0 flex flex-col bg-white rounded-3xl border border-slate-200/90 shadow-[0_4px_25px_rgba(0,0,0,0.03)] overflow-hidden transition-all duration-300 w-[350px] md:w-[370px] lg:w-[390px] xl:w-[410px]">
+          {/* Top Bar: Title, Count & New Session Button */}
+          <div className="p-3.5 px-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold shadow-2xs">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <h2 className="text-sm font-bold text-slate-900 tracking-tight">知识库与培训问答</h2>
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>会话列表</span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-200/70 text-slate-700 font-bold">
+                  {filteredSessions.length}
+                </span>
+              </h2>
             </div>
-
             <button
               type="button"
               onClick={handleCreateNewSession}
-              className="h-8 px-2.5 bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all shrink-0"
+              className="h-8 px-3 rounded-full bg-[#0F4A47] text-white hover:bg-[#0b3836] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs active:scale-95"
               title="新建提问会话"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>新建会话</span>
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>+ 新建会话</span>
             </button>
           </div>
 
-          {/* Search Box */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              placeholder="搜索会话主题或问答关键词..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8.5 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] transition-colors"
-            />
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 pt-0.5">
-            <button
-              type="button"
-              onClick={() => setFilterCategory('all')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-colors ${
-                filterCategory === 'all'
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              全部 ({sessions.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterCategory('training')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1 ${
-                filterCategory === 'training'
-                  ? 'bg-[#EA3A20] text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              <span>内部培训</span>
-              <span className="text-[10px] opacity-80">(3)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterCategory('general')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-colors ${
-                filterCategory === 'general'
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              业务通用
-            </button>
-          </div>
-        </div>
-
-        {/* Sessions Scrollable List */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1.5 custom-scrollbar">
-          {filteredSessions.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 text-xs">
-              <MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p>未搜索到相关会话</p>
-            </div>
-          ) : (
-            filteredSessions.map((session) => {
-              const isActive = session.id === activeSessionId;
-              return (
-                <div
-                  key={session.id}
-                  onClick={() => setActiveSessionId(session.id)}
-                  className={`p-3 rounded-2xl cursor-pointer transition-all border text-left group relative ${
-                    isActive
-                      ? 'bg-white border-slate-200/90 shadow-xs ring-1.5 ring-[#EA3A20]/20'
-                      : 'bg-slate-50/50 hover:bg-white border-transparent hover:border-slate-200'
+          {/* Channel / Category Filter Tabs */}
+          <div className="p-3 pb-2 border-b border-slate-100 bg-white">
+            <div className="bg-slate-100/90 rounded-full p-1 flex items-center gap-1">
+              {[
+                { key: 'all' as const, label: '全部', count: sessions.length },
+                { key: 'training' as const, label: '内部培训', count: sessions.filter((s) => s.category !== 'general').length },
+                { key: 'general' as const, label: '业务通用', count: sessions.filter((s) => s.category === 'general').length }
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setFilterCategory(tab.key)}
+                  className={`flex-1 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    filterCategory === tab.key
+                      ? 'bg-[#EA3A20] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="font-bold text-xs text-slate-800 truncate">
-                        {session.title}
-                      </span>
-                      {session.category !== 'general' && (
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-red-50 text-[#EA3A20] border border-red-200 shrink-0">
-                          内部培训
+                  <span>{tab.label}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                      filterCategory === tab.key ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-600'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Search & Filter Controls */}
+          <div className="p-3 border-b border-slate-100 bg-slate-50/40 space-y-2">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜索会话主题 / 导师 / 问答关键词..."
+                className="h-8 pl-8 pr-7 w-full rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] focus:border-[#EA3A20]"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Source & Status Dropdowns */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <select
+                  value={sourceFilter}
+                  onChange={(e) => setSourceFilter(e.target.value as 'all' | 'builtin' | 'custom')}
+                  className="appearance-none w-full h-7 pl-2.5 pr-6 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer"
+                >
+                  <option value="all">全部来源</option>
+                  <option value="builtin">⚡ 系统内置</option>
+                  <option value="custom">👤 自定义提问</option>
+                </select>
+                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+
+              <div className="relative">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as 'all' | 'learning' | 'completed')}
+                  className="appearance-none w-full h-7 pl-2.5 pr-6 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer"
+                >
+                  <option value="all">全部状态</option>
+                  <option value="learning">带教中</option>
+                  <option value="completed">已掌握</option>
+                </select>
+                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+
+          {/* Session Cards Scrollable List */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar bg-slate-50/20">
+            {filteredSessions.length > 0 ? (
+              filteredSessions.map((sess, idx) => {
+                const isSelected = activeSessionId === sess.id;
+                const course = trainingCourses[sess.id];
+                return (
+                  <div
+                    key={sess.id}
+                    onClick={() => setActiveSessionId(sess.id)}
+                    className={`p-3 rounded-2xl border transition-all cursor-pointer relative group ${
+                      isSelected
+                        ? 'bg-[#0F4A47]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/30 shadow-xs border-l-[5px] border-l-[#0F4A47]'
+                        : 'bg-white hover:bg-slate-50/90 border-slate-200/80 hover:border-slate-300'
+                    }`}
+                  >
+                    {/* First Line: Title, ID, Source badge, Time */}
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className={`font-bold text-xs truncate ${isSelected ? 'text-[#0F4A47]' : 'text-slate-900'}`}>
+                          {sess.title}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                          {sess.code || `SESS-${101 + idx}`}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {sess.isBuiltin ? (
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded border border-indigo-100">
+                            <Zap className="w-2.5 h-2.5 text-indigo-500 fill-indigo-400" />
+                            内置
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 bg-amber-50 text-amber-700 text-[10px] font-bold rounded border border-amber-200/60">
+                            <UserPlus className="w-2.5 h-2.5 text-amber-600" />
+                            自建
+                          </span>
+                        )}
+                        <span className="text-[10px] text-slate-400 font-mono">{sess.lastTime}</span>
+                      </div>
+                    </div>
+
+                    {/* Meta Row: Category badge, Mentor/Scope, Quick Status */}
+                    <div className="flex items-center justify-between gap-2 mb-2 text-[11px]">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className={`px-2 py-0.2 rounded-full font-bold text-[10px] border shrink-0 ${
+                            sess.category === 'sales_training'
+                              ? 'bg-blue-50 text-blue-600 border-blue-100'
+                              : sess.category === 'ops_training'
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                              : sess.category === 'hr_training'
+                              ? 'bg-purple-50 text-purple-700 border-purple-100'
+                              : 'bg-slate-100 text-slate-700 border-slate-200'
+                          }`}
+                        >
+                          {sess.category === 'general' ? '业务问答' : '内部培训'}
+                        </span>
+                        <span className="text-slate-500 text-[11px] font-medium truncate">
+                          导师: <strong className="text-slate-700">{course?.mentorName || (sess.category === 'general' ? 'AI全案顾问' : '带教导师')}</strong>
+                        </span>
+                      </div>
+
+                      {/* Quick Status Pill */}
+                      <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <span className="inline-flex items-center gap-1 h-5 px-2 rounded-full border text-[10px] font-bold bg-blue-50 text-blue-700 border-blue-200">
+                          <span>{course ? '带教中' : '可提问'}</span>
+                          <ChevronDown className="w-2.5 h-2.5 text-blue-500" />
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Last Message Snippet */}
+                    <p className="text-[11px] text-slate-500 truncate leading-relaxed mb-2">
+                      {sess.lastMessage || '等待提问与知识检索...'}
+                    </p>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1 items-center">
+                      {course ? (
+                        <>
+                          <span className="px-1.5 py-0.2 text-[9px] bg-emerald-50 text-emerald-700 rounded font-medium border border-emerald-100">
+                            进度: 第 {course.currentLessonIndex + 1}/{course.lessons.length} 节
+                          </span>
+                          <span className="px-1.5 py-0.2 text-[9px] bg-amber-50 text-amber-700 rounded font-medium border border-amber-100">
+                            效率: {course.efficiencyScore}分
+                          </span>
+                        </>
+                      ) : (
+                        <span className="px-1.5 py-0.2 text-[9px] bg-indigo-50 text-indigo-700 rounded font-medium border border-indigo-100">
+                          全案产品知识库
                         </span>
                       )}
+                      {sess.recommendedPrompts?.slice(0, 2).map((prompt, pIdx) => (
+                        <span
+                          key={pIdx}
+                          className="px-1.5 py-0.2 text-[9px] bg-slate-100 text-slate-600 rounded font-medium truncate max-w-[95px]"
+                          title={prompt}
+                        >
+                          {prompt}
+                        </span>
+                      ))}
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono shrink-0">
-                      {session.lastTime}
-                    </span>
                   </div>
+                );
+              })
+            ) : (
+              <div className="py-12 text-center text-slate-400 text-xs px-4">
+                暂无符合条件的会话，可切换类别或清空搜索词。
+              </div>
+            )}
+          </div>
 
-                  <p className="text-[11px] text-slate-500 line-clamp-1 pr-1">
-                    {session.lastMessage}
-                  </p>
-
-                  {/* Training Course Progress & Efficiency Preview */}
-                  {trainingCourses[session.id] && (
-                    <div className="flex items-center gap-2 mt-1.5 text-[10px]">
-                      <span className="text-emerald-700 font-medium bg-emerald-50/80 px-1.5 py-0.2 rounded border border-emerald-100">
-                        进度: 第 {trainingCourses[session.id].currentLessonIndex + 1}/{trainingCourses[session.id].lessons.length} 节
-                      </span>
-                      <span className="text-amber-700 font-medium bg-amber-50/80 px-1.5 py-0.2 rounded border border-amber-100">
-                        效率: {trainingCourses[session.id].efficiencyScore}分
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
+          {/* Left Footer: Count & Pagination */}
+          <div className="p-2.5 px-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-[11px] text-slate-500">
+            <span>共 {filteredSessions.length} 条会话</span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="px-2 py-0.5 rounded border border-slate-200 text-[11px] text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white cursor-pointer"
+              >
+                上一页
+              </button>
+              <span className="px-1.5 font-bold text-slate-700">{currentPage}</span>
+              <button
+                type="button"
+                disabled={true}
+                className="px-2 py-0.5 rounded border border-slate-200 text-[11px] text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white cursor-pointer"
+              >
+                下一页
+              </button>
+            </div>
+          </div>
         </div>
 
-      </div>
-
-      {/* ========================================================================= */}
-      {/* RIGHT MAIN VIEW: Chat Conversation Content                                */}
-      {/* ========================================================================= */}
-      <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-hidden">
+        {/* ========================================================= */}
+        {/* RIGHT MAIN VIEW: Chat Conversation Content                                */}
+        {/* ========================================================= */}
+        <div className="flex-1 flex flex-col bg-white rounded-3xl border border-slate-200/90 shadow-[0_4px_25px_rgba(0,0,0,0.03)] overflow-hidden min-w-0">
         
         {/* Right Header: Active Session Title & Mentor Info */}
         <div className="px-6 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
@@ -964,6 +1100,8 @@ export const HomeModule: React.FC = () => {
           </div>
 
         </div>
+
+      </div>
 
       </div>
 

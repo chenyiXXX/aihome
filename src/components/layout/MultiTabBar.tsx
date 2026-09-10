@@ -91,7 +91,8 @@ export const MultiTabBar: React.FC<MultiTabBarProps> = ({
                 tab.subView !== tab.moduleTitle &&
                 tab.subView !== '通用知识问答' &&
                 tab.subView !== '售前询盘列表' &&
-                tab.subView !== '会话列表' && (
+                tab.subView !== '会话列表' &&
+                tab.subView !== 'AI会话列表' && (
                   <>
                     <ChevronRight
                       className={`w-3 h-3 ${
