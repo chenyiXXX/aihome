@@ -106,10 +106,7 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
               <SlidersHorizontal className="w-3.5 h-3.5" />
             </div>
             <div>
-              <span className="font-bold text-slate-800 text-xs">业务适用与有效期限配置</span>
-              <span className="text-[11px] text-slate-400 ml-2">
-                设置适用地区/语种、知识有效期限与关联知识条目（岗位权限已由所属分类统一部署）
-              </span>
+              <span className="font-bold text-slate-800 text-xs">适用范围与时效设置</span>
             </div>
           </div>
         </div>
@@ -259,7 +256,6 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
                 <Calendar className="w-3.5 h-3.5 text-amber-600" />
                 有效期限
               </label>
-              <span className="text-[10px] text-slate-400">适用于限时政策或阶段性规范</span>
             </div>
 
             <div className="space-y-2.5">
@@ -359,7 +355,6 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
                         <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
                           <span className="text-red-500">*</span>结束日期
                         </label>
-                        <span className="text-[10px] text-slate-400">不能早于开始日期</span>
                       </div>
                       <input
                         type="date"
@@ -423,164 +418,6 @@ export const ArticlePermissionsTab: React.FC<ArticlePermissionsTabProps> = ({
                 </div>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* 3. 关联条目 (搜索选择框) */}
-        <div className="space-y-1.5 pt-3 border-t border-slate-200/60">
-          <div className="flex items-center justify-between">
-            <label className="font-bold text-slate-700 flex items-center gap-1">
-              <Link2 className="w-3.5 h-3.5 text-indigo-600" />
-              关联知识条目 (搜索选择框)
-            </label>
-            <span className="text-[11px] text-indigo-600 font-medium">
-              已关联 {articleFormRelatedIds.length} 篇知识
-            </span>
-          </div>
-
-          {/* Selected Related Articles Chips */}
-          {articleFormRelatedIds.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 p-2 bg-white rounded-xl border border-slate-200 max-h-24 overflow-y-auto custom-scrollbar">
-              {articleFormRelatedIds.map((rId) => {
-                const relatedArt = contentList.find((a) => a.id === rId);
-                if (!relatedArt) return null;
-                return (
-                  <span
-                    key={rId}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-900 border border-indigo-200 text-xs font-medium shadow-2xs"
-                  >
-                    <span className="font-mono text-[10px] text-indigo-600">{relatedArt.code}</span>
-                    <span className="truncate max-w-[200px]">{relatedArt.title}</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setArticleFormRelatedIds(articleFormRelatedIds.filter((id) => id !== rId))
-                      }
-                      className="text-indigo-400 hover:text-red-600 cursor-pointer"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Related Article Search & Select Trigger */}
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="搜索知识条目标题或编号关联其他条目..."
-                  value={relatedSearchQuery}
-                  onChange={(e) => {
-                    setRelatedSearchQuery(e.target.value);
-                    setIsRelatedDropdownOpen(true);
-                  }}
-                  onFocus={() => setIsRelatedDropdownOpen(true)}
-                  className="w-full pl-8 pr-8 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-2xs"
-                />
-                {relatedSearchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setRelatedSearchQuery('')}
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsRelatedDropdownOpen(!isRelatedDropdownOpen)}
-                className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl font-medium hover:bg-indigo-100 flex items-center gap-1 cursor-pointer transition-colors shadow-2xs text-xs"
-              >
-                <span>浏览全部</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform ${
-                    isRelatedDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-            </div>
-
-            {/* Related Articles Dropdown Selection */}
-            {isRelatedDropdownOpen && (
-              <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-2 space-y-1 max-h-56 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-100">
-                <div className="flex items-center justify-between pb-1.5 px-2 border-b border-slate-100 text-[11px] text-slate-400">
-                  <span>点击条目加入关联知识</span>
-                  <button
-                    type="button"
-                    onClick={() => setIsRelatedDropdownOpen(false)}
-                    className="text-slate-400 hover:text-slate-600 font-medium cursor-pointer"
-                  >
-                    关闭
-                  </button>
-                </div>
-
-                {contentList
-                  .filter((art) => {
-                    // Filter out current article being edited
-                    if (_editingArticle && art.id === _editingArticle.id) return false;
-                    if (!relatedSearchQuery.trim()) return true;
-                    const q = relatedSearchQuery.toLowerCase();
-                    return (
-                      art.title.toLowerCase().includes(q) ||
-                      art.code.toLowerCase().includes(q) ||
-                      art.category.toLowerCase().includes(q)
-                    );
-                  })
-                  .slice(0, 15)
-                  .map((art) => {
-                    const isSelected = articleFormRelatedIds.includes(art.id);
-                    return (
-                      <button
-                        key={art.id}
-                        type="button"
-                        onClick={() => {
-                          if (isSelected) {
-                            setArticleFormRelatedIds(
-                              articleFormRelatedIds.filter((id) => id !== art.id)
-                            );
-                          } else {
-                            setArticleFormRelatedIds([...articleFormRelatedIds, art.id]);
-                          }
-                        }}
-                        className={`w-full flex items-center justify-between p-2 rounded-lg text-left text-xs transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-indigo-50 border border-indigo-200 text-indigo-900 font-medium'
-                            : 'hover:bg-slate-50 text-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 max-w-[85%]">
-                          <div
-                            className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${
-                              isSelected
-                                ? 'bg-indigo-600 border-indigo-600 text-white'
-                                : 'border-slate-300'
-                            }`}
-                          >
-                            {isSelected && <Check className="w-2.5 h-2.5" />}
-                          </div>
-                          <div>
-                            <div className="truncate font-medium">{art.title}</div>
-                            <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1.5">
-                              <span>{art.code}</span>
-                              <span>·</span>
-                              <span className="text-slate-500">{art.category}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                          {art.fileType || 'MD'}
-                        </span>
-                      </button>
-                    );
-                  })}
-              </div>
-            )}
           </div>
         </div>
       </div>

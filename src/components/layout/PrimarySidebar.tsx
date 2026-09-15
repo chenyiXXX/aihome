@@ -141,7 +141,7 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
     },
     {
       id: 'pre_sales' as ModuleType,
-      label: '售前询盘助手',
+      label: '售前询盘',
       icon: Send,
       defaultSubView: '售前询盘列表',
       subViews: []

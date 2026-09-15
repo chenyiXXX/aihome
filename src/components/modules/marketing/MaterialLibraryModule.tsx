@@ -44,7 +44,12 @@ import {
   Eye,
   Share2,
   Radio,
-  MoveRight
+  MoveRight,
+  CheckCircle,
+  Edit3,
+  Disc,
+  Headphones,
+  Repeat
 } from 'lucide-react';
 import { MediaAssetItem, MediaFolderItem, MediaType, AspectRatioType } from '../../../types';
 
@@ -54,8 +59,9 @@ interface MaterialLibraryModuleProps {
 
 // Initial Mock Folders
 const initialFolders: MediaFolderItem[] = [
-  { id: 'folder-all', name: '全部素材', assetCount: 16, isSystem: true },
-  { id: 'folder-fav', name: '⭐ 收藏标星', assetCount: 5, isSystem: true },
+  { id: 'folder-all', name: '全部素材', assetCount: 19, isSystem: true },
+  { id: 'folder-fav', name: '⭐ 收藏标星', assetCount: 6, isSystem: true },
+  { id: 'folder-bgm', name: '🎵 商业背景音乐 (BGM库)', assetCount: 6 },
   { id: 'folder-showroom', name: '2026轻奢新品展厅实拍', assetCount: 4 },
   { id: 'folder-factory', name: '德国数控机床流水线', assetCount: 3 },
   { id: 'folder-joinery', name: '门墙柜一体实景案例', assetCount: 3 },
@@ -460,14 +466,123 @@ const initialAssets: MediaAssetItem[] = [
     aspectRatio: 'other',
     fileSize: '1.2 MB',
     format: 'MP3',
-    folderId: 'folder-overseas',
-    folderName: '欧美出海混剪爆款库',
-    tags: ['#快剪鼓点', '#15秒Hook', '#高完播配乐'],
+    folderId: 'folder-bgm',
+    folderName: '🎵 商业背景音乐 (BGM库)',
+    tags: ['#快剪鼓点', '#15秒Hook', '#高完播配乐', '#背景音乐'],
     usageCount: 7,
     isFavorite: true,
     uploader: '李晨 (运营策划)',
     uploadedAt: '2026-08-22 10:20',
     associatedProjects: ['7秒完播率混剪工程']
+  },
+  {
+    id: 'asset-a4',
+    code: 'MED-A2026-204',
+    title: '北欧现代家居原木温润吉他民谣 Acoustic BGM',
+    type: 'audio',
+    url: 'https://assets.mixkit.co/music/preview/mixkit-acoustic-guitar-reflection-476.mp3',
+    thumbnail: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=600&auto=format&fit=crop&q=80',
+    duration: '00:28',
+    durationSec: 28,
+    aspectRatio: 'other',
+    fileSize: '2.1 MB',
+    format: 'MP3',
+    folderId: 'folder-bgm',
+    folderName: '🎵 商业背景音乐 (BGM库)',
+    tags: ['#温润吉他', '#北欧原木', '#温馨治愈', '#自然原木', '#背景音乐'],
+    usageCount: 4,
+    isFavorite: true,
+    uploader: '张林 (视觉总监)',
+    uploadedAt: '2026-09-03 11:30',
+    associatedProjects: ['北欧原木风整家微纪录片']
+  },
+  {
+    id: 'asset-a5',
+    code: 'MED-A2026-205',
+    title: '大平层空间全景运镜空灵电影级钢琴曲 (Cinematic Piano)',
+    type: 'audio',
+    url: 'https://assets.mixkit.co/music/preview/mixkit-piano-reflections-480.mp3',
+    thumbnail: 'https://images.unsplash.com/photo-1520523839898-507127053c37?w=600&auto=format&fit=crop&q=80',
+    duration: '00:42',
+    durationSec: 42,
+    aspectRatio: 'other',
+    fileSize: '3.6 MB',
+    format: 'MP3',
+    folderId: 'folder-bgm',
+    folderName: '🎵 商业背景音乐 (BGM库)',
+    tags: ['#空灵钢琴', '#电影质感', '#大平层运镜', '#高级定制', '#背景音乐'],
+    usageCount: 6,
+    isFavorite: true,
+    uploader: '张林 (视觉总监)',
+    uploadedAt: '2026-09-02 16:45',
+    associatedProjects: ['2026米兰高定概念片']
+  },
+  {
+    id: 'asset-a6',
+    code: 'MED-A2026-206',
+    title: 'TikTok海外出海爆款流行电子律动音乐 (Modern Electro)',
+    type: 'audio',
+    url: 'https://assets.mixkit.co/music/preview/mixkit-deep-urban-623.mp3',
+    thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
+    duration: '00:20',
+    durationSec: 20,
+    aspectRatio: 'other',
+    fileSize: '1.7 MB',
+    format: 'MP3',
+    folderId: 'folder-bgm',
+    folderName: '🎵 商业背景音乐 (BGM库)',
+    tags: ['#出海爆款', '#流行电音', '#节奏卡点', '#短视频Hook', '#背景音乐'],
+    usageCount: 9,
+    isFavorite: false,
+    uploader: '李晨 (运营策划)',
+    uploadedAt: '2026-08-29 09:10',
+    associatedProjects: ['TikTok全球家居好物榜EP03']
+  },
+  // Recycle Bin Initial Mock Items (回收站初始模拟素材)
+  {
+    id: 'asset-del-1',
+    code: 'MED-V2025-098',
+    title: '2025米兰家具展前期现场花絮未调色废片 (1080P已删除)',
+    type: 'video',
+    url: 'https://assets.mixkit.co/videos/preview/mixkit-hands-opening-and-closing-a-kitchen-cabinet-drawer-42998-large.mp4',
+    thumbnail: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&auto=format&fit=crop&q=80',
+    duration: '00:11',
+    durationSec: 11,
+    aspectRatio: '16:9',
+    resolution: '1080P FHD',
+    fileSize: '19.4 MB',
+    format: 'MP4',
+    folderId: 'folder-showroom',
+    folderName: '2026轻奢新品展厅实拍',
+    tags: ['#旧片废稿', '#待清理', '#未调色'],
+    usageCount: 0,
+    isFavorite: false,
+    uploader: '王工 (制造中心)',
+    uploadedAt: '2026-07-15 11:20',
+    isDeleted: true,
+    deletedAt: '2026-09-09 16:30'
+  },
+  {
+    id: 'asset-del-2',
+    code: 'MED-A2025-088',
+    title: '旧版企业宣传片转场测试音频 (过时版本已弃用)',
+    type: 'audio',
+    url: 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3',
+    thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+    duration: '00:18',
+    durationSec: 18,
+    aspectRatio: 'other',
+    fileSize: '1.4 MB',
+    format: 'MP3',
+    folderId: 'folder-bgm',
+    folderName: '🎵 商业背景音乐 (BGM库)',
+    tags: ['#旧版声效', '#已下线', '#背景音乐'],
+    usageCount: 0,
+    isFavorite: false,
+    uploader: '李晨 (运营策划)',
+    uploadedAt: '2026-06-20 14:10',
+    isDeleted: true,
+    deletedAt: '2026-09-08 10:15'
   }
 ];
 
@@ -506,6 +621,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
 
   // Upload Modal State
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
+  const [uploadAssetType, setUploadAssetType] = useState<'video' | 'image' | 'audio'>('video');
   const [uploadTargetFolder, setUploadTargetFolder] = useState<string>('folder-showroom');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -518,29 +634,68 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const audioPreviewRef = useRef<HTMLAudioElement | null>(null);
 
-  // Calculate dynamic counts
+  // Single Asset Tag Editing State
+  const [newTagInput, setNewTagInput] = useState<string>('');
+  const recommendedTags = [
+    '#意式轻奢',
+    '#原木极简',
+    '#短视频卡点',
+    '#大平层运镜',
+    '#氛围BGM',
+    '#免版权配乐',
+    '#爆款实拍',
+    '#4K超清',
+    '#五金阻尼',
+    '#生活美学',
+    '#出海爆款',
+    '#TikTok热歌'
+  ];
+
+  // Toast Notification State
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((curr) => (curr === msg ? null : curr));
+    }, 2800);
+  };
+
+  // Recycle Bin Active Check
+  const isRecycleBin = selectedFolderId === 'folder-trash';
+
+  // Calculate dynamic counts (active vs recycle bin)
   const counts = useMemo(() => {
-    const total = assets.length;
-    const video = assets.filter((a) => a.type === 'video').length;
-    const image = assets.filter((a) => a.type === 'image').length;
-    const audio = assets.filter((a) => a.type === 'audio').length;
-    const fav = assets.filter((a) => a.isFavorite).length;
-    return { total, video, image, audio, fav };
+    const active = assets.filter((a) => !a.isDeleted);
+    const trash = assets.filter((a) => a.isDeleted);
+    const total = active.length;
+    const video = active.filter((a) => a.type === 'video').length;
+    const image = active.filter((a) => a.type === 'image').length;
+    const audio = active.filter((a) => a.type === 'audio').length;
+    const fav = active.filter((a) => a.isFavorite).length;
+    return { total, video, image, audio, fav, trash: trash.length };
   }, [assets]);
 
   // Filtered and Sorted Assets
   const filteredAssets = useMemo(() => {
-    return assets
-      .filter((asset) => {
-        // Folder check
-        if (selectedFolderId === 'folder-fav') {
-          if (!asset.isFavorite) return false;
-        } else if (selectedFolderId !== 'folder-all') {
-          if (asset.folderId !== selectedFolderId) return false;
-        }
+    const pool = isRecycleBin
+      ? assets.filter((a) => a.isDeleted)
+      : assets.filter((a) => !a.isDeleted);
 
-        // Favorite Toggle Filter
-        if (filterFavoriteOnly && !asset.isFavorite) return false;
+    return pool
+      .filter((asset) => {
+        // Folder check only applies outside recycle bin
+        if (!isRecycleBin) {
+          if (selectedFolderId === 'folder-fav') {
+            if (!asset.isFavorite) return false;
+          } else if (selectedFolderId === 'folder-bgm') {
+            if (asset.folderId !== 'folder-bgm' && asset.type !== 'audio') return false;
+          } else if (selectedFolderId !== 'folder-all') {
+            if (asset.folderId !== selectedFolderId) return false;
+          }
+
+          // Favorite Toggle Filter
+          if (filterFavoriteOnly && !asset.isFavorite) return false;
+        }
 
         // Type check
         if (selectedType !== 'all' && asset.type !== selectedType) return false;
@@ -588,6 +743,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
       });
   }, [
     assets,
+    isRecycleBin,
     selectedFolderId,
     filterFavoriteOnly,
     selectedType,
@@ -606,6 +762,95 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
         item.id === assetId ? { ...item, isFavorite: !item.isFavorite } : item
       )
     );
+  };
+
+  // Tag Handlers (查看单个素材支持人工编辑标签)
+  const handleRemoveTag = (tagToRemove: string) => {
+    if (!previewModalAsset) return;
+    const updatedTags = previewModalAsset.tags.filter((t) => t !== tagToRemove);
+    const updatedAsset = { ...previewModalAsset, tags: updatedTags };
+    setPreviewModalAsset(updatedAsset);
+    setAssets((prev) =>
+      prev.map((a) => (a.id === previewModalAsset.id ? updatedAsset : a))
+    );
+    showToast(`已移除标签: ${tagToRemove}`);
+  };
+
+  const handleAddTag = (tagToAdd?: string) => {
+    if (!previewModalAsset) return;
+    const raw = (tagToAdd || newTagInput).trim();
+    if (!raw) return;
+    const tag = raw.startsWith('#') ? raw : `#${raw}`;
+    if (previewModalAsset.tags.includes(tag)) {
+      showToast(`标签「${tag}」已存在`);
+      return;
+    }
+    const updatedTags = [...previewModalAsset.tags, tag];
+    const updatedAsset = { ...previewModalAsset, tags: updatedTags };
+    setPreviewModalAsset(updatedAsset);
+    setAssets((prev) =>
+      prev.map((a) => (a.id === previewModalAsset.id ? updatedAsset : a))
+    );
+    setNewTagInput('');
+    showToast(`✅ 标签已更新并保存: ${tag}`);
+  };
+
+  // Trash & Recycle Bin Handlers (素材回收站操作)
+  const handleMoveToTrash = (asset: MediaAssetItem, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const nowStr = new Date().toLocaleString('zh-CN', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    setAssets((prev) =>
+      prev.map((a) =>
+        a.id === asset.id ? { ...a, isDeleted: true, deletedAt: `今日 ${nowStr}` } : a
+      )
+    );
+    setBasketAssets((prev) => prev.filter((b) => b.id !== asset.id));
+    if (previewModalAsset?.id === asset.id) {
+      setPreviewModalAsset(null);
+    }
+    showToast(`已将素材「${asset.title.slice(0, 14)}...」移入回收站`);
+  };
+
+  const handleRestoreFromTrash = (asset: MediaAssetItem, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setAssets((prev) =>
+      prev.map((a) =>
+        a.id === asset.id ? { ...a, isDeleted: false, deletedAt: undefined } : a
+      )
+    );
+    showToast(`已还原素材至「${asset.folderName}」`);
+  };
+
+  const handlePermanentDelete = (asset: MediaAssetItem, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (window.confirm(`确定要彻底清除素材「${asset.title}」吗？此操作不可撤销！`)) {
+      setAssets((prev) => prev.filter((a) => a.id !== asset.id));
+      showToast(`素材已彻底清除，释放存储空间`);
+    }
+  };
+
+  const handleRestoreAllTrash = () => {
+    const trashCount = assets.filter((a) => a.isDeleted).length;
+    if (trashCount === 0) return;
+    setAssets((prev) =>
+      prev.map((a) => (a.isDeleted ? { ...a, isDeleted: false, deletedAt: undefined } : a))
+    );
+    showToast(`已将回收站中的 ${trashCount} 项素材全部还原！`);
+  };
+
+  const handleEmptyTrash = () => {
+    const trashCount = assets.filter((a) => a.isDeleted).length;
+    if (trashCount === 0) return;
+    if (window.confirm(`确定要清空回收站（共 ${trashCount} 项素材）吗？彻底删除后将无法恢复！`)) {
+      setAssets((prev) => prev.filter((a) => !a.isDeleted));
+      showToast(`回收站已清空，存储空间已释放`);
+    }
   };
 
   // Add / Remove from Clip Basket
@@ -628,6 +873,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
     setCurrentTime(0);
     setMarkIn(0);
     setMarkOut(asset.durationSec || 10);
+    setNewTagInput('');
   };
 
   // Video Time Update in Modal
@@ -702,38 +948,87 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
           setTimeout(() => {
             setIsUploading(false);
             setShowUploadModal(false);
-            // Add a mock new asset
-            const createdAsset: MediaAssetItem = {
-              id: `asset-new-${Date.now()}`,
-              code: `MED-V2026-${Math.floor(100 + Math.random() * 900)}`,
-              title: '新品激光雕刻与大平层门板平整度高精检测 (刚上传)',
-              type: 'video',
-              url: 'https://assets.mixkit.co/videos/preview/mixkit-hands-opening-and-closing-a-kitchen-cabinet-drawer-42998-large.mp4',
-              thumbnail: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80',
-              duration: '00:15',
-              durationSec: 15,
-              width: 2160,
-              height: 3840,
-              aspectRatio: '9:16',
-              resolution: '4K UHD (2160×3840)',
-              fps: 60,
-              fileSize: '32.6 MB',
-              format: 'MP4',
-              folderId: uploadTargetFolder,
-              folderName: folders.find((f) => f.id === uploadTargetFolder)?.name || '未分组',
-              tags: ['#高精检测', '#刚上传', '#4K超清', '#智能质检'],
-              usageCount: 0,
-              isFavorite: true,
-              uploader: '当前登录运营员',
-              uploadedAt: '刚刚',
-              scenesDetected: ['激光扫平标线', '平整度微米检测'],
-              colorPalette: ['#1C1D21', '#4A90E2']
-            };
+
+            let createdAsset: MediaAssetItem;
+            if (uploadAssetType === 'audio') {
+              createdAsset = {
+                id: `asset-new-audio-${Date.now()}`,
+                code: `MED-A2026-${Math.floor(100 + Math.random() * 900)}`,
+                title: '商业影视级高级轻奢展厅背景音乐 (新上传BGM)',
+                type: 'audio',
+                url: 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3',
+                thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
+                duration: '00:30',
+                durationSec: 30,
+                aspectRatio: 'other',
+                fileSize: '2.8 MB',
+                format: 'MP3',
+                folderId: uploadTargetFolder === 'folder-showroom' ? 'folder-bgm' : uploadTargetFolder,
+                folderName: folders.find((f) => f.id === uploadTargetFolder)?.name || '🎵 商业背景音乐 (BGM库)',
+                tags: ['#商业BGM', '#免版权配乐', '#新上传背景音', '#轻奢高级'],
+                usageCount: 0,
+                isFavorite: true,
+                uploader: '当前登录运营员',
+                uploadedAt: '刚刚',
+                associatedProjects: ['短视频混剪配乐模版']
+              };
+            } else if (uploadAssetType === 'image') {
+              createdAsset = {
+                id: `asset-new-img-${Date.now()}`,
+                code: `MED-I2026-${Math.floor(100 + Math.random() * 900)}`,
+                title: '2026米兰高定衣帽间8K全景效果渲染图 (新上传)',
+                type: 'image',
+                url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1200&auto=format&fit=crop&q=80',
+                thumbnail: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600&auto=format&fit=crop&q=80',
+                aspectRatio: '16:9',
+                resolution: '3840×2160',
+                fileSize: '8.4 MB',
+                format: 'PNG',
+                folderId: uploadTargetFolder,
+                folderName: folders.find((f) => f.id === uploadTargetFolder)?.name || '未分组',
+                tags: ['#8K渲染', '#高定衣帽间', '#新上传效果图'],
+                usageCount: 0,
+                isFavorite: true,
+                uploader: '当前登录运营员',
+                uploadedAt: '刚刚',
+                scenesDetected: ['独立衣帽间', '全景收纳'],
+                colorPalette: ['#2F3542', '#F1F2F6']
+              };
+            } else {
+              createdAsset = {
+                id: `asset-new-${Date.now()}`,
+                code: `MED-V2026-${Math.floor(100 + Math.random() * 900)}`,
+                title: '新品激光雕刻与大平层门板平整度高精检测 (刚上传)',
+                type: 'video',
+                url: 'https://assets.mixkit.co/videos/preview/mixkit-hands-opening-and-closing-a-kitchen-cabinet-drawer-42998-large.mp4',
+                thumbnail: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80',
+                duration: '00:15',
+                durationSec: 15,
+                width: 2160,
+                height: 3840,
+                aspectRatio: '9:16',
+                resolution: '4K UHD (2160×3840)',
+                fps: 60,
+                fileSize: '32.6 MB',
+                format: 'MP4',
+                folderId: uploadTargetFolder,
+                folderName: folders.find((f) => f.id === uploadTargetFolder)?.name || '未分组',
+                tags: ['#高精检测', '#刚上传', '#4K超清', '#智能质检'],
+                usageCount: 0,
+                isFavorite: true,
+                uploader: '当前登录运营员',
+                uploadedAt: '刚刚',
+                scenesDetected: ['激光扫平标线', '平整度微米检测'],
+                colorPalette: ['#1C1D21', '#4A90E2']
+              };
+            }
+
             setAssets((prev) => [createdAsset, ...prev]);
+            showToast(`✅ 成功上传素材: ${createdAsset.title.slice(0, 16)}...`);
             // Update folder count
             setFolders((prev) =>
               prev.map((f) =>
-                f.id === uploadTargetFolder ? { ...f, assetCount: f.assetCount + 1 } : f
+                f.id === createdAsset.folderId ? { ...f, assetCount: f.assetCount + 1 } : f
               )
             );
           }, 400);
@@ -792,13 +1087,13 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
               <div className="w-7 h-7 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold">
                 <FolderOpen className="w-4 h-4" />
               </div>
-              <h3 className="text-xs font-bold text-slate-900 tracking-tight">素材箱目录 (Bins)</h3>
+              <h3 className="text-xs font-bold text-slate-900 tracking-tight">素材目录</h3>
             </div>
             <button
               type="button"
               onClick={() => setShowNewFolderModal(true)}
               className="h-7 px-2.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700 flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
-              title="新建素材箱/分组"
+              title="新建分组"
             >
               <FolderPlus className="w-3.5 h-3.5 text-slate-600" />
               <span>新建</span>
@@ -809,7 +1104,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
           <div className="px-4 py-2.5 bg-[#0F4A47]/5 border-b border-slate-100 flex items-center justify-between text-[11px]">
             <div className="flex items-center gap-1.5 text-slate-600 font-medium">
               <Layers className="w-3.5 h-3.5 text-[#0F4A47]" />
-              <span>云端素材库容量</span>
+              <span>存储空间</span>
             </div>
             <span className="font-mono font-bold text-[#0F4A47]">3.8 GB / 100 GB</span>
           </div>
@@ -848,19 +1143,46 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                       ? counts.total
                       : folder.id === 'folder-fav'
                       ? counts.fav
-                      : assets.filter((a) => a.folderId === folder.id).length}
+                      : folder.id === 'folder-bgm'
+                      ? counts.audio
+                      : assets.filter((a) => !a.isDeleted && a.folderId === folder.id).length}
                   </span>
                 </button>
               );
             })}
           </div>
 
-          {/* Left Footer Info */}
-          <div className="p-3 border-t border-slate-100 bg-slate-50/50 text-[11px] text-slate-500 flex items-center justify-between">
-            <span>支持混剪直接裁切调用</span>
-            <span className="inline-flex items-center gap-1 text-[#EA3A20] font-bold">
-              <Sparkles className="w-3 h-3" /> AI 标签增强
-            </span>
+          {/* Left Footer: Recycle Bin (素材回收站) */}
+          <div className="p-2.5 border-t border-slate-100 bg-slate-50/70">
+            <button
+              type="button"
+              onClick={() => setSelectedFolderId('folder-trash')}
+              className={`w-full px-3 py-2.5 rounded-2xl flex items-center justify-between text-xs font-bold cursor-pointer transition-all border ${
+                selectedFolderId === 'folder-trash'
+                  ? 'bg-rose-600 border-rose-600 text-white shadow-xs'
+                  : 'bg-white/80 border-slate-200 text-slate-700 hover:bg-rose-50/80 hover:text-rose-700 hover:border-rose-200'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Trash2
+                  className={`w-4 h-4 shrink-0 ${
+                    selectedFolderId === 'folder-trash' ? 'text-white' : 'text-rose-500'
+                  }`}
+                />
+                <span className="truncate">素材回收站</span>
+              </div>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold shrink-0 ${
+                  selectedFolderId === 'folder-trash'
+                    ? 'bg-white/20 text-white'
+                    : counts.trash > 0
+                    ? 'bg-rose-100 text-rose-700 font-bold'
+                    : 'bg-slate-100 text-slate-400'
+                }`}
+              >
+                {counts.trash}
+              </span>
+            </button>
           </div>
         </div>
 
@@ -876,10 +1198,10 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
               {/* Type Category Pills */}
               <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-full border border-slate-200/60">
                 {[
-                  { key: 'all' as const, label: '全部素材', count: counts.total, icon: Layers },
-                  { key: 'video' as const, label: '视频片段 (B-Roll)', count: counts.video, icon: Film },
-                  { key: 'image' as const, label: '高清图片/渲染', count: counts.image, icon: ImageIcon },
-                  { key: 'audio' as const, label: '音效 & BGM', count: counts.audio, icon: Music }
+                  { key: 'all' as const, label: '全部', count: counts.total, icon: Layers },
+                  { key: 'video' as const, label: '视频', count: counts.video, icon: Film },
+                  { key: 'image' as const, label: '图片', count: counts.image, icon: ImageIcon },
+                  { key: 'audio' as const, label: '音频', count: counts.audio, icon: Music }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   const active = selectedType === tab.key;
@@ -908,7 +1230,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                 })}
               </div>
 
-              {/* Right Action Buttons: Batch Upload & Open Basket */}
+              {/* Right Action Buttons: Upload & Open Basket */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -916,7 +1238,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   className="h-8 px-3.5 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs active:scale-95"
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  <span>+ 批量上传素材</span>
+                  <span>上传素材</span>
                 </button>
 
                 {basketAssets.length > 0 && (
@@ -926,7 +1248,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                     className="h-8 px-3 rounded-full bg-[#0F4A47] hover:bg-[#0b3836] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
                   >
                     <Film className="w-3.5 h-3.5" />
-                    <span>混剪托盘 ({basketAssets.length})</span>
+                    <span>已选素材 ({basketAssets.length})</span>
                   </button>
                 )}
               </div>
@@ -964,10 +1286,10 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   onChange={(e) => setSelectedAspect(e.target.value as any)}
                   className="h-7.5 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer"
                 >
-                  <option value="all">全部画幅比例</option>
-                  <option value="9:16">📱 9:16 竖屏 (Reels/Shorts)</option>
-                  <option value="16:9">🖥️ 16:9 横屏 (YouTube/官网)</option>
-                  <option value="1:1">⏹️ 1:1 方形 (Instagram)</option>
+                  <option value="all">画幅比例</option>
+                  <option value="9:16">9:16 竖屏</option>
+                  <option value="16:9">16:9 横屏</option>
+                  <option value="1:1">1:1 方形</option>
                 </select>
 
                 {/* Duration Filter */}
@@ -976,10 +1298,10 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   onChange={(e) => setSelectedDurationRange(e.target.value)}
                   className="h-7.5 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer"
                 >
-                  <option value="all">全部镜头时长</option>
-                  <option value="short">⚡ 0~7秒 (卡点/转场Hook)</option>
-                  <option value="medium">⏱️ 7~15秒 (产品核心卖点)</option>
-                  <option value="long">🎬 15秒+ (完整工艺讲解)</option>
+                  <option value="all">时长范围</option>
+                  <option value="short">0~7 秒</option>
+                  <option value="medium">7~15 秒</option>
+                  <option value="long">15 秒以上</option>
                 </select>
 
                 {/* Resolution Filter */}
@@ -988,9 +1310,9 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   onChange={(e) => setSelectedResolution(e.target.value)}
                   className="h-7.5 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer"
                 >
-                  <option value="all">全部分辨率</option>
-                  <option value="4k">4K UHD 超高清</option>
-                  <option value="1080p">1080P 全高清</option>
+                  <option value="all">分辨率</option>
+                  <option value="4k">4K</option>
+                  <option value="1080p">1080P</option>
                 </select>
 
                 {/* Favorite Star Toggle Button */}
@@ -1004,7 +1326,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   }`}
                 >
                   <Star className={`w-3.5 h-3.5 ${filterFavoriteOnly ? 'fill-amber-500 text-amber-500' : 'text-slate-400'}`} />
-                  <span>仅看星标</span>
+                  <span>星标</span>
                 </button>
               </div>
 
@@ -1018,10 +1340,10 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                     onChange={(e) => setSortBy(e.target.value as any)}
                     className="h-7.5 px-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer"
                   >
-                    <option value="date_desc">按上传时间最新</option>
-                    <option value="usage_desc">按混剪引用次数</option>
-                    <option value="duration_desc">按时长从长到短</option>
-                    <option value="size_desc">按文件大小排序</option>
+                    <option value="date_desc">最新上传</option>
+                    <option value="usage_desc">引用最多</option>
+                    <option value="duration_desc">时长由长到短</option>
+                    <option value="size_desc">文件大小</option>
                   </select>
                 </div>
 
@@ -1061,14 +1383,61 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
           {/* ASSETS DISPLAY AREA (Grid / List)                                         */}
           {/* ========================================================================= */}
           <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-slate-50/40">
+            {/* Recycle Bin Top Notification Banner */}
+            {isRecycleBin && (
+              <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-rose-900 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold shrink-0">
+                    <Trash2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-rose-900">
+                      素材回收站 ({filteredAssets.length})
+                    </h4>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleRestoreAllTrash}
+                    disabled={filteredAssets.length === 0}
+                    className="px-3 py-1.5 rounded-xl bg-white border border-rose-300 text-rose-700 hover:bg-rose-100/60 text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>全部还原</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleEmptyTrash}
+                    disabled={filteredAssets.length === 0}
+                    className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>清空回收站</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFolderId('folder-all')}
+                    className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <span>返回全部素材</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {filteredAssets.length === 0 ? (
               <div className="py-24 text-center">
                 <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
-                  <Film className="w-6 h-6" />
+                  {isRecycleBin ? <Trash2 className="w-6 h-6 text-slate-300" /> : <Film className="w-6 h-6" />}
                 </div>
-                <h4 className="text-sm font-bold text-slate-700">没有找到符合条件的素材</h4>
+                <h4 className="text-sm font-bold text-slate-700">
+                  {isRecycleBin ? '回收站为空' : '暂无符合条件的素材'}
+                </h4>
                 <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                  可尝试调整筛选标签、切换素材箱目录或清空搜索关键字。
+                  {isRecycleBin
+                    ? '暂无已删除素材。'
+                    : '可尝试更换筛选条件或清空搜索关键字。'}
                 </p>
                 <button
                   type="button"
@@ -1083,7 +1452,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   }}
                   className="mt-4 px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 cursor-pointer"
                 >
-                  重置所有筛选
+                  {isRecycleBin ? '返回全部素材' : '重置所有筛选'}
                 </button>
               </div>
             ) : viewMode === 'grid' ? (
@@ -1110,7 +1479,9 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                         }
                       }}
                       className={`group bg-white rounded-2xl border transition-all duration-200 overflow-hidden cursor-pointer flex flex-col relative shadow-2xs hover:shadow-md ${
-                        isInBasket
+                        asset.isDeleted
+                          ? 'border-rose-200 bg-rose-50/20'
+                          : isInBasket
                           ? 'border-[#0F4A47] ring-2 ring-[#0F4A47]/20 bg-slate-50/50'
                           : 'border-slate-200/80 hover:border-slate-300'
                       }`}
@@ -1136,9 +1507,13 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                         {/* Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30 pointer-events-none" />
 
-                        {/* Top-Left: Resolution & FPS Badges */}
+                        {/* Top-Left: Resolution & Badges */}
                         <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
-                          {asset.type === 'video' ? (
+                          {asset.isDeleted ? (
+                            <span className="px-1.5 py-0.5 rounded bg-rose-600/90 text-white text-[9px] font-bold border border-rose-400/30 flex items-center gap-0.5">
+                              <Trash2 className="w-2.5 h-2.5" /> 已在回收站
+                            </span>
+                          ) : asset.type === 'video' ? (
                             <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-xs text-white text-[9px] font-mono font-bold border border-white/10">
                               {asset.resolution?.includes('4K') ? '4K 60FPS' : '1080P'}
                             </span>
@@ -1148,31 +1523,64 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                             </span>
                           ) : (
                             <span className="px-1.5 py-0.5 rounded bg-indigo-900/80 backdrop-blur-xs text-indigo-200 text-[9px] font-mono font-bold border border-indigo-400/20">
-                              AUDIO
+                              BGM音乐
                             </span>
                           )}
 
                           {/* Aspect Ratio Badge */}
-                          {asset.aspectRatio !== 'other' && (
+                          {asset.aspectRatio !== 'other' && !asset.isDeleted && (
                             <span className="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-xs text-slate-200 text-[9px] font-mono font-bold border border-white/10">
                               {asset.aspectRatio}
                             </span>
                           )}
                         </div>
 
-                        {/* Top-Right: Star Favorite Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => handleToggleFavorite(asset.id, e)}
-                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-xs text-white flex items-center justify-center cursor-pointer transition-colors z-10"
-                          title={asset.isFavorite ? '取消标星' : '标星收藏'}
-                        >
-                          <Star
-                            className={`w-3.5 h-3.5 ${
-                              asset.isFavorite ? 'fill-amber-400 text-amber-400' : 'text-white/80'
-                            }`}
-                          />
-                        </button>
+                        {/* Top-Right Action Buttons */}
+                        <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
+                          {asset.isDeleted ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={(e) => handleRestoreFromTrash(asset, e)}
+                                className="w-6 h-6 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center cursor-pointer shadow-xs transition-colors"
+                                title="从回收站还原素材"
+                              >
+                                <RotateCcw className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => handlePermanentDelete(asset, e)}
+                                className="w-6 h-6 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center cursor-pointer shadow-xs transition-colors"
+                                title="彻底删除"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={(e) => handleToggleFavorite(asset.id, e)}
+                                className="w-6 h-6 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-xs text-white flex items-center justify-center cursor-pointer transition-colors"
+                                title={asset.isFavorite ? '取消标星' : '标星收藏'}
+                              >
+                                <Star
+                                  className={`w-3.5 h-3.5 ${
+                                    asset.isFavorite ? 'fill-amber-400 text-amber-400' : 'text-white/80'
+                                  }`}
+                                />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => handleMoveToTrash(asset, e)}
+                                className="w-6 h-6 rounded-full bg-black/50 hover:bg-rose-600 backdrop-blur-xs text-white flex items-center justify-center cursor-pointer transition-colors"
+                                title="移入回收站"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </>
+                          )}
+                        </div>
 
                         {/* Bottom-Left: Type Icon & Duration / Dimensions */}
                         <div className="absolute bottom-2 left-2 flex items-center gap-1 z-10">
@@ -1207,29 +1615,41 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                           )}
                         </div>
 
-                        {/* Bottom-Right: Quick Add to Remix Basket Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => handleToggleBasket(asset, e)}
-                          className={`absolute bottom-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-xs z-10 ${
-                            isInBasket
-                              ? 'bg-[#0F4A47] text-white'
-                              : 'bg-white/90 hover:bg-white text-slate-800'
-                          }`}
-                          title={isInBasket ? '从混剪托盘移除' : '加入混剪托盘'}
-                        >
-                          {isInBasket ? (
-                            <>
-                              <Check className="w-3 h-3" />
-                              <span>已入剪辑</span>
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-3 h-3" />
-                              <span>+ 混剪</span>
-                            </>
-                          )}
-                        </button>
+                        {/* Bottom-Right Button: Quick Add to Remix Basket OR Restore if Deleted */}
+                        {asset.isDeleted ? (
+                          <button
+                            type="button"
+                            onClick={(e) => handleRestoreFromTrash(asset, e)}
+                            className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-xs z-10 bg-emerald-600 hover:bg-emerald-700 text-white"
+                            title="还原素材"
+                          >
+                            <RotateCcw className="w-2.5 h-2.5" />
+                            <span>还原素材</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => handleToggleBasket(asset, e)}
+                            className={`absolute bottom-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-xs z-10 ${
+                              isInBasket
+                                ? 'bg-[#0F4A47] text-white'
+                                : 'bg-white/90 hover:bg-white text-slate-800'
+                            }`}
+                            title={isInBasket ? '移除已选' : '加入已选'}
+                          >
+                            {isInBasket ? (
+                              <>
+                                <Check className="w-3 h-3" />
+                                <span>已选</span>
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="w-3 h-3" />
+                                <span>加入</span>
+                              </>
+                            )}
+                          </button>
+                        )}
                       </div>
 
                       {/* Card Content Information */}
@@ -1263,17 +1683,30 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                           )}
                         </div>
 
-                        {/* Footer Row: Usage count and size */}
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-medium">
-                          <span>
-                            {asset.usageCount > 0 ? (
-                              <strong className="text-[#0F4A47]">已混剪 {asset.usageCount} 次</strong>
-                            ) : (
-                              <span className="text-slate-400">未被引用</span>
-                            )}
-                          </span>
-                          <span className="font-mono text-slate-400">{asset.fileSize}</span>
-                        </div>
+                        {/* Footer Row: Usage count or Delete info */}
+                        {asset.isDeleted ? (
+                          <div className="pt-2 border-t border-rose-100 flex items-center justify-between text-[10px] text-rose-600 font-medium">
+                            <span className="truncate">{asset.deletedAt || '已在回收站'}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => handlePermanentDelete(asset, e)}
+                              className="text-rose-500 hover:text-rose-800 hover:underline shrink-0"
+                            >
+                              彻底删除
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-medium">
+                            <span>
+                              {asset.usageCount > 0 ? (
+                                <strong className="text-[#0F4A47]">引用 {asset.usageCount} 次</strong>
+                              ) : (
+                                <span className="text-slate-400">未被引用</span>
+                              )}
+                            </span>
+                            <span className="font-mono text-slate-400">{asset.fileSize}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -1290,8 +1723,8 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                       <th className="py-2.5 px-3">类型 / 编码</th>
                       <th className="py-2.5 px-3">比例与画质</th>
                       <th className="py-2.5 px-3">时长 / 文件大小</th>
-                      <th className="py-2.5 px-3">所属素材箱</th>
-                      <th className="py-2.5 px-3 text-center">混剪引用</th>
+                      <th className="py-2.5 px-3">所属分组</th>
+                      <th className="py-2.5 px-3 text-center">引用次数</th>
                       <th className="py-2.5 px-3">上传人 & 时间</th>
                       <th className="py-2.5 pr-4 pl-2 text-right">操作</th>
                     </tr>
@@ -1417,25 +1850,57 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                           {/* Actions */}
                           <td className="py-3 pr-4 pl-2 text-right" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleBasket(asset)}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
-                                  isInBasket
-                                    ? 'bg-[#0F4A47] text-white'
-                                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                                }`}
-                              >
-                                {isInBasket ? '已选入' : '+ 混剪'}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleOpenPreviewModal(asset)}
-                                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100"
-                                title="查看详情"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
+                              {asset.isDeleted ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRestoreFromTrash(asset)}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1"
+                                    title="从回收站还原素材"
+                                  >
+                                    <RotateCcw className="w-3 h-3" />
+                                    <span>还原</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePermanentDelete(asset)}
+                                    className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 cursor-pointer transition-colors"
+                                    title="彻底删除"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleBasket(asset)}
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                                      isInBasket
+                                        ? 'bg-[#0F4A47] text-white'
+                                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                    }`}
+                                  >
+                                    {isInBasket ? '已选入' : '+ 混剪'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenPreviewModal(asset)}
+                                    className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 cursor-pointer"
+                                    title="查看详情"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveToTrash(asset)}
+                                    className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 cursor-pointer transition-colors"
+                                    title="移入回收站"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -1577,8 +2042,20 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
             {/* Modal Header */}
             <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold">
-                  {previewModalAsset.type === 'video' ? (
+                <div
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${
+                    previewModalAsset.isDeleted
+                      ? 'bg-rose-100 text-rose-700'
+                      : previewModalAsset.type === 'video'
+                      ? 'bg-red-50 text-[#EA3A20]'
+                      : previewModalAsset.type === 'image'
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : 'bg-indigo-50 text-indigo-600'
+                  }`}
+                >
+                  {previewModalAsset.isDeleted ? (
+                    <Trash2 className="w-4 h-4" />
+                  ) : previewModalAsset.type === 'video' ? (
                     <Film className="w-4 h-4" />
                   ) : previewModalAsset.type === 'image' ? (
                     <ImageIcon className="w-4 h-4" />
@@ -1587,34 +2064,61 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   )}
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">{previewModalAsset.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-slate-900">{previewModalAsset.title}</h3>
+                    {previewModalAsset.isDeleted && (
+                      <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold border border-rose-200">
+                        当前位于素材回收站
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono mt-0.5">
                     <span>{previewModalAsset.code}</span>
                     <span>·</span>
                     <span>{previewModalAsset.folderName}</span>
                     <span>·</span>
                     <span>{previewModalAsset.fileSize}</span>
+                    {previewModalAsset.duration && (
+                      <>
+                        <span>·</span>
+                        <span>时长 {previewModalAsset.duration}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleToggleBasket(previewModalAsset)}
-                  className={`h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
-                    basketAssets.some((b) => b.id === previewModalAsset.id)
-                      ? 'bg-[#0F4A47] text-white'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-                  }`}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>
-                    {basketAssets.some((b) => b.id === previewModalAsset.id)
-                      ? '已加入混剪'
-                      : '加入混剪托盘'}
-                  </span>
-                </button>
+                {previewModalAsset.isDeleted ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleRestoreFromTrash(previewModalAsset);
+                      setPreviewModalAsset(null);
+                    }}
+                    className="h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>还原素材</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleToggleBasket(previewModalAsset)}
+                    className={`h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
+                      basketAssets.some((b) => b.id === previewModalAsset.id)
+                        ? 'bg-[#0F4A47] text-white'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                    }`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>
+                      {basketAssets.some((b) => b.id === previewModalAsset.id)
+                        ? '已加入混剪'
+                        : '加入混剪托盘'}
+                    </span>
+                  </button>
+                )}
 
                 <button
                   type="button"
@@ -1737,12 +2241,58 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                     />
                   </div>
                 ) : (
-                  <div className="w-full max-w-md bg-slate-900 rounded-3xl p-6 text-center space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-red-500/20 text-[#EA3A20] flex items-center justify-center mx-auto">
-                      <Music className="w-8 h-8" />
+                  /* AUDIO / BGM STUDIO PLAYER */
+                  <div className="w-full max-w-lg bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-6 text-center space-y-5 border border-white/10 shadow-2xl">
+                    {/* Vinyl Record Disc & Cover Art Graphic */}
+                    <div className="relative w-36 h-36 mx-auto flex items-center justify-center">
+                      {/* Animated Glow Halo */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#EA3A20]/30 to-indigo-500/30 blur-xl animate-pulse" />
+                      
+                      {/* Spinning Vinyl Record Disk */}
+                      <div
+                        className={`w-36 h-36 rounded-full bg-slate-950 border-4 border-slate-800 shadow-2xl flex items-center justify-center relative overflow-hidden ${
+                          playingAudioId === previewModalAsset.id ? 'animate-spin' : ''
+                        }`}
+                        style={{ animationDuration: '8s' }}
+                      >
+                        {/* Grooves */}
+                        <div className="absolute inset-3 rounded-full border border-slate-800/80" />
+                        <div className="absolute inset-6 rounded-full border border-slate-800/60" />
+                        <div className="absolute inset-9 rounded-full border border-slate-800/40" />
+
+                        {/* Center Label / Cover Artwork */}
+                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-400/80 shadow-md relative z-10">
+                          <img
+                            src={previewModalAsset.thumbnail}
+                            alt={previewModalAsset.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        {/* Center Spindle Hole */}
+                        <div className="absolute w-3 h-3 rounded-full bg-slate-900 border border-slate-700 z-20" />
+                      </div>
                     </div>
-                    <h4 className="text-white font-bold text-sm">{previewModalAsset.title}</h4>
-                    <audio src={previewModalAsset.url} controls className="w-full" />
+
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-indigo-950/80 border border-indigo-400/30 text-indigo-300 text-[10px] font-bold mb-2">
+                        <Disc className="w-3 h-3 text-indigo-400 animate-spin" />
+                        <span>100% 免版税商业授权 · 短视频混剪推荐 BGM</span>
+                      </div>
+                      <h4 className="text-white font-bold text-base line-clamp-1">{previewModalAsset.title}</h4>
+                      <p className="text-xs text-slate-400 mt-1">
+                        格式: {previewModalAsset.format} · 大小: {previewModalAsset.fileSize} · 推荐卡点混剪
+                      </p>
+                    </div>
+
+                    {/* Audio Player Controls */}
+                    <div className="bg-black/40 rounded-2xl p-3 border border-white/5 space-y-2">
+                      <audio
+                        src={previewModalAsset.url}
+                        controls
+                        className="w-full h-10 accent-[#EA3A20]"
+                        autoPlay={false}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -1756,17 +2306,31 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   </h4>
                   <div className="bg-slate-50 rounded-2xl p-3 space-y-1.5 text-xs text-slate-600 border border-slate-100">
                     <div className="flex justify-between">
+                      <span className="text-slate-400">素材类型</span>
+                      <span className="font-bold text-slate-800">
+                        {previewModalAsset.type === 'video'
+                          ? '视频片段 (B-Roll)'
+                          : previewModalAsset.type === 'image'
+                          ? '高清图像/静帧'
+                          : '商业背景音乐 (BGM)'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-slate-400">格式编码</span>
-                      <span className="font-mono font-bold text-slate-800">{previewModalAsset.format} (H.264/AAC)</span>
+                      <span className="font-mono font-bold text-slate-800">{previewModalAsset.format}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">画幅比例</span>
-                      <span className="font-mono font-bold text-slate-800">{previewModalAsset.aspectRatio}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">物理分辨率</span>
-                      <span className="font-mono font-bold text-slate-800">{previewModalAsset.resolution}</span>
-                    </div>
+                    {previewModalAsset.aspectRatio !== 'other' && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">画幅比例</span>
+                        <span className="font-mono font-bold text-slate-800">{previewModalAsset.aspectRatio}</span>
+                      </div>
+                    )}
+                    {previewModalAsset.resolution && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">物理分辨率</span>
+                        <span className="font-mono font-bold text-slate-800">{previewModalAsset.resolution}</span>
+                      </div>
+                    )}
                     {previewModalAsset.fps && (
                       <div className="flex justify-between">
                         <span className="text-slate-400">帧率 (FPS)</span>
@@ -1777,10 +2341,16 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                       <span className="text-slate-400">文件大小</span>
                       <span className="font-mono text-slate-800">{previewModalAsset.fileSize}</span>
                     </div>
+                    {previewModalAsset.duration && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">持续时长</span>
+                        <span className="font-mono text-slate-800">{previewModalAsset.duration}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* AI Detected Scenes */}
+                {/* AI Detected Scenes (Video Only) */}
                 {previewModalAsset.scenesDetected && previewModalAsset.scenesDetected.length > 0 && (
                   <div>
                     <h4 className="text-xs font-bold text-slate-900 mb-2 flex items-center gap-1.5">
@@ -1800,27 +2370,113 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   </div>
                 )}
 
-                {/* Tags Management */}
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 mb-2 flex items-center gap-1.5">
-                    <Tag className="w-3.5 h-3.5 text-slate-500" /> 标签属性 (Tags)
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {previewModalAsset.tags.map((tag, tIdx) => (
-                      <span
-                        key={tIdx}
-                        className="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                {/* ================================================================= */}
+                {/* TAGS MANAGEMENT: Artificial / Manual Tag Editing (支持人工编辑标签)  */}
+                {/* ================================================================= */}
+                <div className="bg-slate-50/80 rounded-2xl p-3.5 border border-slate-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-[#EA3A20]" />
+                      <span>标签属性 (支持人工编辑)</span>
+                    </h4>
+                    <span className="text-[10px] text-slate-400">共 {previewModalAsset.tags.length} 个标签</span>
+                  </div>
+
+                  {/* Current Tags Chips with Delete Button */}
+                  <div className="flex flex-wrap gap-1.5 min-h-[32px]">
+                    {previewModalAsset.tags.length === 0 ? (
+                      <span className="text-[11px] text-slate-400 italic">暂无标签，请在下方添加</span>
+                    ) : (
+                      previewModalAsset.tags.map((tag, tIdx) => (
+                        <span
+                          key={tIdx}
+                          className="group inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 text-xs font-medium shadow-2xs hover:border-red-300 transition-colors"
+                        >
+                          <span>{tag}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTag(tag)}
+                            className="p-0.5 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+                            title={`移除标签 "${tag}"`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Manual Tag Input Field */}
+                  <div className="flex items-center gap-1.5">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={newTagInput}
+                        onChange={(e) => setNewTagInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddTag();
+                          }
+                        }}
+                        placeholder="输入新标签，回车或点击添加..."
+                        className="w-full h-8 pl-2.5 pr-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] focus:border-[#EA3A20]"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleAddTag()}
+                      disabled={!newTagInput.trim()}
+                      className="h-8 px-3 rounded-xl bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold shrink-0 cursor-pointer disabled:opacity-40 shadow-xs transition-colors flex items-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>添加</span>
+                    </button>
+                  </div>
+
+                  {/* Quick Suggested Tags */}
+                  <div>
+                    <div className="text-[10px] text-slate-400 mb-1">快捷添加常用业务标签：</div>
+                    <div className="flex flex-wrap gap-1">
+                      {[
+                        '高定展位',
+                        '轻奢慢摇',
+                        '快节奏混剪',
+                        '产品微距',
+                        '4K原片',
+                        '短视频爆款',
+                        '客户口碑'
+                      ]
+                        .filter((t) => !previewModalAsset.tags.includes(t))
+                        .slice(0, 4)
+                        .map((suggestedTag) => (
+                          <button
+                            key={suggestedTag}
+                            type="button"
+                            onClick={() => {
+                              if (!previewModalAsset.tags.includes(suggestedTag)) {
+                                const updatedTags = [...previewModalAsset.tags, suggestedTag];
+                                setPreviewModalAsset({ ...previewModalAsset, tags: updatedTags });
+                                setAssets((prev) =>
+                                  prev.map((a) => (a.id === previewModalAsset.id ? { ...a, tags: updatedTags } : a))
+                                );
+                                showToast(`已添加标签 "${suggestedTag}"`);
+                              }
+                            }}
+                            className="px-2 py-0.5 rounded-md bg-white hover:bg-red-50 text-slate-600 hover:text-red-700 text-[10px] border border-slate-200 hover:border-red-200 cursor-pointer transition-colors flex items-center gap-0.5"
+                          >
+                            <Plus className="w-2.5 h-2.5" />
+                            <span>{suggestedTag}</span>
+                          </button>
+                        ))}
+                    </div>
                   </div>
                 </div>
 
                 {/* Associated Projects */}
                 <div>
                   <h4 className="text-xs font-bold text-slate-900 mb-2 flex items-center gap-1.5">
-                    <Film className="w-3.5 h-3.5 text-slate-500" /> 关联混剪项目
+                    <Film className="w-3.5 h-3.5 text-slate-500" /> 关联项目
                   </h4>
                   {previewModalAsset.associatedProjects && previewModalAsset.associatedProjects.length > 0 ? (
                     <div className="space-y-1">
@@ -1834,33 +2490,76 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400">暂无项目引用，可作为新首发原片使用。</p>
+                    <p className="text-xs text-slate-400">暂无关联项目</p>
                   )}
                 </div>
 
                 {/* Modal Action Buttons */}
                 <div className="pt-3 border-t border-slate-100 space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleToggleBasket(previewModalAsset);
-                      setPreviewModalAsset(null);
-                    }}
-                    className="w-full py-2 rounded-xl bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-                  >
-                    <Scissors className="w-3.5 h-3.5" />
-                    <span>裁切当前选段并加入混剪</span>
-                  </button>
-                  <a
-                    href={previewModalAsset.url}
-                    download
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>下载原始素材文件</span>
-                  </a>
+                  {previewModalAsset.isDeleted ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleRestoreFromTrash(previewModalAsset);
+                          setPreviewModalAsset(null);
+                        }}
+                        className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-colors"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>还原素材</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handlePermanentDelete(previewModalAsset);
+                          setPreviewModalAsset(null);
+                        }}
+                        className="w-full py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>彻底删除</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleToggleBasket(previewModalAsset);
+                          setPreviewModalAsset(null);
+                        }}
+                        className="w-full py-2 rounded-xl bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                      >
+                        <Scissors className="w-3.5 h-3.5" />
+                        <span>加入剪辑</span>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={previewModalAsset.url}
+                          download
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>下载文件</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleMoveToTrash(previewModalAsset);
+                            setPreviewModalAsset(null);
+                          }}
+                          className="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                          title="移入回收站"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>移入回收站</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
 
               </div>
@@ -1872,7 +2571,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
       )}
 
       {/* ========================================================================= */}
-      {/* BATCH UPLOAD MODAL (批量上传素材弹窗)                                       */}
+      {/* UPLOAD MODAL (上传素材弹窗)                                               */}
       {/* ========================================================================= */}
       {showUploadModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
@@ -1882,7 +2581,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                 <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold">
                   <Upload className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-900">批量上传多媒体素材</h3>
+                <h3 className="text-sm font-bold text-slate-900">上传素材</h3>
               </div>
               <button
                 type="button"
@@ -1893,23 +2592,64 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
               </button>
             </div>
 
+            {/* Media Type Selector */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                素材类型
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { key: 'video' as const, label: '视频', icon: Film },
+                  { key: 'image' as const, label: '图片', icon: ImageIcon },
+                  { key: 'audio' as const, label: '音频', icon: Music }
+                ].map((t) => {
+                  const Icon = t.icon;
+                  const active = uploadAssetType === t.key;
+                  return (
+                    <button
+                      key={t.key}
+                      type="button"
+                      onClick={() => {
+                        setUploadAssetType(t.key);
+                        if (t.key === 'audio') {
+                          setUploadTargetFolder('folder-bgm');
+                        }
+                      }}
+                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-all ${
+                        active
+                          ? 'bg-red-50 border-[#EA3A20] text-[#EA3A20] shadow-xs'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Drag and Drop Zone */}
             <div className="border-2 border-dashed border-slate-200 hover:border-[#EA3A20] rounded-2xl p-6 text-center bg-slate-50/60 transition-colors cursor-pointer space-y-2">
               <div className="w-12 h-12 rounded-2xl bg-white shadow-xs text-[#EA3A20] flex items-center justify-center mx-auto">
                 <Upload className="w-6 h-6" />
               </div>
               <p className="text-xs font-bold text-slate-800">
-                点击选择文件，或将视频/图片拖拽至此区域
+                {uploadAssetType === 'audio'
+                  ? '点击或拖拽音频文件至此区域'
+                  : uploadAssetType === 'image'
+                  ? '点击或拖拽图片文件至此区域'
+                  : '点击或拖拽视频文件至此区域'}
               </p>
               <p className="text-[11px] text-slate-400">
-                支持 MP4, MOV, JPG, PNG, WEBP, WAV, MP3（单文件最大 2GB）
+                支持 MP4, MOV, JPG, PNG, WEBP, WAV, MP3（最大 2GB）
               </p>
             </div>
 
             {/* Folder Target Selection */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                存储目标素材箱 (Bin)
+                存储分组
               </label>
               <select
                 value={uploadTargetFolder}
@@ -1926,22 +2666,11 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
               </select>
             </div>
 
-            {/* AI Auto Enhancements Toggle */}
-            <div className="p-3 bg-red-50/50 rounded-2xl border border-red-100 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-slate-700">
-                <Sparkles className="w-4 h-4 text-[#EA3A20]" />
-                <span>自动开启 AI 场景检测与智能打标</span>
-              </div>
-              <span className="text-[10px] font-bold text-[#EA3A20] bg-white px-2 py-0.5 rounded-full border border-red-200">
-                已启用
-              </span>
-            </div>
-
             {/* Upload Progress Bar if Uploading */}
             {isUploading && (
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs text-slate-600 font-medium">
-                  <span>上传中与云端画质转码...</span>
+                  <span>上传转码中...</span>
                   <span className="font-mono font-bold text-[#EA3A20]">{uploadProgress}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -1970,7 +2699,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                 className="px-5 py-2 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
               >
                 <Upload className="w-3.5 h-3.5" />
-                <span>{isUploading ? '正在上传转码...' : '开始上传素材'}</span>
+                <span>{isUploading ? '正在上传...' : '开始上传'}</span>
               </button>
             </div>
           </div>
@@ -1978,7 +2707,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
       )}
 
       {/* ========================================================================= */}
-      {/* NEW FOLDER MODAL (新建素材箱弹窗)                                          */}
+      {/* NEW FOLDER MODAL (新建分组弹窗)                                            */}
       {/* ========================================================================= */}
       {showNewFolderModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
@@ -1986,7 +2715,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <div className="flex items-center gap-2">
                 <FolderPlus className="w-4 h-4 text-[#0F4A47]" />
-                <h3 className="text-xs font-bold text-slate-900">新建素材箱目录 (Bin)</h3>
+                <h3 className="text-xs font-bold text-slate-900">新建分组</h3>
               </div>
               <button
                 type="button"
@@ -1998,12 +2727,12 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">素材箱名称</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">分组名称</label>
               <input
                 type="text"
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
-                placeholder="例如：2026米兰展高定展位精剪"
+                placeholder="输入分组名称"
                 autoFocus
                 className="w-full h-8.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#0F4A47]"
               />
@@ -2023,10 +2752,20 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                 disabled={!newFolderName.trim()}
                 className="px-4 py-1.5 rounded-full bg-[#0F4A47] hover:bg-[#0b3836] text-white text-xs font-bold cursor-pointer disabled:opacity-50"
               >
-                创建素材箱
+                创建
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* FLOATING TOAST FEEDBACK NOTIFICATION                                       */}
+      {/* ========================================================================= */}
+      {toastMessage && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2.5 text-xs font-bold animate-fade-in border border-white/15">
+          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
         </div>
       )}
 

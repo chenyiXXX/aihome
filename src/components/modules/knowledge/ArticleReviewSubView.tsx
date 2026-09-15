@@ -453,98 +453,29 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden space-y-4">
-      {/* Top Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0">
-        <div
-          onClick={() => setActiveTab('待复核')}
-          className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-            activeTab === '待复核'
-              ? 'bg-amber-500/10 border-amber-500 shadow-xs'
-              : 'bg-white border-slate-200/90 hover:border-slate-300'
-          }`}
-        >
-          <div className="space-y-0.5">
-            <span className="text-xs font-semibold text-slate-500">待复核条目</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-amber-600">{pendingCount}</span>
-              <span className="text-[10px] text-amber-700 font-bold bg-amber-100 px-1.5 py-0.2 rounded-md">
-                需管理员审批
-              </span>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
-            <Clock className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div
-          onClick={() => setActiveTab('复核通过')}
-          className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-            activeTab === '复核通过'
-              ? 'bg-emerald-500/10 border-emerald-500 shadow-xs'
-              : 'bg-white border-slate-200/90 hover:border-slate-300'
-          }`}
-        >
-          <div className="space-y-0.5">
-            <span className="text-xs font-semibold text-slate-500">复核通过 (已发布)</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-emerald-600">{approvedCount}</span>
-              <span className="text-[10px] text-emerald-700 font-medium bg-emerald-50 px-1.5 py-0.2 rounded-md">
-                线上生效
-              </span>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div
-          onClick={() => setActiveTab('复核不通过')}
-          className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-            activeTab === '复核不通过'
-              ? 'bg-red-500/10 border-red-500 shadow-xs'
-              : 'bg-white border-slate-200/90 hover:border-slate-300'
-          }`}
-        >
-          <div className="space-y-0.5">
-            <span className="text-xs font-semibold text-slate-500">复核不通过 (已驳回)</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-red-600">{rejectedCount}</span>
-              <span className="text-[10px] text-red-700 font-medium bg-red-50 px-1.5 py-0.2 rounded-md">
-                退回修订
-              </span>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
-            <XCircle className="w-5 h-5" />
-          </div>
-        </div>
-      </div>
-
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden space-y-3">
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-h-0 bg-white border border-slate-100 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.02)] overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
         {/* Header Navigation & Filters Bar */}
-        <div className="p-4 border-b border-slate-100 space-y-3 shrink-0 bg-slate-50/40">
-          {/* Sub-menu Tabs */}
+        <div className="p-3.5 border-b border-slate-100 space-y-3 shrink-0 bg-slate-50/50">
+          {/* Status Tabs & Filters */}
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-1.5 p-1 bg-slate-200/70 rounded-xl">
+            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/60">
               <button
                 onClick={() => {
                   setActiveTab('待复核');
                   setSelectedIds(new Set());
                 }}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   activeTab === '待复核'
-                    ? 'bg-white text-[#EA3A20] shadow-xs'
+                    ? 'bg-white text-amber-700 shadow-2xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <Clock className="w-3.5 h-3.5 text-amber-500" />
                 <span>待复核</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                  activeTab === '待复核' ? 'bg-amber-100 text-amber-800' : 'bg-slate-300 text-slate-600'
+                  activeTab === '待复核' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-600'
                 }`}>
                   {pendingCount}
                 </span>
@@ -555,15 +486,17 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
                   setActiveTab('复核通过');
                   setSelectedIds(new Set());
                 }}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   activeTab === '复核通过'
-                    ? 'bg-white text-emerald-700 shadow-xs'
+                    ? 'bg-white text-emerald-700 shadow-2xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>复核通过</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-100 text-slate-500">
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                  activeTab === '复核通过' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
+                }`}>
                   {approvedCount}
                 </span>
               </button>
@@ -573,15 +506,17 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
                   setActiveTab('复核不通过');
                   setSelectedIds(new Set());
                 }}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   activeTab === '复核不通过'
-                    ? 'bg-white text-red-700 shadow-xs'
+                    ? 'bg-white text-rose-700 shadow-2xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <XCircle className="w-3.5 h-3.5 text-red-500" />
+                <XCircle className="w-3.5 h-3.5 text-rose-500" />
                 <span>复核不通过</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-100 text-slate-500">
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                  activeTab === '复核不通过' ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-600'
+                }`}>
                   {rejectedCount}
                 </span>
               </button>
@@ -915,12 +850,9 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
         </div>
 
         {/* Footer Summary */}
-        <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/50 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
+        <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/50 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
           <span>
-            共 {filteredArticles.length} 条记录（当前状态：【{activeTab}】）
-          </span>
-          <span className="font-mono text-[10px]">
-            平台审核管控模式: 严格风控已就绪
+            共 {filteredArticles.length} 条记录
           </span>
         </div>
       </div>

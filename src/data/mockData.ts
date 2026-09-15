@@ -3645,8 +3645,8 @@ export const initialRoles: RoleConfig[] = [
     description: '拥有外贸 AI 平台所有模块的全局读写、权限分配与算力配置最高权限。',
     userCount: 1,
     permissions: [
-      { module: '首页问答', view: true, edit: true, delete: true, export: true },
-      { module: '售前询盘助手', view: true, edit: true, delete: true, export: true },
+      { module: '知识问答', view: true, edit: true, delete: true, export: true },
+      { module: '售前询盘', view: true, edit: true, delete: true, export: true },
       { module: '销售助手', view: true, edit: true, delete: true, export: true },
       { module: '运营助手', view: true, edit: true, delete: true, export: true },
       { module: '知识库管理', view: true, edit: true, delete: true, export: true },
@@ -3687,8 +3687,8 @@ export const initialRoles: RoleConfig[] = [
     description: '管理询盘分配、会话监控、话术库共享审核及智能答复质量调控。',
     userCount: 2,
     permissions: [
-      { module: '首页问答', view: true, edit: true, delete: false, export: true },
-      { module: '售前询盘助手', view: true, edit: true, delete: false, export: true },
+      { module: '知识问答', view: true, edit: true, delete: false, export: true },
+      { module: '售前询盘', view: true, edit: true, delete: false, export: true },
       { module: '销售助手', view: true, edit: true, delete: false, export: true },
       { module: '知识库管理', view: true, edit: true, delete: false, export: true },
       { module: '数据统计', view: true, edit: false, delete: false, export: true }
@@ -3725,8 +3725,8 @@ export const initialRoles: RoleConfig[] = [
     description: '负责单客询盘跟进、即时会话与私人话术库维护。',
     userCount: 8,
     permissions: [
-      { module: '首页问答', view: true, edit: false, delete: false, export: false },
-      { module: '售前询盘助手', view: true, edit: true, delete: false, export: false },
+      { module: '知识问答', view: true, edit: false, delete: false, export: false },
+      { module: '售前询盘', view: true, edit: true, delete: false, export: false },
       { module: '销售助手', view: true, edit: true, delete: false, export: false },
       { module: '知识库管理', view: true, edit: false, delete: false, export: false }
     ],
@@ -3761,7 +3761,7 @@ export const initialRoles: RoleConfig[] = [
     description: '负责海外社媒矩阵运营、AI视频与图文内容生成及发布审核。',
     userCount: 3,
     permissions: [
-      { module: '首页问答', view: true, edit: false, delete: false, export: false },
+      { module: '知识问答', view: true, edit: false, delete: false, export: false },
       { module: '运营助手', view: true, edit: true, delete: true, export: true },
       { module: '数据统计', view: true, edit: false, delete: false, export: true }
     ],

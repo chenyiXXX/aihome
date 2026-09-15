@@ -1627,33 +1627,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                     </span>
                     <span className="truncate">业务属性</span>
                   </button>
-
-                  {/* REVIEW MODE TAB 4: AI 语义切片 */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('vectors')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      activeTab === 'vectors'
-                        ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-                    }`}
-                  >
-                    <span
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors ${
-                        activeTab === 'vectors' ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      4
-                    </span>
-                    <span className="truncate">AI 语义切片</span>
-                    <span
-                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 transition-colors ${
-                        activeTab === 'vectors' ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-slate-200/80 text-slate-600'
-                      }`}
-                    >
-                      {article.chunksCount || 32}
-                    </span>
-                  </button>
                 </>
               ) : (
                 <>
@@ -1874,13 +1847,9 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                         <Video className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="font-bold text-xs text-slate-100">高清实操视频录像</span>
-                        <p className="text-[10px] text-slate-400">{article.videoInfo?.sourceName || '工厂工艺实拍教学'}</p>
+                        <span className="font-bold text-xs text-slate-100">实操视频录像</span>
                       </div>
                     </div>
-                    <span className="text-xs font-mono bg-purple-950 text-purple-300 border border-purple-800/80 px-2.5 py-1 rounded-full font-bold">
-                      时长: {article.videoInfo?.duration || '09分42秒'}
-                    </span>
                   </div>
 
                   <div className="aspect-video w-full rounded-xl overflow-hidden bg-black flex items-center justify-center relative border border-slate-800">
@@ -2065,50 +2034,11 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                   </div>
                 </div>
               </div>
-
-              {/* 2. Related Articles Linkage */}
-              {article.relatedArticleIds && article.relatedArticleIds.length > 0 && (
-                <div className="p-4 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <Link2 className="w-4 h-4 text-slate-500" />
-                      <span>关联上下文条目 ({article.relatedArticleIds.length})</span>
-                    </span>
-                    <span className="text-[11px] text-slate-400">协同召回关联网络</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {article.relatedArticleIds.map((relId) => {
-                      const relArt = allArticles.find((a) => a.id === relId);
-                      if (!relArt) return null;
-                      return (
-                        <button
-                          key={relId}
-                          type="button"
-                          onClick={() => {
-                            if (onSelectRelated) onSelectRelated(relArt);
-                          }}
-                          className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-all cursor-pointer group flex items-center justify-between gap-2"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <span className="font-mono text-[10px] text-slate-500 font-bold block mb-0.5">
-                              {relArt.code}
-                            </span>
-                            <p className="text-xs font-bold text-slate-800 group-hover:text-slate-950 truncate">
-                              {relArt.title}
-                            </p>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 shrink-0" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
           {/* TAB 3: AI 语义切片与向量化 (AI Semantic Chunks & Vectorization Engine) */}
-          {activeTab === 'vectors' && (
+          {activeTab === 'vectors' && !isReviewMode && (
             <div className="space-y-5">
               
               {/* 1. Vectorization Engine & Pipeline Metrics Banner */}
@@ -2295,14 +2225,8 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                             </span>
 
                             <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h5 className="text-xs font-bold text-slate-900 hover:text-[#EA3A20] transition-colors">
-                                  {chunk.sectionTitle}
-                                </h5>
-                                <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200/60">
-                                  {chunk.topic}
-                                </span>
-                                {chunk.similarityScore !== undefined && vectorSearchQuery && (
+                              {chunk.similarityScore !== undefined && vectorSearchQuery && (
+                                <div className="mb-1">
                                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${
                                     chunk.similarityScore >= 0.85
                                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -2312,10 +2236,10 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                                   }`}>
                                     相似度: {(chunk.similarityScore * 100).toFixed(1)}%
                                   </span>
-                                )}
-                              </div>
+                                </div>
+                              )}
 
-                              <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1 flex-wrap font-mono">
+                              <div className="flex items-center gap-3 text-[11px] text-slate-400 flex-wrap font-mono">
                                 <span>{chunk.tokenCount} Tokens</span>
                                 <span>•</span>
                                 <span>{chunk.charCount} 字符</span>
@@ -2327,7 +2251,7 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                             </div>
                           </div>
 
-                          {/* Quick Actions */}
+                          {/* Quick Actions: Only Copy */}
                           <div className="flex items-center gap-1.5 shrink-0">
                             {/* Copy Chunk Button */}
                             <button
@@ -2348,29 +2272,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                                 </>
                               )}
                             </button>
-
-                            {/* Re-Vectorize Single Chunk Button */}
-                            <button
-                              type="button"
-                              disabled={isReindexing}
-                              onClick={() => handleRevectorizeSingleChunk(chunk)}
-                              className="px-2.5 py-1 text-[11px] font-medium text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 rounded-lg transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50"
-                              title="单独重新向量化此切片"
-                            >
-                              <RefreshCw className={`w-3 h-3 ${isReindexing ? 'animate-spin' : ''}`} />
-                              <span>{isReindexing ? '嵌入中...' : '重向量化'}</span>
-                            </button>
-
-                            {/* View Raw Vector Metadata */}
-                            <button
-                              type="button"
-                              onClick={() => setRawVectorModalChunk(chunk)}
-                              className="px-2.5 py-1 text-[11px] font-medium text-purple-700 hover:text-purple-800 bg-purple-50 hover:bg-purple-100/80 border border-purple-200 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
-                              title="查看该切片的 3072 维向量参数与 JSON 元数据"
-                            >
-                              <Code2 className="w-3 h-3" />
-                              <span>向量参数</span>
-                            </button>
                           </div>
                         </div>
 
@@ -2390,18 +2291,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                             </button>
                           )}
                         </div>
-
-                        {/* Chunk Entity Tags */}
-                        {chunk.tags && chunk.tags.length > 0 && (
-                          <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                            <span className="text-[10px] text-slate-400 font-medium">切片实体特征:</span>
-                            {chunk.tags.map((tag, tIdx) => (
-                              <span key={tIdx}>
-                                {renderPairedTagBadge(tag)}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     );
                   })

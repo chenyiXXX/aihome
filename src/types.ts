@@ -135,6 +135,8 @@ export interface ChatMessage {
     id: string;
     title: string;
     version: string;
+    category?: string;
+    excerpt?: string;
   }[];
   // 引用的社媒聊天记录 (Quoted social chat records)
   quotedMessages?: {
@@ -188,6 +190,8 @@ export interface MediaAssetItem {
   scenesDetected?: string[]; // AI 检测的分镜场景标签
   colorPalette?: string[]; // AI 色彩分析
   associatedProjects?: string[]; // 已关联的视频或图文项目
+  isDeleted?: boolean; // 是否处于回收站中
+  deletedAt?: string; // 移入回收站时间，如 '2026-09-10 10:15'
 }
 
 export interface MediaFolderItem {

@@ -57,7 +57,9 @@ export interface VideoClipItem {
   durationSeconds: number;
   durationText: string;
   resolution: '4K 60fps' | '1080P 60fps';
-  publishPlatform: '抖音 / 视频号 / TikTok' | 'YouTube / 海外官网' | '全网多平台矩阵';
+  publishPlatform: string;
+  targetPlatforms?: string[];
+  language?: '中文' | '英文';
   status: VideoClipStatus;
   auditRejectReason?: string;
   scheduledPublishTime?: string;

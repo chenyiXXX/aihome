@@ -862,12 +862,12 @@ export const VideoClipModule: React.FC<VideoClipModuleProps> = ({ onNavigateToPl
                 {/* Left Panel Footer Summary */}
                 <div className="px-3 py-2 bg-slate-50 border-t border-slate-200/80 text-[10.5px] text-slate-500 flex items-center justify-between shrink-0">
                   <span>共 {filteredMaterials.length} 条素材</span>
-                  <span className="text-slate-400 text-[10px]">点击素材快速引用至指令</span>
+                  <span className="text-slate-400 text-[10px]">点击素材快速引用</span>
                 </div>
           </div>
 
           {/* ------------------------------------------------------------------ */}
-          {/* COLUMN 2 (MIDDLE): AI 视频剪辑对话控制台 (AI Video Copilot) */}
+          {/* COLUMN 2 (MIDDLE): 视频剪辑对话控制台 */}
           {/* ------------------------------------------------------------------ */}
           <div className="flex-1 flex flex-col bg-white overflow-hidden border-r border-slate-200/80 min-w-[380px]">
             {/* Top Workspace Navigation Bar (Aligned with GraphicTextModule) */}
@@ -879,10 +879,10 @@ export const VideoClipModule: React.FC<VideoClipModuleProps> = ({ onNavigateToPl
                     type="button"
                     onClick={() => setViewMode('list')}
                     className="h-8 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shrink-0 mr-1"
-                    title="返回视频工程列表"
+                    title="返回列表"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>返回工程库</span>
+                    <span>返回列表</span>
                   </button>
                 )}
 
@@ -940,6 +940,11 @@ export const VideoClipModule: React.FC<VideoClipModuleProps> = ({ onNavigateToPl
                     </div>
                   </div>
                   <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 truncate font-mono">
+                    {currentVideo.language && (
+                      <span className="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-bold font-sans text-[10px]">
+                        {currentVideo.language}
+                      </span>
+                    )}
                     <span>{currentVideo.aspectRatio}</span>
                     <span>·</span>
                     <span>{currentVideo.durationText}</span>

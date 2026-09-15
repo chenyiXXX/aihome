@@ -415,21 +415,12 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const filteredTags = tagList
     .filter((tag) => {
       const q = tagSearchQuery.toLowerCase().trim();
-      const matchSearch =
-        !q ||
+      if (!q) return true;
+      return (
         tag.name.toLowerCase().includes(q) ||
         (tag.values && tag.values.some((v) => v.toLowerCase().includes(q))) ||
-        (tag.description && tag.description.toLowerCase().includes(q)) ||
-        (tag.categoryGroup && tag.categoryGroup.toLowerCase().includes(q)) ||
-        (tag.creator && tag.creator.toLowerCase().includes(q));
-
-      const matchGroup = selectedTagGroup === '全部' || tag.categoryGroup === selectedTagGroup;
-      const matchType =
-        selectedTagTypeFilter === 'all' ||
-        (selectedTagTypeFilter === 'builtin' && Boolean(tag.isBuiltin)) ||
-        (selectedTagTypeFilter === 'custom' && !tag.isBuiltin);
-
-      return matchSearch && matchGroup && matchType;
+        (tag.description && tag.description.toLowerCase().includes(q))
+      );
     })
     .sort((a, b) => {
       if (tagSortBy === 'usage') {
@@ -497,24 +488,15 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const handleOpenAddTagModal = () => {
     setNewTagName('');
     setNewTagValuesInput('');
-    // 业务分组默认选当前筛选的有效业务大类或'通用'
-    const defaultGrp =
-      selectedTagGroup !== '全部' && allTagGroupOptions.includes(selectedTagGroup)
-        ? selectedTagGroup
-        : '通用';
-    setNewTagGroup(defaultGrp);
-    setNewTagCustomGroup('');
     setNewTagColor('purple');
     setNewTagDesc('');
-    // 规则：只有平台管理才可以新增内置标签，其他的人默认新增自定义标签
-    setNewTagIsBuiltin(currentUserRole === 'admin');
     setIsAddTagModalOpen(true);
   };
 
   const handleConfirmAddTag = () => {
     const trimmedName = newTagName.trim();
     if (!trimmedName) {
-      showToast('⚠️ 请输入标签名 (如：风格、色系、空间、材质)');
+      showToast('⚠️ 请输入标签名称 (如：风格、色系、材质)');
       return;
     }
 
@@ -523,11 +505,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       showToast(`⚠️ 标签名「${trimmedName}」已存在，请勿重复创建`);
       return;
     }
-
-    // 权限规则严格校验：只有平台管理才可以新增内置标签，其他人员无论如何默认强制为自定义标签
-    const actualIsBuiltin = currentUserRole === 'admin' ? Boolean(newTagIsBuiltin) : false;
-
-    const finalGroup = newTagGroup === '__custom__' ? (newTagCustomGroup.trim() || '通用') : (newTagGroup || '通用');
 
     // Parse values list
     const parsedValues = newTagValuesInput
@@ -541,18 +518,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       id: `TAG-${Date.now()}`,
       name: trimmedName,
       values: distinctValues,
-      isBuiltin: actualIsBuiltin,
-      builtinValues: actualIsBuiltin ? [...distinctValues] : [],
+      isBuiltin: true,
+      builtinValues: [...distinctValues],
       color: newTagColor,
-      categoryGroup: finalGroup,
+      categoryGroup: '通用',
       description: newTagDesc.trim() || undefined,
       createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      creator: actualIsBuiltin ? 'Franklin Jr (平台管理员)' : 'Alex (外贸业务员)'
+      creator: 'Franklin Jr (管理员)'
     };
 
     setTagList([newTagItem, ...tagList]);
     setIsAddTagModalOpen(false);
-    showToast(`✅ ${actualIsBuiltin ? '🏢 公司内置' : '🏷️ 自定义'}标签「${trimmedName}」创建成功，归属【${finalGroup}】分组`);
+    showToast(`✅ 标签「${trimmedName}」创建成功`);
   };
 
   const handleConfirmBatchAddTags = () => {
@@ -568,8 +545,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
     let addedCount = 0;
     const newItems: KBTag[] = [];
-    const actualIsBuiltin = currentUserRole === 'admin';
-    const finalBatchGroup = batchTagGroup || '通用';
 
     lines.forEach((line) => {
       let tagName = line;
@@ -589,12 +564,12 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
           id: `TAG-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
           name: tagName,
           values: dVals,
-          isBuiltin: actualIsBuiltin,
-          builtinValues: actualIsBuiltin ? [...dVals] : [],
+          isBuiltin: true,
+          builtinValues: [...dVals],
           color: batchTagColor,
-          categoryGroup: finalBatchGroup,
+          categoryGroup: '通用',
           createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-          creator: actualIsBuiltin ? 'Franklin Jr (平台管理员)' : 'Alex (外贸业务员)'
+          creator: 'Franklin Jr (管理员)'
         });
         addedCount++;
       }
@@ -608,7 +583,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setTagList([...newItems, ...tagList]);
     setIsBatchAddTagModalOpen(false);
     setBatchTagsInput('');
-    showToast(`✅ 成功批量添加 ${addedCount} 个成对标签（归属【${finalBatchGroup}】）`);
+    showToast(`✅ 成功批量添加 ${addedCount} 个标签`);
   };
 
   const handleOpenEditTag = (tag: KBTag, e?: React.MouseEvent) => {
@@ -617,11 +592,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setEditTagName(tag.name);
     setEditTagValues([...(tag.values || [])]);
     setEditTagNewValueInput('');
-    setEditTagGroup(allTagGroupOptions.includes(tag.categoryGroup) ? tag.categoryGroup : '__custom__');
-    setEditTagCustomGroup(allTagGroupOptions.includes(tag.categoryGroup) ? '' : tag.categoryGroup);
     setEditTagColor(tag.color);
     setEditTagDesc(tag.description || '');
-    setEditTagIsBuiltin(Boolean(tag.isBuiltin));
     setIsEditTagModalOpen(true);
   };
 
@@ -642,10 +614,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       return;
     }
 
-    // 权限校验：如果是非平台管理员，不能把自定义标签修改为内置标签
-    const actualIsBuiltin = currentUserRole === 'admin' ? editTagIsBuiltin : (editingTag.isBuiltin ? true : false);
-
-    const finalGroup = editTagGroup === '__custom__' ? (editTagCustomGroup.trim() || '通用') : (editTagGroup || '通用');
     const oldName = editingTag.name;
     const finalValues = Array.from(new Set(editTagValues.filter(Boolean)));
 
@@ -657,9 +625,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               ...t,
               name: trimmed,
               values: finalValues,
-              isBuiltin: actualIsBuiltin,
+              isBuiltin: true,
               color: editTagColor,
-              categoryGroup: finalGroup,
+              categoryGroup: '通用',
               description: editTagDesc.trim() || undefined,
               updatedAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
             }
@@ -2286,28 +2254,10 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               <button
                 type="button"
                 onClick={(e) => handleOpenEditCatModal(node, e)}
-                title="编辑分类（名称、适用角色、复核策略）"
+                title="编辑分类"
                 className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-              </button>
-
-              {/* 同级上下移辅助按钮 */}
-              <button
-                type="button"
-                onClick={(e) => handleMoveCatNode(node.id, 'up', false, e)}
-                title="同级上移"
-                className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <ArrowUp className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => handleMoveCatNode(node.id, 'down', false, e)}
-                title="同级下移"
-                className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <ArrowDown className="w-3.5 h-3.5" />
               </button>
 
               {!isBuiltin ? (
@@ -2371,14 +2321,11 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
             </span>
           ) : currentView === '标签管理' ? (
             <span className="text-[11px] font-medium text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md shrink-0">
-              共 {tagList.length} 个成对标签体系
+              共 {tagList.length} 个标签
             </span>
           ) : (
-            <span className="text-[11px] font-medium text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md flex items-center gap-1.5 shrink-0">
-              <span>共 {contentList.length} 篇知识条目</span>
-              <span className="text-emerald-600 font-bold flex items-center gap-0.5">
-                <Check className="w-3 h-3" /> 向量库同步在线
-              </span>
+            <span className="text-[11px] font-medium text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md shrink-0">
+              共 {contentList.length} 篇知识条目
             </span>
           )}
         </div>
@@ -2430,47 +2377,11 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
           {currentView === '标签管理' && (
             <div className="flex items-center gap-2">
-              {/* Role Toggle for Tag Creation & Management */}
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100/90 rounded-full border border-slate-200/80 text-xs shrink-0">
-                <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">操作身份:</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = currentUserRole === 'admin' ? 'staff' : 'admin';
-                    setCurrentUserRole(next);
-                    showToast(
-                      next === 'admin'
-                        ? '👑 已切换为【平台管理员】身份（支持新增公司内置标签和自定义标签）'
-                        : '👤 已切换为【普通人员/业务员】身份（默认仅可新增团队自定义标签）'
-                    );
-                  }}
-                  className={`px-2 py-0.5 rounded-full text-[11px] font-bold cursor-pointer transition-all flex items-center gap-1 shadow-2xs active:scale-95 ${
-                    currentUserRole === 'admin'
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                      : 'bg-amber-600 hover:bg-amber-700 text-white'
-                  }`}
-                  title="点击切换操作身份体验内置标签权限控制"
-                >
-                  {currentUserRole === 'admin' ? (
-                    <>
-                      <Building2 className="w-3 h-3" />
-                      <span>平台管理员</span>
-                    </>
-                  ) : (
-                    <>
-                      <Tag className="w-3 h-3" />
-                      <span>普通人员 (Alex)</span>
-                    </>
-                  )}
-                  <span className="text-[9px] opacity-75 underline ml-0.5">切换</span>
-                </button>
-              </div>
-
-              <div className="relative w-44 sm:w-56">
+              <div className="relative w-48 sm:w-60">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="搜索标签名或候选值..."
+                  placeholder="搜索标签名称或标签值..."
                   value={tagSearchQuery}
                   onChange={(e) => setTagSearchQuery(e.target.value)}
                   className="w-full pl-8.5 pr-7 py-1.5 bg-white border border-slate-200/90 rounded-full text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] shadow-2xs"
@@ -2480,18 +2391,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                     onClick={() => setTagSearchQuery('')}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
 
               <button
                 onClick={() => setIsBatchAddTagModalOpen(true)}
-                className="h-8 px-3 rounded-full bg-white border border-slate-200/90 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs shrink-0 active:scale-95"
-                title="批量导入成对标签"
+                className="h-8 px-3.5 rounded-full bg-white border border-slate-200/90 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs shrink-0 active:scale-95"
+                title="批量导入标签"
               >
                 <UploadCloud className="w-3.5 h-3.5 text-slate-500" />
-                <span className="hidden sm:inline">批量导入</span>
+                <span>批量导入</span>
               </button>
 
               <button
@@ -2511,7 +2422,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 className="h-8.5 px-3.5 rounded-full bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-900 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-2xs"
               >
                 <Plus className="w-3.5 h-3.5 text-[#EA3A20]" />
-                <span>新建条目</span>
+                <span>新建知识</span>
               </button>
               <button
                 onClick={() => {
@@ -2521,7 +2432,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 className="h-8.5 px-4 rounded-full bg-[#EA3A20] text-white hover:bg-[#c42810] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-2xs active:scale-95"
               >
                 <UploadCloud className="w-4 h-4" />
-                <span>批量上传文档</span>
+                <span>上传文档</span>
               </button>
             </div>
           )}
@@ -2604,17 +2515,17 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
 
               {/* Left Footer Info */}
-              <div className="p-2.5 border-t border-slate-100 bg-slate-50/50 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
-                <span>点击分类可快速过滤右侧内容</span>
-                {selectedCategoryFilter && (
+              {selectedCategoryFilter && (
+                <div className="p-2 px-3 border-t border-slate-100 bg-slate-50/50 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
+                  <span className="truncate">已筛选：{selectedCategoryFilter}</span>
                   <button
                     onClick={() => setSelectedCategoryFilter(null)}
-                    className="text-[#EA3A20] hover:underline cursor-pointer font-medium"
+                    className="text-[#EA3A20] hover:underline cursor-pointer font-medium shrink-0 ml-2"
                   >
-                    清除筛选
+                    清除
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* ----------------------------------------------------------------------- */}
@@ -2920,29 +2831,22 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                     <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-400 line-through font-mono text-[11px] font-medium shadow-2xs">
                                       {item.version}
                                     </span>
-                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-medium shadow-2xs" title="原版本已过有效期">
-                                      已过有效期
+                                    <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-medium shadow-2xs">
+                                      已过期
                                     </span>
                                   </div>
 
-                                  {/* Row 2: Rejected Revision Red Pill */}
-                                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold shadow-2xs">
-                                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                                    <span className="whitespace-nowrap">新版 {item.rejectedVersion || 'v1.1.0'} (复核不通过)</span>
-                                  </div>
-
-                                  {/* Row 3: Dedicated Clickable Action Line */}
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setRejectionDetailArticle(item);
                                     }}
-                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-600 hover:text-rose-700 cursor-pointer transition-colors group/link mt-0.5 text-left"
-                                    title="点击查看管理员复核驳回原因与详细修改意见并重新提交"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-bold transition-colors cursor-pointer shadow-2xs"
+                                    title="查看驳回原因并重新提交"
                                   >
                                     <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                                    <span className="group-hover/link:underline underline-offset-2">查看驳回意见并重新提交</span>
+                                    <span>新版 {item.rejectedVersion || 'v1.1.0'} 驳回 (查看原因)</span>
                                   </button>
                                 </div>
                               ) : hasPendingEffective ? (
@@ -3005,31 +2909,24 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                 </div>
                               ) : isRejectedNeverPub ? (
                                 <div className="flex flex-col items-start gap-1 min-w-0">
-                                  {/* Row 1: Initial Version Badge */}
+                                  {/* Initial Version Badge */}
                                   <div className="flex items-center gap-1.5">
                                     <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-mono text-[11px] font-bold shadow-2xs">
                                       {item.version}
                                     </span>
                                   </div>
 
-                                  {/* Row 2: Rejected Red Pill */}
-                                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold shadow-2xs">
-                                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                                    <span className="whitespace-nowrap">新版 {item.rejectedVersion || item.version} (复核不通过)</span>
-                                  </div>
-
-                                  {/* Row 3: Dedicated Clickable Action Line */}
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setRejectionDetailArticle(item);
                                     }}
-                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-600 hover:text-rose-700 cursor-pointer transition-colors group/link mt-0.5 text-left"
-                                    title="点击查看管理员复核驳回原因与详细修改意见并重新提交"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-bold transition-colors cursor-pointer shadow-2xs"
+                                    title="查看驳回原因并重新提交"
                                   >
                                     <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                                    <span className="group-hover/link:underline underline-offset-2">查看驳回意见并重新提交</span>
+                                    <span>新版 {item.rejectedVersion || item.version} 驳回 (查看原因)</span>
                                   </button>
                                 </div>
                               ) : (
@@ -3068,24 +2965,17 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                     </span>
                                   </div>
 
-                                  {/* Row 2: Rejected Revision Red Pill */}
-                                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold shadow-2xs">
-                                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                                    <span className="whitespace-nowrap">新版 {item.rejectedVersion || 'v1.1.0'} (复核不通过)</span>
-                                  </div>
-
-                                  {/* Row 3: Dedicated Clickable Action Line */}
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setRejectionDetailArticle(item);
                                     }}
-                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-600 hover:text-rose-700 cursor-pointer transition-colors group/link mt-0.5 text-left"
-                                    title="点击查看管理员复核驳回原因与详细修改意见并重新提交"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-bold transition-colors cursor-pointer shadow-2xs"
+                                    title="查看驳回原因并重新提交"
                                   >
                                     <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                                    <span className="group-hover/link:underline underline-offset-2">查看驳回意见并重新提交</span>
+                                    <span>新版 {item.rejectedVersion || 'v1.1.0'} 驳回 (查看原因)</span>
                                   </button>
                                 </div>
                               ) : hasPendingEffective ? (
@@ -3139,9 +3029,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  showToast('⚠️ 该知识条目正在复核审批中，已被系统锁定编辑，待管理员审批完成。');
+                                  showToast('该知识条目正在复核审批中');
                                 }}
-                                title="复核审批中，暂时不能编辑"
+                                title="复核审批中"
                                 className="p-1 rounded-lg text-slate-300 hover:text-slate-400 hover:bg-slate-100/50 cursor-not-allowed transition-colors"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -3151,9 +3041,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  showToast(isExpired ? `⚠️ 该条目原版本已过有效期，新版本【${item.pendingVersion || ''}】正在复核审批中。` : `⚠️ 该条目已有新版本【${item.pendingVersion || ''}】在复核审批中，线上版本正常运行中。`);
+                                  showToast(isExpired ? `新版本【${item.pendingVersion || ''}】正在复核中` : `新版本【${item.pendingVersion || ''}】正在复核中`);
                                 }}
-                                title={isExpired ? '已过有效期，新版本正在复核审批中' : '已有新版本在复核审批中'}
+                                title="新版本复核中"
                                 className="p-1 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 transition-colors cursor-pointer"
                               >
                                 <Clock className="w-3.5 h-3.5" />
@@ -3163,9 +3053,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  showToast(isExpired ? `ℹ️ 该条目原版本已过有效期，新版本【${item.pendingEffectiveVersion || ''}】已复核通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 自动生效。` : `ℹ️ 该条目新版本【${item.pendingEffectiveVersion || ''}】已复核通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 自动生效切换。`);
+                                  showToast(`新版本【${item.pendingEffectiveVersion || ''}】已通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 生效`);
                                 }}
-                                title={isExpired ? `已过有效期，新版本 ${item.pendingEffectiveVersion} 已复核通过，排期待生效` : `新版本 ${item.pendingEffectiveVersion} 已复核通过，排期待生效`}
+                                title="排期待生效"
                                 className="p-1 rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-200/80 transition-colors cursor-pointer"
                               >
                                 <CalendarClock className="w-3.5 h-3.5" />
@@ -3174,7 +3064,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               <button
                                 type="button"
                                 onClick={(e) => handleOpenEditArticle(item, e)}
-                                title={isExpired ? '已过有效期，新版本复核未通过，点击修改后重新提审' : '复核不通过，点击重新编辑并再次提交复核'}
+                                title="编辑并重新提交"
                                 className="p-1 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -3183,7 +3073,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               <button
                                 type="button"
                                 onClick={(e) => handleOpenEditArticle(item, e)}
-                                title={isDraft ? '编辑草稿并提交复核' : isExpired ? '已过有效期（无新版本），点击编辑重新生效或提交新版复核' : '编辑条目'}
+                                title={isDraft ? '编辑草稿' : '编辑条目'}
                                 className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -3196,13 +3086,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               className="p-1 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
                             >
                               <ArrowRightLeft className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => handleRevectorize(item, e)}
-                              title="重新向量化"
-                              className="p-1 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
-                            >
-                              <RefreshCw className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={(e) => handleDeleteArticle(item.id, item.title, e)}
@@ -3220,9 +3103,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
 
               {/* Table Footer */}
-              <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/50 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
-                <span>显示 {filteredContentList.length} 条记录（总计 {contentList.length} 篇）</span>
-                <span className="font-mono text-[10px]">向量检索引擎: Active · HNSW Index</span>
+              <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/50 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
+                <span>共 {filteredContentList.length} 条记录（总计 {contentList.length} 篇）</span>
               </div>
             </div>
           </div>
@@ -3276,77 +3158,10 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 3: 标签管理 (成对标签管理: 标签名与标签值增删查改) */}
+        {/* TAB 3: 标签管理 (标签维度与候选值管理) */}
         {/* ========================================================================= */}
         {currentView === '标签管理' && (
           <div className="flex-1 flex flex-col min-h-0 space-y-3">
-            {/* Unified Single-Row Filter Bar */}
-            <div className="bg-white border border-slate-100 rounded-2xl p-3 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex items-center justify-between gap-3 flex-wrap shrink-0">
-              {/* Left: Built-in vs Custom Filter Segment + Category Group Filter */}
-              <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
-                {/* Type Filter Buttons */}
-                <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
-                  <button
-                    onClick={() => setSelectedTagTypeFilter('all')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                      selectedTagTypeFilter === 'all'
-                        ? 'bg-white text-slate-900 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    全部 ({tagList.length})
-                  </button>
-                  <button
-                    onClick={() => setSelectedTagTypeFilter('builtin')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                      selectedTagTypeFilter === 'builtin'
-                        ? 'bg-white text-slate-900 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    内置标签 ({tagList.filter((t) => t.isBuiltin).length})
-                  </button>
-                  <button
-                    onClick={() => setSelectedTagTypeFilter('custom')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                      selectedTagTypeFilter === 'custom'
-                        ? 'bg-white text-slate-900 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    自定义标签 ({tagList.filter((t) => !t.isBuiltin).length})
-                  </button>
-                </div>
-
-                <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
-
-                {/* Category Groups Dropdown */}
-                <div className="flex items-center gap-1.5 text-xs shrink-0">
-                  <span className="text-slate-400 text-[11px]">业务大类:</span>
-                  <div className="relative">
-                    <select
-                      value={selectedTagGroup}
-                      onChange={(e) => setSelectedTagGroup(e.target.value)}
-                      className="pl-3 pr-8 py-1.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-[#EA3A20] text-xs cursor-pointer appearance-none transition-colors shadow-2xs"
-                    >
-                      <option value="全部">全部业务大类 ({tagList.length})</option>
-                      {allTagGroupOptions.map((grp) => {
-                        const count = tagList.filter((t) => t.categoryGroup === grp).length;
-                        return (
-                          <option key={grp} value={grp}>
-                            {grp} {count > 0 ? `(${count})` : ''}
-                          </option>
-                        );
-                      })}
-                    </select>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
-
-
-            </div>
-
             {/* Tag Cards Grid */}
             <div className="flex-1 overflow-y-auto custom-scrollbar bg-white border border-slate-100 rounded-2xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] min-h-0 flex flex-col justify-between">
               {filteredTags.length === 0 ? (
@@ -3354,16 +3169,13 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto text-slate-300">
                     <Hash className="w-6 h-6" />
                   </div>
-                  <p className="text-xs font-bold text-slate-600">未找到匹配的成对标签</p>
-                  <p className="text-[11px] text-slate-400">
-                    您可以尝试切换筛选、搜索标签名或标签值，或点击右上角「新建标签」创建
-                  </p>
+                  <p className="text-xs font-bold text-slate-600">暂无匹配的标签</p>
                   <button
                     onClick={handleOpenAddTagModal}
                     className="px-4 py-1.5 rounded-full bg-[#EA3A20] text-white text-xs font-bold hover:bg-[#c42810] cursor-pointer inline-flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>新建成对标签</span>
+                    <span>新建标签</span>
                   </button>
                 </div>
               ) : (
@@ -3371,60 +3183,36 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   {filteredTags.map((tag) => {
                     const usageCount = getTagUsageCount(tag);
                     const valuesList = tag.values || [];
-                    const isBuiltin = Boolean(tag.isBuiltin);
-                    const builtinSet = new Set(tag.builtinValues || tag.values || []);
 
                     return (
                       <div
                         key={tag.id}
-                        className={`p-4 rounded-2xl border transition-all duration-150 flex flex-col justify-between gap-3 group hover:shadow-sm ${
-                          isBuiltin
-                            ? 'border-slate-200/90 bg-slate-50/40 hover:bg-white'
-                            : 'border-amber-200/80 bg-amber-50/20 hover:bg-white'
-                        }`}
+                        className="p-4 rounded-2xl border border-slate-200/80 bg-white hover:border-slate-300 transition-all duration-150 flex flex-col justify-between gap-3 group hover:shadow-xs"
                       >
-                        {/* Top: Tag Key Header & Built-in vs Custom Badges */}
-                        <div className="space-y-2">
+                        {/* Top: Tag Header & Actions */}
+                        <div className="space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`px-2.5 py-1 rounded-lg text-xs font-bold border flex items-center gap-1.5 ${getTagBadgeStyle(
-                                  tag.color
-                                )}`}
-                              >
-                                <span className={`w-1.5 h-1.5 rounded-full ${getTagDotColor(tag.color)}`} />
-                                <span>{tag.name}</span>
-                              </span>
+                            <span
+                              className={`px-2.5 py-1 rounded-lg text-xs font-bold border flex items-center gap-1.5 ${getTagBadgeStyle(
+                                tag.color
+                              )}`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${getTagDotColor(tag.color)}`} />
+                              <span>{tag.name}</span>
+                            </span>
 
-                              {/* Prominent Builtin vs Custom Indicator */}
-                              {isBuiltin ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-100 shadow-2xs">
-                                  <Building2 className="w-3 h-3 text-blue-600" />
-                                  <span>公司内置标准</span>
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 text-[10px] font-bold border border-amber-200 shadow-2xs">
-                                  <Tag className="w-3 h-3 text-amber-600" />
-                                  <span>团队自定义</span>
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] font-medium px-2 py-0.5 bg-white text-slate-500 rounded-md border border-slate-200/70 shrink-0">
-                                {tag.categoryGroup}
-                              </span>
+                            <div className="flex items-center gap-1">
                               <button
                                 onClick={(e) => handleOpenEditTag(tag, e)}
-                                title="编辑标签名及配置"
-                                className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                title="编辑标签"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={(e) => handleOpenDeleteTag(tag, e)}
                                 title="删除标签"
-                                className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -3447,37 +3235,27 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               onClick={() => setActiveTagForArticlesDrawer({ tag })}
                               className="hover:text-[#EA3A20] transition-colors cursor-pointer flex items-center gap-0.5"
                             >
-                              <span>总计关联 {usageCount} 篇知识</span>
+                              <span>关联 {usageCount} 篇知识</span>
                             </button>
                           </div>
 
-                          <div className="flex items-center gap-1.5 flex-wrap max-h-32 overflow-y-auto custom-scrollbar p-1.5 bg-white rounded-xl border border-slate-100">
+                          <div className="flex items-center gap-1.5 flex-wrap max-h-32 overflow-y-auto custom-scrollbar p-1.5 bg-slate-50/70 rounded-xl border border-slate-100">
                             {valuesList.length === 0 ? (
                               <span className="text-[11px] text-slate-400 italic py-1 px-1">
-                                暂无预设值，请在下方快速添加
+                                暂无候选值，可在下方快速添加
                               </span>
                             ) : (
                               valuesList.map((val) => {
                                 const valUsage = getTagValueUsageCount(tag.name, val);
-                                const isCustomVal = isBuiltin && !builtinSet.has(val);
 
                                 return (
                                   <span
                                     key={val}
                                     onClick={() => setActiveTagForArticlesDrawer({ tag, value: val })}
-                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[11px] font-medium cursor-pointer transition-all hover:scale-102 group/val ${
-                                      isCustomVal
-                                        ? 'bg-amber-50/80 border-amber-200 text-amber-900'
-                                        : 'bg-slate-50 hover:bg-slate-100 border-slate-200/80 text-slate-700'
-                                    }`}
-                                    title={`点击查阅「${tag.name}: ${val}」关联知识${isCustomVal ? ' (团队自定义扩充值)' : ''}`}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border border-slate-200/80 bg-white text-slate-700 hover:bg-slate-50 text-[11px] font-medium cursor-pointer transition-all hover:scale-102 group/val shadow-2xs"
+                                    title={`查看关联「${tag.name}: ${val}」知识`}
                                   >
                                     <span className="font-semibold">{val}</span>
-                                    {isCustomVal && (
-                                      <span className="text-[9px] px-1 py-0.2 rounded bg-amber-200/80 text-amber-900 font-bold">
-                                        自
-                                      </span>
-                                    )}
                                     {valUsage > 0 && (
                                       <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-100/70 text-emerald-700 font-bold">
                                         {valUsage}
@@ -3502,7 +3280,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                         <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5">
                           <input
                             type="text"
-                            placeholder={`+ 为「${tag.name}」扩充新值，回车确认...`}
+                            placeholder={`+ 为「${tag.name}」添加新值，回车确认...`}
                             value={quickAddValues[tag.id] || ''}
                             onChange={(e) =>
                               setQuickAddValues((prev) => ({ ...prev, [tag.id]: e.target.value }))
@@ -3531,9 +3309,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
               {/* Bottom Summary */}
               {filteredTags.length > 0 && (
-                <div className="pt-4 mt-3 border-t border-slate-100/80 text-[11px] text-slate-400 flex items-center justify-between">
-                  <span>显示 {filteredTags.length} 组成对标签维度（支持标签名与标签值对齐）</span>
-                  <span>输入框内按回车可极速添加新标签值</span>
+                <div className="pt-3 mt-3 border-t border-slate-100/80 text-[11px] text-slate-400 flex items-center justify-between">
+                  <span>共 {filteredTags.length} 个标签维度</span>
+                  <span>输入框内按回车可快速添加候选值</span>
                 </div>
               )}
             </div>
@@ -3717,76 +3495,60 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   </div>
                 )}
                 {editingArticle.status === '草稿' && (
-                  <div className="mx-6 mt-3 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-2.5 text-xs text-slate-700 shrink-0">
-                    <FileText className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
-                    <div className="space-y-0.5">
-                      <p className="font-bold">当前知识条目为【草稿】状态（未发布）</p>
-                      <p className="text-[11px] text-slate-600">
-                        您可以自由完善知识内容、适用地区与标签配置，保存并提交复核。
-                      </p>
-                    </div>
+                  <div className="mx-6 mt-3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-xs text-slate-600 shrink-0">
+                    <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>条目为未发布草稿</span>
                   </div>
                 )}
                 {editingArticle.pendingVersion && (
-                  <div className="mx-6 mt-3 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-800 shrink-0">
-                    <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <div className="space-y-0.5">
-                      <p className="font-bold">当前已有新版本【{editingArticle.pendingVersion}】在复核中</p>
-                      <p className="text-[11px] text-amber-700">
-                        当前生效版本为 {editingArticle.version}，继续保存将覆盖复核中的待审核版本草稿。
-                      </p>
-                    </div>
+                  <div className="mx-6 mt-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-2 text-xs text-amber-800 shrink-0">
+                    <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>新版本【{editingArticle.pendingVersion}】审核中，保存将更新该待审核版本</span>
                   </div>
                 )}
               </>
             )}
 
-            {/* 3 Step Tabs Navigation Header */}
+            {/* Step Tabs Navigation Header */}
             <div className="px-6 pt-3 pb-2 border-b border-slate-100 bg-white shrink-0">
               <div className="flex items-center gap-2 p-1 bg-slate-100/80 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setArticleModalStepTab('content')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     articleModalStepTab === 'content'
                       ? 'bg-white text-[#EA3A20] shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
                   }`}
                 >
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                    articleModalStepTab === 'content' ? 'bg-[#EA3A20] text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>1</span>
-                  <span>设置知识内容</span>
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>知识正文</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setArticleModalStepTab('tags')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     articleModalStepTab === 'tags'
                       ? 'bg-white text-[#EA3A20] shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
                   }`}
                 >
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                    articleModalStepTab === 'tags' ? 'bg-[#EA3A20] text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>2</span>
-                  <span>打标签</span>
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>业务标签</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setArticleModalStepTab('permissions')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     articleModalStepTab === 'permissions'
                       ? 'bg-white text-[#EA3A20] shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
                   }`}
                 >
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                    articleModalStepTab === 'permissions' ? 'bg-[#EA3A20] text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>3</span>
-                  <span>配置业务范围与有效期</span>
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>范围与时效</span>
                 </button>
               </div>
             </div>
@@ -3929,8 +3691,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                       : editingArticle?.status === '草稿'
                       ? '提交复核'
                       : editingArticle
-                      ? '保存并提交'
-                      : '保存并更新向量库'}
+                      ? '保存修改'
+                      : '创建知识条目'}
                   </span>
                 </button>
               </div>
@@ -4810,105 +4572,13 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar text-xs">
-              {/* Role Permission Notice Banner */}
-              {currentUserRole !== 'admin' && (
-                <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl text-xs text-amber-900 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-amber-800">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span>权限说明：仅平台管理可新增内置标签</span>
-                  </div>
-                  <p className="text-[11px] text-amber-700 leading-tight">
-                    当前操作身份为【普通人员/业务员】，新建标签默认作为【团队自定义标签】。公司内置标准标签需由平台管理员统一定义。
-                  </p>
-                </div>
-              )}
-
-              {/* Tag Nature Selector: Built-in vs Custom */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-slate-700 block">
-                    <span className="text-red-500 mr-1">*</span>标签性质类型
-                  </label>
-                  {currentUserRole === 'admin' ? (
-                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 flex items-center gap-1">
-                      <Building2 className="w-3 h-3" />
-                      <span>平台管理员特权</span>
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                      普通人员默认自定义
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (currentUserRole === 'admin') {
-                        setNewTagIsBuiltin(true);
-                      } else {
-                        showToast('⚠️ 权限限制：只有平台管理才可以新增内置标签，其他人员默认新增自定义标签。');
-                      }
-                    }}
-                    className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
-                      currentUserRole !== 'admin'
-                        ? 'opacity-60 bg-slate-100/70 border-dashed border-slate-200 cursor-not-allowed'
-                        : newTagIsBuiltin
-                        ? 'border-blue-500 bg-blue-50/70 text-blue-900 shadow-2xs'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    <Building2 className={`w-4 h-4 shrink-0 mt-0.5 ${newTagIsBuiltin && currentUserRole === 'admin' ? 'text-blue-600' : 'text-slate-400'}`} />
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-xs block">🏢 公司内置标准</span>
-                        {currentUserRole !== 'admin' && (
-                          <span className="text-[9px] font-bold text-slate-500 bg-slate-200/80 px-1.5 py-0.2 rounded">
-                            🔒 仅平台管理
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-slate-500 leading-tight">
-                        全公司统一的标准标签体系，规范统一下发
-                      </p>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setNewTagIsBuiltin(false)}
-                    className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
-                      !newTagIsBuiltin || currentUserRole !== 'admin'
-                        ? 'border-amber-500 bg-amber-50/70 text-amber-900 shadow-2xs'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    <Tag className={`w-4 h-4 shrink-0 mt-0.5 ${!newTagIsBuiltin || currentUserRole !== 'admin' ? 'text-amber-600' : 'text-slate-400'}`} />
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-xs block">🏷️ 团队自定义</span>
-                        {currentUserRole !== 'admin' && (
-                          <span className="text-[9px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded">
-                            ✓ 默认适用
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-slate-500 leading-tight">
-                        由业务团队个性化扩充的灵活维度
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 block">
-                  <span className="text-red-500 mr-1">*</span>标签名称 / 维度名 <span className="text-[11px] text-slate-400 font-normal">(例如：风格、色系、材质、空间、环保等级)</span>
+                  <span className="text-red-500 mr-1">*</span>标签名称
                 </label>
                 <input
                   type="text"
-                  placeholder="例如：风格 或 色系"
+                  placeholder="例如：风格、色系、材质、空间"
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20] text-xs"
@@ -4917,7 +4587,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 block">
-                  预设标签候选值 (以逗号、顿号或换行分隔)
+                  预设候选值 (支持逗号、顿号或换行分隔)
                 </label>
                 <textarea
                   rows={4}
@@ -4928,73 +4598,30 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5 min-w-0">
-                  <label className="font-bold text-slate-700 block">
-                    <span className="text-red-500 mr-1">*</span>业务分组
-                  </label>
-                  <select
-                    value={newTagGroup}
-                    onChange={(e) => setNewTagGroup(e.target.value)}
-                    className="w-full min-w-0 max-w-full truncate px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20] cursor-pointer text-xs"
-                  >
-                    <option value="通用">🌐 通用 (全库通用维度)</option>
-                    {kbFirstLevelCategories.map((catName) => (
-                      <option key={catName} value={catName}>
-                        📁 {catName}
-                      </option>
-                    ))}
-                    {allTagGroupOptions
-                      .filter((g) => g !== '通用' && !kbFirstLevelCategories.includes(g))
-                      .map((grp) => (
-                        <option key={grp} value={grp}>
-                          🏷️ {grp}
-                        </option>
-                      ))}
-                    <option value="__custom__">+ 自定义新分组...</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700 block">色彩视觉标识</label>
-                  <div className="flex items-center gap-1.5 pt-2 flex-wrap">
-                    {colorOptions.map((col) => (
-                      <button
-                        key={col.key}
-                        type="button"
-                        onClick={() => setNewTagColor(col.key)}
-                        className={`w-6 h-6 rounded-full border-2 cursor-pointer transition-all flex items-center justify-center ${
-                          newTagColor === col.key ? 'scale-110 shadow-xs border-slate-800' : 'border-white opacity-70 hover:opacity-100'
-                        } ${col.bgClass}`}
-                        title={col.label}
-                      >
-                        {newTagColor === col.key && <Check className="w-3 h-3 text-white" />}
-                      </button>
-                    ))}
-                  </div>
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 block">色彩视觉标识</label>
+                <div className="flex items-center gap-2 pt-1 flex-wrap">
+                  {colorOptions.map((col) => (
+                    <button
+                      key={col.key}
+                      type="button"
+                      onClick={() => setNewTagColor(col.key)}
+                      className={`w-6 h-6 rounded-full border-2 cursor-pointer transition-all flex items-center justify-center ${
+                        newTagColor === col.key ? 'scale-110 shadow-xs border-slate-800' : 'border-white opacity-70 hover:opacity-100'
+                      } ${col.bgClass}`}
+                      title={col.label}
+                    >
+                      {newTagColor === col.key && <Check className="w-3 h-3 text-white" />}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {newTagGroup === '__custom__' && (
-                <div className="space-y-1.5 animate-in fade-in">
-                  <label className="font-bold text-slate-700 block">
-                    <span className="text-red-500 mr-1">*</span>输入新分组名称
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="输入自定义分组名称..."
-                    value={newTagCustomGroup}
-                    onChange={(e) => setNewTagCustomGroup(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20] text-xs"
-                  />
-                </div>
-              )}
-
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 block">标签说明与适用场景</label>
+                <label className="font-bold text-slate-700 block">标签说明 (选填)</label>
                 <textarea
                   rows={2}
-                  placeholder="简要说明此成对标签维度的用途、业务定义..."
+                  placeholder="简要说明此标签的用途或定义..."
                   value={newTagDesc}
                   onChange={(e) => setNewTagDesc(e.target.value)}
                   className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20]"
@@ -5062,47 +4689,21 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar text-xs">
-              <div className="space-y-1.5 min-w-0">
-                <label className="font-bold text-slate-700 block">
-                  <span className="text-red-500 mr-1">*</span>批量归属分组
-                </label>
-                <select
-                  value={batchTagGroup}
-                  onChange={(e) => setBatchTagGroup(e.target.value)}
-                  className="w-full min-w-0 max-w-full truncate px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20] cursor-pointer text-xs"
-                >
-                  <option value="通用">🌐 通用 (全库通用维度)</option>
-                  {kbFirstLevelCategories.map((catName) => (
-                    <option key={catName} value={catName}>
-                      📁 {catName}
-                    </option>
-                  ))}
-                  {allTagGroupOptions
-                    .filter((g) => g !== '通用' && !kbFirstLevelCategories.includes(g))
-                    .map((grp) => (
-                      <option key={grp} value={grp}>
-                        🏷️ {grp}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 block">
-                  <span className="text-red-500 mr-1">*</span>标签名与值列表 (支持成对格式，每行一条)
+                  <span className="text-red-500 mr-1">*</span>标签与候选值列表 (每行一条，格式如 风格: 地中海、现代简约)
                 </label>
                 <textarea
                   rows={8}
-                  placeholder="格式示例：&#10;风格: 地中海、现代简约、意式极简&#10;色系: 暖色调、冷色调、黑白灰&#10;五金配件: 百隆阻尼、海蒂诗导轨"
+                  placeholder="示例：&#10;风格: 地中海、现代简约、意式极简&#10;色系: 暖色调、冷色调、黑白灰&#10;材质: 实木、岩板、皮艺"
                   value={batchTagsInput}
                   onChange={(e) => setBatchTagsInput(e.target.value)}
                   className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20] resize-y"
                 />
               </div>
 
-              <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-xs text-blue-700 leading-relaxed space-y-1">
-                <p className="font-bold">💡 格式提示说明：</p>
-                <p>支持以冒号分隔标签名与标签值（如 <code>风格: 地中海、现代</code>），系统将自动解析构建成对标签体系。</p>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 leading-relaxed">
+                <span>提示：冒号前为标签名，冒号后为候选值（以逗号或顿号分隔），系统将自动解析导入。</span>
               </div>
             </div>
 
@@ -5118,7 +4719,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 className="px-5 py-2 text-sm font-bold text-white bg-[#EA3A20] hover:bg-[#c42810] rounded-xl shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>批量导入创建</span>
+                <span>立即导入</span>
               </button>
             </div>
           </div>
@@ -5126,7 +4727,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 9: EDIT TAG DRAWER (成对标签编辑 - 右侧抽屉) */}
+      {/* MODAL 9: EDIT TAG DRAWER (标签编辑 - 右侧抽屉) */}
       {/* ========================================================================= */}
       {isEditTagModalOpen && editingTag && (
         <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
@@ -5144,8 +4745,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <Edit3 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">编辑成对标签维度</h3>
-                  <p className="text-[11px] text-slate-400">修改标签维度定义、预设值与颜色分组</p>
+                  <h3 className="text-base font-bold text-slate-900">编辑标签</h3>
+                  <p className="text-[11px] text-slate-400">修改标签名称与预设候选值</p>
                 </div>
               </div>
               <button
@@ -5157,100 +4758,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar text-xs">
-              {/* Role Permission Notice Banner */}
-              {currentUserRole !== 'admin' && (
-                <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl text-xs text-amber-900 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-amber-800">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span>权限说明：非平台管理员不可修改或设为内置标签</span>
-                  </div>
-                  <p className="text-[11px] text-amber-700 leading-tight">
-                    当前操作身份为【普通人员/业务员】。内置标准标签由平台管理统一定义维护。
-                  </p>
-                </div>
-              )}
-
-              {/* Tag Nature Selector: Built-in vs Custom */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-slate-700 block">
-                    <span className="text-red-500 mr-1">*</span>标签性质类型
-                  </label>
-                  {currentUserRole === 'admin' ? (
-                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 flex items-center gap-1">
-                      <Building2 className="w-3 h-3" />
-                      <span>平台管理员特权</span>
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                      普通人员
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (currentUserRole === 'admin') {
-                        setEditTagIsBuiltin(true);
-                      } else {
-                        showToast('⚠️ 权限限制：只有平台管理才可以设置或维护内置标签。');
-                      }
-                    }}
-                    className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
-                      currentUserRole !== 'admin' && !editTagIsBuiltin
-                        ? 'opacity-60 bg-slate-100/70 border-dashed border-slate-200 cursor-not-allowed'
-                        : editTagIsBuiltin
-                        ? 'border-blue-500 bg-blue-50/70 text-blue-900 shadow-2xs'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    <Building2 className={`w-4 h-4 shrink-0 mt-0.5 ${editTagIsBuiltin ? 'text-blue-600' : 'text-slate-400'}`} />
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-xs block">🏢 公司内置标准</span>
-                        {currentUserRole !== 'admin' && (
-                          <span className="text-[9px] font-bold text-slate-500 bg-slate-200/80 px-1.5 py-0.2 rounded">
-                            🔒 仅平台管理
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-slate-500 leading-tight">
-                        全公司统一的标准标签体系
-                      </p>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (currentUserRole === 'admin' || !editingTag?.isBuiltin) {
-                        setEditTagIsBuiltin(false);
-                      } else {
-                        showToast('⚠️ 权限限制：普通人员不可修改内置标签性质。');
-                      }
-                    }}
-                    className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
-                      !editTagIsBuiltin
-                        ? 'border-amber-500 bg-amber-50/70 text-amber-900 shadow-2xs'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    <Tag className={`w-4 h-4 shrink-0 mt-0.5 ${!editTagIsBuiltin ? 'text-amber-600' : 'text-slate-400'}`} />
-                    <div className="space-y-0.5">
-                      <span className="font-bold text-xs block">🏷️ 团队自定义</span>
-                      <p className="text-[10px] text-slate-500 leading-tight">
-                        业务团队个性化扩充的维度
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 block">
-                  <span className="text-red-500 mr-1">*</span>标签名称 / 维度名
+                  <span className="text-red-500 mr-1">*</span>标签名称
                 </label>
                 <input
                   type="text"
@@ -5258,21 +4768,17 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   onChange={(e) => setEditTagName(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20] text-xs"
                 />
-                <p className="text-[11px] text-amber-600 mt-1">
-                  注意：修改标签名将自动同步更新所有已关联的知识条目标签。
-                </p>
               </div>
 
               {/* Tag Values Manager inside Edit Modal */}
               <div className="space-y-2 p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
                 <label className="font-bold text-slate-700 block flex items-center justify-between">
-                  <span>标签候选值列表 ({editTagValues.length})</span>
-                  <span className="text-[11px] text-slate-400 font-normal">点击删除或在下方添加</span>
+                  <span>候选值列表 ({editTagValues.length})</span>
                 </label>
 
                 <div className="flex items-center gap-1.5 flex-wrap min-h-12 p-2 bg-white rounded-lg border border-slate-200">
                   {editTagValues.length === 0 ? (
-                    <span className="text-xs text-slate-400 italic">暂无标签值</span>
+                    <span className="text-xs text-slate-400 italic">暂无候选值</span>
                   ) : (
                     editTagValues.map((val) => (
                       <span
@@ -5295,7 +4801,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 <div className="flex items-center gap-2 pt-1">
                   <input
                     type="text"
-                    placeholder="输入新标签值，回车或点击添加..."
+                    placeholder="输入新候选值，回车添加..."
                     value={editTagNewValueInput}
                     onChange={(e) => setEditTagNewValueInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -5321,77 +4827,35 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                     }}
                     className="px-3.5 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs cursor-pointer"
                   >
-                    添加值
+                    添加
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5 min-w-0">
-                  <label className="font-bold text-slate-700 block">
-                    <span className="text-red-500 mr-1">*</span>业务分组
-                  </label>
-                  <select
-                    value={editTagGroup}
-                    onChange={(e) => setEditTagGroup(e.target.value)}
-                    className="w-full min-w-0 max-w-full truncate px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20] cursor-pointer text-xs"
-                  >
-                    <option value="通用">🌐 通用 (全库通用维度)</option>
-                    {kbFirstLevelCategories.map((catName) => (
-                      <option key={catName} value={catName}>
-                        📁 {catName}
-                      </option>
-                    ))}
-                    {allTagGroupOptions
-                      .filter((g) => g !== '通用' && !kbFirstLevelCategories.includes(g))
-                      .map((grp) => (
-                        <option key={grp} value={grp}>
-                          🏷️ {grp}
-                        </option>
-                      ))}
-                    <option value="__custom__">+ 自定义新分组...</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700 block">色彩视觉标识</label>
-                  <div className="flex items-center gap-1.5 pt-2 flex-wrap">
-                    {colorOptions.map((col) => (
-                      <button
-                        key={col.key}
-                        type="button"
-                        onClick={() => setEditTagColor(col.key)}
-                        className={`w-6 h-6 rounded-full border-2 cursor-pointer transition-all flex items-center justify-center ${
-                          editTagColor === col.key ? 'scale-110 shadow-xs border-slate-800' : 'border-white opacity-70 hover:opacity-100'
-                        } ${col.bgClass}`}
-                        title={col.label}
-                      >
-                        {editTagColor === col.key && <Check className="w-3 h-3 text-white" />}
-                      </button>
-                    ))}
-                  </div>
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 block">色彩视觉标识</label>
+                <div className="flex items-center gap-2 pt-1 flex-wrap">
+                  {colorOptions.map((col) => (
+                    <button
+                      key={col.key}
+                      type="button"
+                      onClick={() => setEditTagColor(col.key)}
+                      className={`w-6 h-6 rounded-full border-2 cursor-pointer transition-all flex items-center justify-center ${
+                        editTagColor === col.key ? 'scale-110 shadow-xs border-slate-800' : 'border-white opacity-70 hover:opacity-100'
+                      } ${col.bgClass}`}
+                      title={col.label}
+                    >
+                      {editTagColor === col.key && <Check className="w-3 h-3 text-white" />}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {editTagGroup === '__custom__' && (
-                <div className="space-y-1.5 animate-in fade-in">
-                  <label className="font-bold text-slate-700 block">
-                    <span className="text-red-500 mr-1">*</span>输入新分组名称
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="输入自定义分组名称..."
-                    value={editTagCustomGroup}
-                    onChange={(e) => setEditTagCustomGroup(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20] text-xs"
-                  />
-                </div>
-              )}
-
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 block">标签说明与适用场景</label>
+                <label className="font-bold text-slate-700 block">标签说明 (选填)</label>
                 <textarea
                   rows={2}
+                  placeholder="说明此标签维度的定义或适用场景..."
                   value={editTagDesc}
                   onChange={(e) => setEditTagDesc(e.target.value)}
                   className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20]"

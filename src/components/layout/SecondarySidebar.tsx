@@ -52,13 +52,13 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
   const getModuleTitle = () => {
     switch (activeModule) {
       case 'home': return '知识问答';
-      case 'pre_sales': return '售前询盘助手';
+      case 'pre_sales': return '售前询盘';
       case 'in_sales': return '客户';
-      case 'marketing': return '营销推广';
+      case 'marketing': return '运营助手';
       case 'knowledge_base': return '知识库管理';
       case 'pricing_maintenance': return '产品价格维护';
       case 'analytics': return '数据报告';
-      case 'employee': return '团队与权限';
+      case 'employee': return '员工权限';
       case 'sys_config': return '智能体基础设置';
       case 'audit_logs': return '日志与审计';
     }
@@ -81,20 +81,35 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
           </div>
         );
 
-      case 'in_sales':
       case 'pre_sales':
         return (
           <div className="space-y-1">
-            {/* 客户列表 */}
             <button
-              onClick={() => onSelectSubView(activeModule === 'pre_sales' ? '售前询盘列表' : '客户列表')}
+              onClick={() => onSelectSubView('售前询盘列表')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs transition-all cursor-pointer ${
-                subView.includes('列表') || subView === '客户列表'
+                subView === '售前询盘列表' || subView.includes('询盘')
                   ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold shadow-2xs'
                   : 'text-slate-700 hover:bg-slate-100/80 font-medium'
               }`}
             >
-              {activeModule === 'pre_sales' ? '售前询盘列表' : '客户列表'}
+              询盘列表
+            </button>
+          </div>
+        );
+
+      case 'in_sales':
+        return (
+          <div className="space-y-1">
+            {/* 客户列表 */}
+            <button
+              onClick={() => onSelectSubView('客户列表')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs transition-all cursor-pointer ${
+                subView === '客户列表'
+                  ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold shadow-2xs'
+                  : 'text-slate-700 hover:bg-slate-100/80 font-medium'
+              }`}
+            >
+              客户列表
             </button>
 
             {/* 会话管理 ▾ */}
@@ -243,6 +258,14 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
       case 'marketing':
         return (
           <div className="space-y-1">
+            <button
+              onClick={() => onSelectSubView('素材库')}
+              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
+                subView === '素材库' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              素材库
+            </button>
             <button
               onClick={() => onSelectSubView('视频剪辑')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${

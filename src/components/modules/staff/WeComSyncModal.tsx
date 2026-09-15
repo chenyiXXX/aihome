@@ -39,26 +39,23 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
       <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50/60 via-teal-50/30 to-white">
+        <div className="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50/50 via-teal-50/20 to-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-xs">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-slate-900">企业微信通讯录对接设置</h3>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                <h3 className="text-base font-bold text-slate-900">企业微信通讯录对接</h3>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <CheckCircle2 className="w-3 h-3" />
-                  已正常连接
+                  连接正常
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                实时自动获取企业组织架构与在职员工，免除手动开通与账号录入维护
-              </p>
             </div>
           </div>
           <button
@@ -70,7 +67,7 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto space-y-6 custom-scrollbar text-xs">
+        <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar text-xs">
           
           {/* Status Box */}
           <div className="grid grid-cols-3 gap-3">
@@ -80,33 +77,30 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
                 <span>组织架构部门</span>
               </div>
               <div className="text-xl font-bold text-slate-900">{deptCount} <span className="text-xs font-normal text-slate-500">个部门</span></div>
-              <div className="text-[11px] text-emerald-600 font-medium mt-1">架构层级完整同步</div>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
               <div className="flex items-center gap-2 text-slate-500 mb-1">
                 <Users className="w-3.5 h-3.5 text-blue-600" />
-                <span>同步员工数量</span>
+                <span>在职员工</span>
               </div>
               <div className="text-xl font-bold text-slate-900">{employeeCount} <span className="text-xs font-normal text-slate-500">人</span></div>
-              <div className="text-[11px] text-blue-600 font-medium mt-1">全员企微认证在职</div>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
               <div className="flex items-center gap-2 text-slate-500 mb-1">
                 <Clock className="w-3.5 h-3.5 text-amber-600" />
-                <span>上次同步时间</span>
+                <span>最近同步</span>
               </div>
               <div className="text-sm font-bold text-slate-800 font-mono mt-0.5">{lastSyncTime}</div>
-              <div className="text-[11px] text-slate-400 mt-1">状态：同步正常</div>
             </div>
           </div>
 
           {/* Connection Details */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-slate-800 flex items-center gap-1.5">
+          <div className="space-y-2.5">
+            <h4 className="font-bold text-slate-800 flex items-center gap-1.5 text-sm">
               <Server className="w-4 h-4 text-emerald-600" />
-              企业微信应用通讯录授权凭证
+              <span>授权凭证</span>
             </h4>
             <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-2.5">
               <div className="flex items-center justify-between">
@@ -122,7 +116,7 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">通讯录同步事件回调 (Webhook):</span>
+                <span className="text-slate-500">事件回调 Webhook:</span>
                 <span className="text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 font-mono text-[11px]">
                   https://api.homecraft-ai.com/wecom/events/v1
                 </span>
@@ -131,18 +125,18 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
           </div>
 
           {/* Sync Strategies */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-slate-800 flex items-center gap-1.5">
+          <div className="space-y-2.5">
+            <h4 className="font-bold text-slate-800 flex items-center gap-1.5 text-sm">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              通讯录同步与账号安全规则
+              <span>同步规则</span>
             </h4>
             
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               <div className="p-3.5 rounded-2xl border border-slate-100 bg-white flex items-center justify-between">
                 <div>
                   <div className="font-bold text-slate-800">自动同步策略</div>
-                  <div className="text-slate-500 text-[11px] mt-0.5">
-                    实时接收企微 Webhook 变更事件，同时保留定时全量核验
+                  <div className="text-slate-400 text-[11px] mt-0.5">
+                    实时接收变更回调与定时核验
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
@@ -152,7 +146,7 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
                       syncFreq === 'realtime' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-600'
                     }`}
                   >
-                    实时回调+定时
+                    实时回调
                   </button>
                   <button
                     onClick={() => setSyncFreq('2h')}
@@ -175,9 +169,9 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
 
               <div className="p-3.5 rounded-2xl border border-slate-100 bg-white flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-slate-800">离职员工自动停用系统权限</div>
-                  <div className="text-slate-500 text-[11px] mt-0.5">
-                    当员工在企业微信通讯录中被删除或标记离职时，立即停用本系统登录与 AI 算力
+                  <div className="font-bold text-slate-800">离职员工自动停用权限</div>
+                  <div className="text-slate-400 text-[11px] mt-0.5">
+                    企微标记离职后立即停用账号与 AI 算力
                   </div>
                 </div>
                 <button
@@ -196,9 +190,9 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
 
               <div className="p-3.5 rounded-2xl border border-slate-100 bg-white flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-slate-800">新员工入职自动分配默认角色</div>
-                  <div className="text-slate-500 text-[11px] mt-0.5">
-                    从企业微信同步入职的新员工，默认分配「销售业务员」角色及每日 1,500 算力
+                  <div className="font-bold text-slate-800">入职自动分配初始角色</div>
+                  <div className="text-slate-400 text-[11px] mt-0.5">
+                    新员工默认分配「销售业务员」与每日 1,500 算力
                   </div>
                 </div>
                 <button
@@ -217,13 +211,6 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
             </div>
           </div>
 
-          <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200/70 flex items-start gap-2.5 text-amber-800">
-            <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
-            <div className="text-[11px] leading-relaxed">
-              <strong className="font-bold">企业架构同步须知：</strong>员工增删、部门调动、职位调整均以企业微信管理后台为唯一事实源，本系统只负责分配外贸系统业务权限、数据范围与 AI 算力限额，无需二次创建或删除员工。
-            </div>
-          </div>
-
         </div>
 
         {/* Footer */}
@@ -234,14 +221,14 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
             rel="noreferrer"
             className="text-xs text-slate-500 hover:text-emerald-700 flex items-center gap-1.5 font-medium transition-colors"
           >
-            <span>登录企业微信管理后台</span>
+            <span>企业微信管理后台</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/60 cursor-pointer transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200/60 cursor-pointer transition-colors"
             >
               关闭
             </button>
@@ -251,7 +238,7 @@ export const WeComSyncModal: React.FC<WeComSyncModalProps> = ({
               className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer transition-all disabled:opacity-60"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? '正在拉取企业微信通讯录...' : '立即同步通讯录'}</span>
+              <span>{isSyncing ? '正在同步...' : '立即同步'}</span>
             </button>
           </div>
         </div>

@@ -113,8 +113,8 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       }
       return [...prev, updatedRole];
     });
-    setSyncToast(`✅ 角色「${updatedRole.roleName}」的菜单权限、数据权限及操作权限已更新并实时下发！`);
-    setTimeout(() => setSyncToast(null), 4000);
+    setSyncToast(`角色「${updatedRole.roleName}」权限配置已保存`);
+    setTimeout(() => setSyncToast(null), 3000);
   };
 
   // Create new role
@@ -126,7 +126,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       userCount: 0,
       permissions: [
         { module: '知识问答', view: true, edit: false, delete: false, export: false },
-        { module: '售前询盘助手', view: true, edit: false, delete: false, export: false },
+        { module: '售前询盘', view: true, edit: false, delete: false, export: false },
         { module: '销售助手', view: true, edit: false, delete: false, export: false },
         { module: '运营助手', view: false, edit: false, delete: false, export: false },
         { module: '知识库管理', view: true, edit: false, delete: false, export: false },
@@ -475,31 +475,32 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
         </div>
 
         {/* Right Action Bar */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {activeTab === '员工列表' ? (
             <>
-              {/* Notice: No manual creation */}
-              <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>企微组织架构已打通 · 无需手动创建账号</span>
-              </div>
-
+              <button
+                onClick={() => setIsWeComModalOpen(true)}
+                className="h-9 px-3.5 rounded-full border border-slate-200 hover:border-slate-300 bg-white text-slate-700 hover:text-slate-900 text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+              >
+                <Building2 className="w-3.5 h-3.5 text-slate-500" />
+                <span>对接配置</span>
+              </button>
               <button
                 onClick={handleTriggerWeComSync}
                 disabled={isSyncing}
-                className="h-9 px-4.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
+                className="h-9 px-4 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                <span>{isSyncing ? '正在拉取企业微信...' : '立即同步企业微信'}</span>
+                <span>{isSyncing ? '正在同步...' : '同步企微通讯录'}</span>
               </button>
             </>
           ) : (
             <button
               onClick={handleCreateNewRole}
-              className="h-9 px-4.5 rounded-full bg-[#0F4A47] text-white hover:bg-[#0b3836] text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
+              className="h-9 px-4.5 rounded-full bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs active:scale-95"
             >
               <Plus className="w-4 h-4" />
-              <span>新增权限角色</span>
+              <span>新增角色</span>
             </button>
           )}
         </div>
@@ -522,31 +523,21 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 text-xs">组织架构</h4>
-                    <span className="text-[10px] text-slate-400 font-mono">企业微信实时通讯录</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => {
-                      if (expandedNodes.size > 2) {
-                        handleCollapseAll();
-                      } else {
-                        handleExpandAll();
-                      }
-                    }}
-                    title={expandedNodes.size > 2 ? "收起所有分支" : "展开所有分支"}
-                    className="px-1.5 py-0.5 rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-800 cursor-pointer text-[11px] font-medium transition-colors"
-                  >
-                    {expandedNodes.size > 2 ? '全部收起' : '全部展开'}
-                  </button>
-                  <button
-                    onClick={() => setIsWeComModalOpen(true)}
-                    title="查看企微对接详情"
-                    className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-emerald-700 cursor-pointer"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    if (expandedNodes.size > 2) {
+                      handleCollapseAll();
+                    } else {
+                      handleExpandAll();
+                    }
+                  }}
+                  title={expandedNodes.size > 2 ? "收起所有分支" : "展开所有分支"}
+                  className="px-2 py-1 rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-800 cursor-pointer text-[11px] font-medium transition-colors"
+                >
+                  {expandedNodes.size > 2 ? '全部收起' : '全部展开'}
+                </button>
               </div>
 
               {/* Quick Search */}
@@ -580,7 +571,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
               <div className="p-3 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between shrink-0">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-slate-600">已同步企微架构</span>
+                  <span className="text-slate-600">已同步</span>
                 </span>
                 <span className="font-mono text-slate-400 text-[10px]">{lastSyncTime}</span>
               </div>
@@ -741,18 +732,9 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
 
                           {/* 5. 角色 */}
                           <td className="py-3.5 px-3">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingEmployee(emp);
-                                setEmployeeModalTab('auth');
-                                setIsEmployeeModalOpen(true);
-                              }}
-                              title="点击进行授权配置"
-                              className="px-2.5 py-1 text-xs bg-[#FFF4F2] text-[#EA3A20] font-bold rounded-full border border-red-100 hover:bg-[#ffece6] cursor-pointer transition-colors inline-flex items-center gap-1"
-                            >
-                              <span>{emp.role}</span>
-                            </button>
+                            <span className="px-2.5 py-1 text-xs bg-slate-100 text-slate-700 font-medium rounded-full border border-slate-200/60 inline-flex items-center">
+                              {emp.role}
+                            </span>
                           </td>
 
                           {/* 6. 每日AI算力限额 */}
@@ -800,37 +782,20 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                             </div>
                           </td>
 
-                          {/* 8. 操作：授权和算力配置 */}
+                          {/* 8. 操作 */}
                           <td className="py-3.5 pr-6 pl-2 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditingEmployee(emp);
-                                  setEmployeeModalTab('auth');
-                                  setIsEmployeeModalOpen(true);
-                                }}
-                                className="px-2.5 py-1 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200/70 cursor-pointer transition-colors flex items-center gap-1 shadow-2xs whitespace-nowrap"
-                                title="授予系统角色与数据权限"
-                              >
-                                <Shield className="w-3.5 h-3.5 text-blue-600" />
-                                <span>授权</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditingEmployee(emp);
-                                  setEmployeeModalTab('quota');
-                                  setIsEmployeeModalOpen(true);
-                                }}
-                                className="px-2.5 py-1 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200/70 cursor-pointer transition-colors flex items-center gap-1 shadow-2xs whitespace-nowrap"
-                                title="配置每日 AI 算力限额"
-                              >
-                                <Cpu className="w-3.5 h-3.5 text-purple-600" />
-                                <span>算力配置</span>
-                              </button>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingEmployee(emp);
+                                setIsEmployeeModalOpen(true);
+                              }}
+                              className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-[#EA3A20] hover:bg-red-50 rounded-xl border border-slate-200 hover:border-red-200 transition-colors inline-flex items-center gap-1 cursor-pointer"
+                              title="配置角色与每日算力限额"
+                            >
+                              <Sliders className="w-3.5 h-3.5" />
+                              <span>设置</span>
+                            </button>
                           </td>
 
                         </tr>
@@ -850,31 +815,9 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
 
           </div>
         ) : (
-          /* TAB: 角色管理 (菜单权限 + 数据权限 + 操作权限) */
+          /* TAB: 角色管理 (功能权限 + 数据权限 + 操作权限) */
           <div className="h-full overflow-y-auto custom-scrollbar space-y-4 pr-1">
             
-            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#0F4A47] rounded-3xl p-6 text-white shadow-md flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-base font-bold">企业外贸权限与安全控制矩阵 (RBAC)</h3>
-                </div>
-                <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-                  外贸 AI 系统支持三大维度立体授权：<strong>菜单权限</strong>（控制功能模块的读写删导）、<strong>数据权限</strong>（控制全司、部门、仅本人数据隔离及客户信息脱敏）、<strong>操作权限</strong>（控制特批报价、社媒审核、词条免审等细粒度业务动作）。
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleCreateNewRole}
-                  className="px-5 py-2.5 rounded-2xl bg-[#EA3A20] hover:bg-[#d0311a] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>创建自定义角色</span>
-                </button>
-              </div>
-            </div>
-
             {/* Role Cards Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-6">
               {roles.map((role) => {
@@ -916,23 +859,23 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                             setEditingRole(role);
                             setIsRoleModalOpen(true);
                           }}
-                          className="px-4 py-1.5 bg-[#FFF4F2] text-[#EA3A20] hover:bg-[#ffece6] text-xs font-bold rounded-full cursor-pointer transition-colors shrink-0"
+                          className="px-3.5 py-1.5 bg-[#FFF4F2] text-[#EA3A20] hover:bg-[#ffece6] text-xs font-bold rounded-xl cursor-pointer transition-colors shrink-0"
                         >
-                          配置权限矩阵
+                          编辑权限
                         </button>
                       </div>
 
                       {/* Three Dimensions Overview */}
                       <div className="grid grid-cols-3 gap-2.5 pt-3">
                         
-                        {/* 1. Menu Permissions */}
+                        {/* 1. Functional Permissions */}
                         <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
                           <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                             <Eye className="w-3 h-3 text-[#EA3A20]" />
-                            <span>1. 菜单权限</span>
+                            <span>功能权限</span>
                           </div>
                           <div className="text-xs font-bold text-slate-800">
-                            {menuCount} / {totalMenu} <span className="text-[10px] font-normal text-slate-500">模块可用</span>
+                            {menuCount} / {totalMenu} <span className="text-[10px] font-normal text-slate-500">模块</span>
                           </div>
                           <div className="text-[10px] text-slate-400 truncate">
                             {role.permissions.filter((p) => p.view).map((p) => p.module).slice(0, 3).join('、')}
@@ -943,7 +886,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                         <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
                           <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                             <Database className="w-3 h-3 text-blue-600" />
-                            <span>2. 数据权限</span>
+                            <span>数据权限</span>
                           </div>
                           <div className="text-xs font-bold text-blue-900 truncate" title={dataScope}>
                             {role.dataPermission?.scope === 'all'
@@ -952,12 +895,12 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                               ? '本部门及下级'
                               : role.dataPermission?.scope === 'dept_only'
                               ? '本部门数据'
-                              : '仅本人私海'}
+                              : '仅本人数据'}
                           </div>
                           <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                            {maskContact && <span>🔒客户脱敏</span>}
-                            {maskCost && <span>💰底价脱敏</span>}
-                            {!maskContact && !maskCost && <span>明文全量查看</span>}
+                            {maskContact && <span>客户脱敏</span>}
+                            {maskCost && <span>· 底价保护</span>}
+                            {!maskContact && !maskCost && <span>明文查看</span>}
                           </div>
                         </div>
 
@@ -965,13 +908,13 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                         <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
                           <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                             <Sliders className="w-3 h-3 text-emerald-600" />
-                            <span>3. 操作权限</span>
+                            <span>操作权限</span>
                           </div>
                           <div className="text-xs font-bold text-emerald-900">
-                            {opPermsCount} 项 <span className="text-[10px] font-normal text-slate-500">已授权</span>
+                            {opPermsCount} 项 <span className="text-[10px] font-normal text-slate-500">已开通</span>
                           </div>
                           <div className="text-[10px] text-slate-400 truncate">
-                            {role.operationPermissions?.knowledgePublish ? '含免审发布' : '需审核流'}
+                            {role.operationPermissions?.knowledgePublish ? '含免审' : '标准审批'}
                           </div>
                         </div>
 
@@ -995,15 +938,6 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                     {/* Footer Actions */}
                     <div className="border-t border-slate-100 pt-3 flex items-center justify-between text-xs text-slate-400">
                       <span>角色ID: <code className="font-mono">{role.id}</code></span>
-                      <button
-                        onClick={() => {
-                          setEditingRole(role);
-                          setIsRoleModalOpen(true);
-                        }}
-                        className="text-slate-600 hover:text-[#EA3A20] font-bold cursor-pointer"
-                      >
-                        编辑权限矩阵 →
-                      </button>
                     </div>
 
                   </div>

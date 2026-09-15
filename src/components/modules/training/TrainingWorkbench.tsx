@@ -166,13 +166,9 @@ export const TrainingWorkbench: React.FC<TrainingWorkbenchProps> = ({
       {/* Current Lesson Interactive Control Strip */}
       <div className="px-6 py-2.5 bg-amber-50/50 border-t border-amber-100/80 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-          <span className="text-amber-900 font-bold">
-            当前学习：第 {course.currentLessonIndex + 1} 节 · {currentLesson.title}
-          </span>
-          <span className="text-slate-400">|</span>
-          <span className="text-slate-500 text-[11px] hidden sm:inline">
-            请仔细研读讲义与实战要点，有疑问可随时向导师提问。学完后点击确认推进。
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span className="text-slate-800 font-bold">
+            当前课程：第 {course.currentLessonIndex + 1} 节 · {currentLesson.title}
           </span>
         </div>
 

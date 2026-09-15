@@ -172,7 +172,7 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
         {activeTab === '发布审核' && (
           <div className="bg-white border border-slate-100 rounded-3xl p-6 space-y-4 shadow-[0_4px_25px_rgba(0,0,0,0.03)]">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-              <ShieldCheck className="w-4 h-4 text-[#0F4A47]" /> 运营发布内容合规与品牌合规审核
+              <ShieldCheck className="w-4 h-4 text-[#0F4A47]" /> 发布审核
             </h2>
 
             <div className="space-y-3">
@@ -180,7 +180,7 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
                 <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-bold">审核通过：POST-801 (2026 Architectural Custom Wardrobes)</h4>
-                  <p className="mt-1">符合欧洲 FSC 森林环保声明规范，无虚假宣传风险；BS5852 阻燃标准用语准确。</p>
+                  <p className="mt-1">符合欧洲 FSC 森林环保声明规范，BS5852 阻燃标准用语准确。</p>
                 </div>
               </div>
 
@@ -188,7 +188,7 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
                 <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-bold">需注意描述：POST-803 (German Hardware Supplier Claim)</h4>
-                  <p className="mt-1">包含“100% German Made”字样。建议调整为：“Features German-Engineered Soft-close Hinge Systems”以规避商标海关风险。</p>
+                  <p className="mt-1">包含“100% German Made”字样。建议调整为：“Features German-Engineered Soft-close Hinge Systems”。</p>
                 </div>
               </div>
             </div>
@@ -198,7 +198,7 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
         {activeTab === '发布计划' && (
           <div className="bg-white border border-slate-100 rounded-3xl p-6 space-y-4 shadow-[0_4px_25px_rgba(0,0,0,0.03)]">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Calendar className="w-4 h-4 text-[#EA3A20]" /> 社媒自动发布计划日历
+              <Calendar className="w-4 h-4 text-[#EA3A20]" /> 发布计划
             </h2>
 
             <div className="space-y-3">
@@ -229,17 +229,14 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
             <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <UserCheck className="w-4 h-4 text-[#EA3A20]" /> 海外社媒矩阵账号管理与授权中心
+                  <UserCheck className="w-4 h-4 text-[#EA3A20]" /> 账号管理
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  统一绑定并授权海外主流社媒平台官方账号，支持多矩阵账号一键同步排期分发与授权状态健康监测。
-                </p>
               </div>
               <button
                 onClick={() => alert('点击添加新社媒账号授权')}
-                className="px-5 py-2.5 bg-[#EA3A20] hover:bg-[#c42810] text-white font-bold text-xs rounded-full shadow-xs transition-all flex items-center gap-2 cursor-pointer shrink-0"
+                className="px-4 py-2 bg-[#EA3A20] hover:bg-[#c42810] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer shrink-0"
               >
-                <Plus className="w-4 h-4" /> 绑定新社媒账号
+                <Plus className="w-4 h-4" /> 绑定新账号
               </button>
             </div>
 

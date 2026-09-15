@@ -42,6 +42,7 @@ import { VoiceInputBanner } from '../common/VoiceInputBanner';
 import { useChatAttachment } from '../../hooks/useChatAttachment';
 import { ChatAttachmentDropZone } from '../common/ChatAttachmentDropZone';
 import { ImagePreviewModal } from '../common/ImagePreviewModal';
+import { CreateSessionModal } from './home/CreateSessionModal';
 
 export interface ChatMessage {
   id: string;
@@ -312,14 +313,12 @@ export const HomeModule: React.FC = () => {
   const [activeSessionId, setActiveSessionId] = useState<string>('sess-sales');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<'all' | 'training' | 'general'>('all');
-  const [sourceFilter, setSourceFilter] = useState<'all' | 'builtin' | 'custom'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'learning' | 'completed'>('all');
-  const [currentPage, setCurrentPage] = useState<number>(1);
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
   const [previewModalImage, setPreviewModalImage] = useState<{ url: string; name: string } | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Chat attachments: Ctrl+V clipboard paste & Drag-and-drop
   const {
@@ -401,48 +400,48 @@ export const HomeModule: React.FC = () => {
     if (filterCategory === 'training' && s.category === 'general') return false;
     if (filterCategory === 'general' && s.category !== 'general') return false;
 
-    if (sourceFilter === 'builtin' && !s.isBuiltin) return false;
-    if (sourceFilter === 'custom' && s.isBuiltin) return false;
-
-    if (statusFilter === 'learning') {
-      // If learning, must be a training course with progress not 100%
-      const course = trainingCourses[s.id];
-      if (!course) return false;
-    } else if (statusFilter === 'completed') {
-      const course = trainingCourses[s.id];
-      if (course && course.currentLessonIndex + 1 < course.lessons.length) return false;
-    }
-
     return true;
   });
 
-  // Create new custom session
+  // Open create session modal
   const handleCreateNewSession = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  // Create new session from modal configuration
+  const handleCreateSessionFromConfig = (config: {
+    title: string;
+    category: 'sales_training' | 'ops_training' | 'hr_training' | 'general';
+    categoryLabel: string;
+    badgeBg: string;
+    badgeText: string;
+    roleTitle: string;
+    roleSubtitle: string;
+    kbScope: string;
+    recommendedPrompts: string[];
+    welcomeMessage: string;
+  }) => {
     const newId = `sess-${Date.now()}`;
     const newSession: ChatSession = {
       id: newId,
       code: `SESS-${100 + sessions.length + 1}`,
-      title: `自定义问答 · ${new Date().toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}`,
-      category: 'general',
-      categoryLabel: '自定义咨询',
-      badgeBg: 'bg-slate-100 text-slate-700 border-slate-200',
-      badgeText: '业务问答',
+      title: config.title,
+      category: config.category,
+      categoryLabel: config.categoryLabel,
+      badgeBg: config.badgeBg,
+      badgeText: config.badgeText,
       isBuiltin: false,
-      roleTitle: '外贸定制家居 AI 顾问',
-      roleSubtitle: '支持任意关于实木/板式定制、外贸报价、海运装箱及海外施工规范的提问',
-      kbScope: '《外贸全案知识库总集》/《产品技术百科》/《业务SOP》',
+      roleTitle: config.roleTitle,
+      roleSubtitle: config.roleSubtitle,
+      kbScope: config.kbScope,
       lastMessage: '新对话已开启，请输入您的问题...',
       lastTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      recommendedPrompts: [
-        '外贸定制家居 1*40HQ 集装箱海运防潮包装有哪些红线要求？',
-        '针对海外公寓总包工程，如何快速出具 BOQ 工程量清单？',
-        '全屋定制爱格板与实木多层板的单平米造价差异及卖点对比？'
-      ],
+      recommendedPrompts: config.recommendedPrompts,
       messages: [
         {
           id: `msg-welcome-${Date.now()}`,
           sender: 'assistant',
-          content: '您好！我是品爱家居 AI 知识导师。您可以随时向我提问产品工艺、技术标准、外贸大单交付、内部流程或国际贸易合规细节。',
+          content: config.welcomeMessage,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           confidence: 0.99
         }
@@ -654,7 +653,7 @@ export const HomeModule: React.FC = () => {
               {[
                 { key: 'all' as const, label: '全部', count: sessions.length },
                 { key: 'training' as const, label: '内部培训', count: sessions.filter((s) => s.category !== 'general').length },
-                { key: 'general' as const, label: '业务通用', count: sessions.filter((s) => s.category === 'general').length }
+                { key: 'general' as const, label: '业务问答', count: sessions.filter((s) => s.category === 'general').length }
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -662,7 +661,7 @@ export const HomeModule: React.FC = () => {
                   onClick={() => setFilterCategory(tab.key)}
                   className={`flex-1 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     filterCategory === tab.key
-                      ? 'bg-[#EA3A20] text-white shadow-xs'
+                      ? 'bg-[#0F4A47] text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   }`}
                 >
@@ -679,17 +678,16 @@ export const HomeModule: React.FC = () => {
             </div>
           </div>
 
-          {/* Search & Filter Controls */}
-          <div className="p-3 border-b border-slate-100 bg-slate-50/40 space-y-2">
-            {/* Search Input */}
+          {/* Search Bar */}
+          <div className="p-3 border-b border-slate-100 bg-slate-50/40">
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索会话主题 / 导师 / 问答关键词..."
-                className="h-8 pl-8 pr-7 w-full rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] focus:border-[#EA3A20]"
+                placeholder="搜索会话主题或问答内容..."
+                className="h-8 pl-8 pr-7 w-full rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#0F4A47] focus:border-[#0F4A47]"
               />
               {searchQuery && (
                 <button
@@ -701,39 +699,10 @@ export const HomeModule: React.FC = () => {
                 </button>
               )}
             </div>
-
-            {/* Source & Status Dropdowns */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="relative">
-                <select
-                  value={sourceFilter}
-                  onChange={(e) => setSourceFilter(e.target.value as 'all' | 'builtin' | 'custom')}
-                  className="appearance-none w-full h-7 pl-2.5 pr-6 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer"
-                >
-                  <option value="all">全部来源</option>
-                  <option value="builtin">⚡ 系统内置</option>
-                  <option value="custom">👤 自定义提问</option>
-                </select>
-                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-
-              <div className="relative">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as 'all' | 'learning' | 'completed')}
-                  className="appearance-none w-full h-7 pl-2.5 pr-6 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer"
-                >
-                  <option value="all">全部状态</option>
-                  <option value="learning">带教中</option>
-                  <option value="completed">已掌握</option>
-                </select>
-                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
           </div>
 
           {/* Session Cards Scrollable List */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar bg-slate-50/20">
+          <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar bg-slate-50/20">
             {filteredSessions.length > 0 ? (
               filteredSessions.map((sess, idx) => {
                 const isSelected = activeSessionId === sess.id;
@@ -744,39 +713,20 @@ export const HomeModule: React.FC = () => {
                     onClick={() => setActiveSessionId(sess.id)}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer relative group ${
                       isSelected
-                        ? 'bg-[#0F4A47]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/30 shadow-xs border-l-[5px] border-l-[#0F4A47]'
+                        ? 'bg-[#0F4A47]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/30 shadow-xs border-l-[4px] border-l-[#0F4A47]'
                         : 'bg-white hover:bg-slate-50/90 border-slate-200/80 hover:border-slate-300'
                     }`}
                   >
-                    {/* First Line: Title, ID, Source badge, Time */}
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className={`font-bold text-xs truncate ${isSelected ? 'text-[#0F4A47]' : 'text-slate-900'}`}>
-                          {sess.title}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-mono shrink-0">
-                          {sess.code || `SESS-${101 + idx}`}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {sess.isBuiltin ? (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded border border-indigo-100">
-                            <Zap className="w-2.5 h-2.5 text-indigo-500 fill-indigo-400" />
-                            内置
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 bg-amber-50 text-amber-700 text-[10px] font-bold rounded border border-amber-200/60">
-                            <UserPlus className="w-2.5 h-2.5 text-amber-600" />
-                            自建
-                          </span>
-                        )}
-                        <span className="text-[10px] text-slate-400 font-mono">{sess.lastTime}</span>
-                      </div>
+                    {/* First Line: Title & Time */}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className={`font-bold text-xs truncate ${isSelected ? 'text-[#0F4A47]' : 'text-slate-900'}`}>
+                        {sess.title}
+                      </span>
+                      <span className="text-[10px] text-slate-400 shrink-0 font-mono">{sess.lastTime}</span>
                     </div>
 
-                    {/* Meta Row: Category badge, Mentor/Scope, Quick Status */}
-                    <div className="flex items-center justify-between gap-2 mb-2 text-[11px]">
+                    {/* Meta Row: Category Badge & Mentor/Advisor */}
+                    <div className="flex items-center justify-between gap-2 mb-1.5 text-[11px]">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span
                           className={`px-2 py-0.2 rounded-full font-bold text-[10px] border shrink-0 ${
@@ -789,84 +739,31 @@ export const HomeModule: React.FC = () => {
                               : 'bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                         >
-                          {sess.category === 'general' ? '业务问答' : '内部培训'}
+                          {sess.categoryLabel}
                         </span>
-                        <span className="text-slate-500 text-[11px] font-medium truncate">
-                          导师: <strong className="text-slate-700">{course?.mentorName || (sess.category === 'general' ? 'AI全案顾问' : '带教导师')}</strong>
-                        </span>
-                      </div>
-
-                      {/* Quick Status Pill */}
-                      <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <span className="inline-flex items-center gap-1 h-5 px-2 rounded-full border text-[10px] font-bold bg-blue-50 text-blue-700 border-blue-200">
-                          <span>{course ? '带教中' : '可提问'}</span>
-                          <ChevronDown className="w-2.5 h-2.5 text-blue-500" />
+                        <span className="text-slate-500 text-[11px] truncate">
+                          {course?.mentorName || (sess.category === 'general' ? 'AI全案顾问' : '带教导师')}
                         </span>
                       </div>
+                      {course && (
+                        <span className="text-[10px] text-emerald-600 font-medium shrink-0">
+                          {course.currentLessonIndex + 1}/{course.lessons.length} 节
+                        </span>
+                      )}
                     </div>
 
                     {/* Last Message Snippet */}
-                    <p className="text-[11px] text-slate-500 truncate leading-relaxed mb-2">
+                    <p className="text-[11px] text-slate-500 truncate leading-relaxed">
                       {sess.lastMessage || '等待提问与知识检索...'}
                     </p>
-
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1 items-center">
-                      {course ? (
-                        <>
-                          <span className="px-1.5 py-0.2 text-[9px] bg-emerald-50 text-emerald-700 rounded font-medium border border-emerald-100">
-                            进度: 第 {course.currentLessonIndex + 1}/{course.lessons.length} 节
-                          </span>
-                          <span className="px-1.5 py-0.2 text-[9px] bg-amber-50 text-amber-700 rounded font-medium border border-amber-100">
-                            效率: {course.efficiencyScore}分
-                          </span>
-                        </>
-                      ) : (
-                        <span className="px-1.5 py-0.2 text-[9px] bg-indigo-50 text-indigo-700 rounded font-medium border border-indigo-100">
-                          全案产品知识库
-                        </span>
-                      )}
-                      {sess.recommendedPrompts?.slice(0, 2).map((prompt, pIdx) => (
-                        <span
-                          key={pIdx}
-                          className="px-1.5 py-0.2 text-[9px] bg-slate-100 text-slate-600 rounded font-medium truncate max-w-[95px]"
-                          title={prompt}
-                        >
-                          {prompt}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 );
               })
             ) : (
               <div className="py-12 text-center text-slate-400 text-xs px-4">
-                暂无符合条件的会话，可切换类别或清空搜索词。
+                暂无符合条件的会话，可切换分类或清空搜索词。
               </div>
             )}
-          </div>
-
-          {/* Left Footer: Count & Pagination */}
-          <div className="p-2.5 px-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-[11px] text-slate-500">
-            <span>共 {filteredSessions.length} 条会话</span>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="px-2 py-0.5 rounded border border-slate-200 text-[11px] text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white cursor-pointer"
-              >
-                上一页
-              </button>
-              <span className="px-1.5 font-bold text-slate-700">{currentPage}</span>
-              <button
-                type="button"
-                disabled={true}
-                className="px-2 py-0.5 rounded border border-slate-200 text-[11px] text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white cursor-pointer"
-              >
-                下一页
-              </button>
-            </div>
           </div>
         </div>
 
@@ -924,7 +821,7 @@ export const HomeModule: React.FC = () => {
                     
                     <div className="flex items-center gap-2 px-1 text-[11px] text-slate-400">
                       <span className="font-bold text-slate-700">
-                        {isUser ? '我 (业务学员)' : activeSession.roleTitle}
+                        {isUser ? '我' : activeSession.roleTitle}
                       </span>
                       <span>•</span>
                       <span className="font-mono">{msg.timestamp}</span>
@@ -1038,8 +935,8 @@ export const HomeModule: React.FC = () => {
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <div className="bg-white border border-slate-200/90 rounded-2xl rounded-tl-xs p-4 shadow-2xs flex items-center gap-2 text-xs text-slate-500">
-                <div className="w-4 h-4 border-2 border-[#EA3A20] border-t-transparent rounded-full animate-spin" />
-                <span>正在检索品爱内部知识库并由大模型推理合成专业回答...</span>
+                <div className="w-4 h-4 border-2 border-[#0F4A47] border-t-transparent rounded-full animate-spin" />
+                <span>正在检索知识库并生成解答...</span>
               </div>
             </div>
           )}
@@ -1066,12 +963,11 @@ export const HomeModule: React.FC = () => {
 
           {/* Active Session Recommended Quick Prompts */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold">
+            <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
               <span className="flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-[#EA3A20]" />
-                <span>当前主题实战高频推荐提问：</span>
+                <Sparkles className="w-3 h-3 text-[#0F4A47]" />
+                <span>推荐提问</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-normal">点击即发</span>
             </div>
 
             <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
@@ -1080,10 +976,10 @@ export const HomeModule: React.FC = () => {
                   key={idx}
                   type="button"
                   onClick={() => handleQuickPromptClick(prompt)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-red-50/80 border border-slate-200 hover:border-red-200 text-slate-700 hover:text-[#EA3A20] text-xs shrink-0 cursor-pointer transition-colors flex items-center gap-1.5 group"
+                  className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs shrink-0 cursor-pointer transition-colors flex items-center gap-1.5 group"
                 >
                   <span className="truncate max-w-sm">{prompt}</span>
-                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-[#EA3A20] shrink-0" />
+                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-slate-600 shrink-0" />
                 </button>
               ))}
             </div>
@@ -1105,39 +1001,23 @@ export const HomeModule: React.FC = () => {
           {/* Input Method Switch & Textarea Container */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-xl text-[11px] font-bold">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isListening) stopListening();
-                    setInputMode('keyboard');
-                  }}
-                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-                    inputMode === 'keyboard' && !isListening
-                      ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <Keyboard className="w-3.5 h-3.5 text-slate-600" />
-                  <span>键盘输入</span>
-                </button>
-
+              <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-xl text-[11px] font-medium">
                 <button
                   type="button"
                   onClick={handleToggleVoice}
                   className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-                    isListening || inputMode === 'voice'
-                      ? 'bg-[#EA3A20] text-white shadow-2xs font-bold animate-pulse'
-                      : 'text-slate-500 hover:text-[#EA3A20]'
+                    isListening
+                      ? 'bg-red-600 text-white shadow-2xs font-bold animate-pulse'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   <Mic className="w-3.5 h-3.5" />
-                  <span>{isListening ? '录音中 (点击完成)' : '语音转文字'}</span>
+                  <span>{isListening ? '录音中' : '语音输入'}</span>
                 </button>
 
-                <label className="px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer text-slate-500 hover:text-[#EA3A20]">
-                  <Paperclip className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>图片/文件</span>
+                <label className="px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer text-slate-600 hover:text-slate-900">
+                  <Paperclip className="w-3.5 h-3.5 text-slate-500" />
+                  <span>上传附件</span>
                   <input
                     type="file"
                     multiple
@@ -1151,15 +1031,15 @@ export const HomeModule: React.FC = () => {
               </div>
 
               {isListening && (
-                <span className="text-[11px] text-[#EA3A20] font-bold flex items-center gap-1 animate-pulse">
-                  <span className="w-2 h-2 rounded-full bg-[#EA3A20]"></span>
-                  正在收音并转写为文字...
+                <span className="text-[11px] text-red-600 font-medium flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+                  正在录音...
                 </span>
               )}
             </div>
 
             {/* Textarea Input + Mic Toggle + Send Button */}
-            <div className="flex items-end gap-2 bg-slate-50 border border-slate-200/90 rounded-2xl p-2.5 focus-within:ring-2 focus-within:ring-[#EA3A20]/20 focus-within:border-[#EA3A20] transition-all">
+            <div className="flex items-end gap-2 bg-slate-50 border border-slate-200 rounded-2xl p-2.5 focus-within:ring-2 focus-within:ring-[#0F4A47]/20 focus-within:border-[#0F4A47] transition-all">
               <textarea
                 rows={2}
                 value={inputQuery}
@@ -1175,30 +1055,17 @@ export const HomeModule: React.FC = () => {
                 }}
                 placeholder={
                   isListening
-                    ? '正在倾听语音转写中... 您也可以直接使用键盘打字输入补充...'
-                    : `在【${activeSession.categoryLabel}】中输入您的问题，支持键盘输入、Ctrl+V 粘贴图片/文件、直接拖拽文件或点击麦克风语音转文字...`
+                    ? '正在倾听语音...'
+                    : `在【${activeSession.categoryLabel}】中输入您的问题，支持直接输入或粘贴上传附件...`
                 }
                 className="flex-1 bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed p-1"
               />
 
               <button
                 type="button"
-                onClick={handleToggleVoice}
-                className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer transition-all ${
-                  isListening
-                    ? 'bg-red-600 text-white shadow-xs animate-pulse ring-2 ring-red-300'
-                    : 'bg-white hover:bg-slate-200/80 text-slate-600 border border-slate-200/80 shadow-2xs hover:text-[#EA3A20]'
-                }`}
-                title={isListening ? '点击完成语音录入' : '点击开始语音转文字'}
-              >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </button>
-
-              <button
-                type="button"
                 onClick={() => handleSendMessage()}
                 disabled={loading || (!inputQuery.trim() && pendingAttachments.length === 0)}
-                className="h-10 px-5 bg-[#EA3A20] hover:bg-[#d6341c] text-white rounded-xl font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-10 px-5 bg-[#0F4A47] hover:bg-[#0b3836] text-white rounded-xl font-medium text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{loading ? '检索中' : '发送'}</span>
@@ -1207,10 +1074,10 @@ export const HomeModule: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
-            <span>支持 Enter 发送、Shift+Enter 换行、快捷键 Ctrl+V 粘贴图片/文件，或直接鼠标拖拉文件至此发送</span>
+            <span>Enter 发送，Shift+Enter 换行</span>
             <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-emerald-600" />
-              <span>已接入企业内部保密过滤，敏感数据出境合规风控开启</span>
+              <ShieldCheck className="w-3 h-3 text-slate-400" />
+              <span>内部知识库风控合规已启用</span>
             </span>
           </div>
 
@@ -1226,6 +1093,13 @@ export const HomeModule: React.FC = () => {
         imageUrl={previewModalImage?.url || ''}
         imageName={previewModalImage?.name}
         onClose={() => setPreviewModalImage(null)}
+      />
+
+      {/* Create Session Modal (with category selection: 销售培训 / 运营培训 / 人力资源培训 / 知识问答) */}
+      <CreateSessionModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateSessionFromConfig}
       />
 
     </div>

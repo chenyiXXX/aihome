@@ -457,8 +457,7 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
                 点击上传 或 将 {articleFormDocType} 文档拖拽到此处
               </div>
               <p className="text-[11px] text-slate-400 mt-1">
-                支持 DOCX / PPTX / PDF / XLSX，系统将自动进行段落切片、表格 OCR
-                结构化与多模态解析
+                支持 DOCX、PPTX、PDF、XLSX 等格式
               </p>
             </div>
 
@@ -477,7 +476,7 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
                       <span>{articleFormDocFile.size}</span>
                       <span>·</span>
                       <span className="text-emerald-600 flex items-center gap-1 font-medium">
-                        <CheckCircle2 className="w-3 h-3" /> 已就绪 (14 个语义分块)
+                        <CheckCircle2 className="w-3 h-3" /> 已就绪
                       </span>
                     </div>
                   </div>
@@ -506,13 +505,12 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
               <div className="flex items-center justify-between">
                 <label className="font-semibold text-slate-700 text-xs flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                  <span>文档文本提取与补充说明</span>
+                  <span>文档正文与提取内容</span>
                 </label>
-                <span className="text-[11px] text-slate-400">将用于向量语义检索与问答生成</span>
               </div>
               <textarea
                 rows={5}
-                placeholder="此处显示文档自动 OCR / 文本解析结果，您也可以在此输入补充检索摘要与关键参数..."
+                placeholder="此处显示文档解析结果，支持在此输入补充内容与关键说明..."
                 value={articleFormDocFile?.ocrExtractedText || articleFormContent}
                 onChange={(e) => {
                   if (articleFormDocFile) {
@@ -540,18 +538,18 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
                 const file = e.target.files?.[0];
                 if (file) {
                   const sizeMB = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
-                  setArticleFormVideoSourceName(file.name);
-                  setArticleFormVideoDuration('08分45秒');
+                  if (setArticleFormVideoSourceName) setArticleFormVideoSourceName(file.name);
+                  if (setArticleFormVideoDuration) setArticleFormVideoDuration('08分45秒');
                   setArticleFormVideoCover(
                     'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&auto=format&fit=crop&q=80'
                   );
                   setArticleFormVideoTranscript(
-                    `【AI自动转写音轨字幕】\n00:15 大家好，今天演示意式极简全屋定制门板的隐藏天地轴开槽工艺与五金预埋。\n01:30 重点注意：实木多层板与蜂窝铝板的膨胀系数差异，四周必须预留 2mm 呼吸微缝。\n04:10 铰链承重测试：单个承重 25kg，三点受力均摊可确保 10 年不下垂。\n07:20 现场包装封边与外贸出口打木架标准规范。`
+                    `【音轨字幕】\n00:15 大家好，今天演示意式极简全屋定制门板的隐藏天地轴开槽工艺与五金预埋。\n01:30 重点注意：实木多层板与蜂窝铝板的膨胀系数差异，四周预留 2mm 呼吸微缝。\n04:10 铰链承重测试：单个承重 25kg，三点受力均摊。\n07:20 现场包装封边与外贸出口打木架标准规范。`
                   );
                   if (!articleFormTitle) {
                     setArticleFormTitle(file.name.replace(/\.[^/.]+$/, ''));
                   }
-                  showToast(`已成功装载视频文件「${file.name}」(${sizeMB}) 并生成 AI 音轨切片！`);
+                  showToast(`已装载视频文件「${file.name}」(${sizeMB})`);
                 }
               }}
               className="hidden"
@@ -566,41 +564,11 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
                 <Film className="w-5 h-5" />
               </div>
               <div className="font-semibold text-slate-800 text-xs">
-                点击上传 MP4 / MOV 生产实录视频
+                点击上传 MP4 / MOV 等实录视频
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                支持 4K/1080P，系统将自动使用 Whisper
-                提取多语种语音字幕并切片为时间戳索引
+                支持主流高清视频格式
               </p>
-            </div>
-
-            {/* Video Meta Info Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                  <Play className="w-3 h-3 text-purple-600" /> 视频来源 / 拍摄项目
-                </label>
-                <input
-                  type="text"
-                  placeholder="如：工厂二号车间 意式衣帽间五金合页装配教学"
-                  value={articleFormVideoSourceName}
-                  onChange={(e) => setArticleFormVideoSourceName(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-purple-600" /> 视频时长
-                </label>
-                <input
-                  type="text"
-                  placeholder="如：08分30秒"
-                  value={articleFormVideoDuration}
-                  onChange={(e) => setArticleFormVideoDuration(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                />
-              </div>
             </div>
 
             {/* Video Transcript / AI Speech Extraction */}
@@ -608,13 +576,12 @@ export const ArticleContentTab: React.FC<ArticleContentTabProps> = ({
               <div className="flex items-center justify-between">
                 <label className="font-semibold text-slate-700 text-xs flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-                  <span>AI 音轨语音转写与时间戳提炼 (供智能体语义检索定位时段)</span>
+                  <span>视频文字说明与分段摘要</span>
                 </label>
-                <span className="text-[11px] text-slate-400">支持「00:15」时间标记</span>
               </div>
               <textarea
                 rows={5}
-                placeholder="输入带时间戳的语音字幕或提要，如：&#10;00:15 天地轴隐形合页开槽公差±0.5mm&#10;02:30 磁吸静音锁体定位微调方法&#10;05:40 护墙板与门套45度微缝对角拼接..."
+                placeholder="输入视频语音字幕或要点摘要..."
                 value={articleFormVideoTranscript || articleFormContent}
                 onChange={(e) => {
                   setArticleFormVideoTranscript(e.target.value);

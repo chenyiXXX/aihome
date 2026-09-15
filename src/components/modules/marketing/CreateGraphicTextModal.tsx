@@ -206,15 +206,7 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                新建图文方案
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200/80">
-                  AI 智能装配
-                </span>
-              </h2>
-              <p className="text-xs text-slate-500">
-                选择文章主题、挂载核心产品 BOM 与落地交付案例，AI 将自动装配并进入三栏微调工作台
-              </p>
+              <h2 className="text-sm font-bold text-slate-900">新建图文方案</h2>
             </div>
           </div>
 
@@ -232,13 +224,10 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
           
           {/* Section 1: Preset Topic Pills */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <Wand2 className="w-3.5 h-3.5 text-[#EA3A20]" />
-                推荐灵感主题（点击快速填入）：
-              </label>
-              <span className="text-[11px] text-slate-400">已精选海外豪宅高频爆款</span>
-            </div>
+            <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Wand2 className="w-3.5 h-3.5 text-[#EA3A20]" />
+              推荐主题
+            </label>
             <div className="flex flex-wrap gap-1.5">
               {PRESET_TOPICS.map((item, idx) => (
                 <button
@@ -261,26 +250,26 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
           <div className="space-y-3 bg-slate-50/60 p-4 rounded-2xl border border-slate-200/80">
             <div>
               <label className="text-xs font-bold text-slate-800 block mb-1">
-                文章大标题（微信公众平台主标题）：
+                文章标题
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="例如：2026现代极简橱柜设计趋势：PET肤感板与吊滑隐形门的质感革命"
+                placeholder="输入文章主标题..."
                 className="w-full h-10 px-3.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0F4A47] focus:border-transparent"
               />
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-800 block mb-1">
-                开篇导读引言（设计洞察金句）：
+                导读引言
               </label>
               <textarea
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 rows={2}
-                placeholder="简述文章的核心设计洞察与空间哲学..."
+                placeholder="输入文章前置导读与核心摘要..."
                 className="w-full p-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4A47] focus:border-transparent leading-relaxed"
               />
             </div>
@@ -291,7 +280,7 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
             <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5 text-[#0F4A47]" />
-                挂载核心产品（自动装配 BOM 技术参数表，可多选）：
+                关联产品
               </span>
               <span className="text-[11px] text-[#0F4A47] font-bold font-mono">
                 已选 {selectedProductNames.length} 项
@@ -333,7 +322,7 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5 text-[#0F4A47]" />
-              关联落地案例工程（自动导入案例高清实拍大图与封面）：
+              关联案例
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -378,27 +367,27 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <Palette className="w-3.5 h-3.5 text-[#0F4A47]" />
-              排版视觉色标风格（后续可在 AI 工作台随时切换）：
+              排版风格
             </label>
 
             <div className="grid grid-cols-3 gap-2.5">
               {[
                 {
                   id: 'emerald' as const,
-                  name: '墨绿高奢 (Emerald)',
-                  desc: '奢雅高定 · 中东海湾豪宅首选',
+                  name: '墨绿 / 高定奢雅',
+                  desc: '奢雅高定 · 经典案例',
                   color: '#0F4A47'
                 },
                 {
                   id: 'dark' as const,
-                  name: '极简黑白 (Dark)',
-                  desc: '当代建筑 · 极窄五金与铝框',
+                  name: '黑白 / 极简工法',
+                  desc: '当代建筑 · 五金铝框',
                   color: '#18181b'
                 },
                 {
                   id: 'warm' as const,
-                  name: '暖调燕麦 (Warm)',
-                  desc: '自然原木 · 侘寂质感与奶油风',
+                  name: '暖调 / 自然原木',
+                  desc: '质感木作 · 柔和肌理',
                   color: '#92400e'
                 }
               ].map((style) => (
@@ -428,13 +417,7 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 px-6 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between shrink-0">
-          <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>生成后可在三栏工作台中随时通过自然语言对话微调细节</span>
-          </div>
-
-          <div className="flex items-center gap-2">
+        <div className="p-4 px-6 border-t border-slate-100 bg-slate-50/60 flex items-center justify-end gap-2 shrink-0">
             <button
               type="button"
               onClick={onClose}
@@ -457,7 +440,7 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>智能装配并进入 AI 工作台</span>
+                  <span>生成图文方案</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
@@ -465,6 +448,5 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
   );
 };

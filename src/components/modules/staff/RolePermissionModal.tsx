@@ -75,7 +75,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
 
   const availableModules = [
     '知识问答',
-    '售前询盘助手',
+    '售前询盘',
     '销售助手',
     '运营助手',
     '知识库管理',
@@ -213,22 +213,19 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
       <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="px-7 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-white to-slate-50">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#EA3A20] flex items-center justify-center text-white shadow-xs">
-              <ShieldCheck className="w-6 h-6" />
+        <div className="px-7 py-4.5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-red-50/30 via-white to-slate-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#EA3A20] flex items-center justify-center text-white shadow-xs">
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h3 className="text-lg font-bold text-slate-900">配置角色权限矩阵</h3>
+                <h3 className="text-base font-bold text-slate-900">配置角色权限</h3>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#EA3A20] border border-red-100">
                   {roleName || '未命名角色'}
                 </span>
                 <span className="text-xs text-slate-400 font-mono">({role.userCount} 人使用中)</span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                统一配置该系统角色的菜单访问、数据隔离范围与细粒度业务操作权限
-              </p>
             </div>
           </div>
           <button
@@ -240,18 +237,18 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="px-7 pt-4 pb-2 border-b border-slate-100 bg-white flex items-center justify-between">
+        <div className="px-7 pt-3.5 pb-2 border-b border-slate-100 bg-white flex items-center justify-between">
           <div className="flex items-center gap-2 bg-slate-100/80 p-1 rounded-2xl">
             <button
               onClick={() => setActiveTab('menu')}
-              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                 activeTab === 'menu'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5 text-[#EA3A20]" />
-              <span>1. 菜单与模块权限</span>
+              <span>功能权限</span>
               <span className="text-[10px] bg-red-50 text-[#EA3A20] px-1.5 py-0.2 rounded-full font-mono">
                 {permissions.filter((p) => p.view).length}
               </span>
@@ -259,14 +256,14 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
 
             <button
               onClick={() => setActiveTab('data')}
-              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                 activeTab === 'data'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               <Database className="w-3.5 h-3.5 text-blue-600" />
-              <span>2. 数据权限与脱敏</span>
+              <span>数据权限</span>
               <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.2 rounded-full">
                 {dataPermission.scope === 'all'
                   ? '全部'
@@ -282,42 +279,39 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
 
             <button
               onClick={() => setActiveTab('operation')}
-              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                 activeTab === 'operation'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               <Sliders className="w-3.5 h-3.5 text-emerald-600" />
-              <span>3. 细粒度操作权限</span>
+              <span>操作权限</span>
               <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded-full font-mono">
                 {Object.values(operationPermissions).filter(Boolean).length}/16
               </span>
             </button>
           </div>
 
-          <div className="text-xs text-slate-400">
-            修改后该角色下所有员工账号即时生效
+          <div className="text-xs text-slate-400 font-medium">
+            保存后即时生效
           </div>
         </div>
 
         {/* Tab Content Body */}
         <div className="flex-1 overflow-y-auto p-7 space-y-6 custom-scrollbar text-xs">
           
-          {/* TAB 1: MENU PERMISSIONS */}
+          {/* TAB 1: FUNCTION PERMISSIONS */}
           {activeTab === 'menu' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-800">模块导航访问与控制清单</span>
-                  <span className="text-slate-400 text-[11px]">(取消查看权限将对该角色隐藏整套导航与对应接口)</span>
-                </div>
+                <span className="font-bold text-slate-800 text-sm">功能模块权限</span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => toggleAllModules(true)}
                     className="px-3 py-1 rounded-lg text-xs font-bold text-[#EA3A20] hover:bg-red-50 cursor-pointer transition-colors"
                   >
-                    一键全部开启
+                    全部开启
                   </button>
                   <span className="text-slate-300">|</span>
                   <button
@@ -358,7 +352,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                           <span>数据导出</span>
                         </span>
                       </th>
-                      <th className="py-3.5 px-4 text-right w-24">快速控制</th>
+                      <th className="py-3.5 px-4 text-right w-24">快速操作</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -407,7 +401,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                               onClick={() => toggleRowAll(perm.module)}
                               className="text-[11px] font-bold text-slate-400 hover:text-[#EA3A20] cursor-pointer"
                             >
-                              {allChecked ? '全部取消' : '整行全选'}
+                              {allChecked ? '取消全选' : '整行全选'}
                             </button>
                           </td>
                         </tr>
@@ -425,13 +419,10 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
               
               {/* Scope Selection */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-slate-900 flex items-center gap-2 text-sm">
-                    <Database className="w-4 h-4 text-blue-600" />
-                    数据可见性与隔离范围 (Data Scope)
-                  </h4>
-                  <span className="text-[11px] text-slate-400">决定该角色可查询的客户、询盘、会话和统计报表跨度</span>
-                </div>
+                <h4 className="font-bold text-slate-900 flex items-center gap-2 text-sm">
+                  <Database className="w-4 h-4 text-blue-600" />
+                  <span>数据可见范围</span>
+                </h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   
@@ -441,7 +432,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       setDataPermission({
                         ...dataPermission,
                         scope: 'all',
-                        scopeLabel: '全部数据权限 (跨部门全公司)'
+                        scopeLabel: '全部数据权限'
                       })
                     }
                     className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
@@ -466,7 +457,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       </div>
                     </div>
                     <p className="text-slate-500 text-[11px] leading-relaxed">
-                      可查阅全公司跨部门、跨海外所有大区、所有销售人员名下的客户询盘、聊天记录与成交数据（适用于总经理/副总裁/超管）。
+                      全公司跨部门、跨大区所有业务数据
                     </p>
                   </div>
 
@@ -488,7 +479,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2 font-bold text-slate-900">
                         <Building className="w-4 h-4 text-indigo-600" />
-                        <span>本部门及下属子部门数据</span>
+                        <span>本部门及下属部门数据</span>
                       </div>
                       <div
                         className={`w-4 h-4 rounded-full border flex items-center justify-center ${
@@ -501,7 +492,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       </div>
                     </div>
                     <p className="text-slate-500 text-[11px] leading-relaxed">
-                      仅可查阅当前员工所属部门以及该部门挂载的所有下级子团队成员数据（适用于外贸事业部总监、大区经理）。
+                      当前所属部门及挂载的全部下级团队数据
                     </p>
                   </div>
 
@@ -523,7 +514,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2 font-bold text-slate-900">
                         <Users className="w-4 h-4 text-teal-600" />
-                        <span>本部门数据权限</span>
+                        <span>仅本部门数据</span>
                       </div>
                       <div
                         className={`w-4 h-4 rounded-full border flex items-center justify-center ${
@@ -536,7 +527,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       </div>
                     </div>
                     <p className="text-slate-500 text-[11px] leading-relaxed">
-                      仅限查看当前直属部门内的数据，无法查看其他平级部门或跨事业部线索（适用于组长、推广部主管）。
+                      当前直属部门内产生的数据
                     </p>
                   </div>
 
@@ -558,7 +549,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2 font-bold text-slate-900">
                         <User className="w-4 h-4 text-emerald-600" />
-                        <span>仅本人数据权限 (个人私海)</span>
+                        <span>仅本人数据权限</span>
                       </div>
                       <div
                         className={`w-4 h-4 rounded-full border flex items-center justify-center ${
@@ -571,7 +562,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       </div>
                     </div>
                     <p className="text-slate-500 text-[11px] leading-relaxed">
-                      严格隔离，仅能查阅与操作由本人跟进负责的客户、本人参与的 AI 会话及分配名下询盘（适用于一线销售业务员）。
+                      仅本人负责的客户、会话记录及线索
                     </p>
                   </div>
 
@@ -582,20 +573,17 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
               <div className="space-y-3 pt-2">
                 <h4 className="font-bold text-slate-900 flex items-center gap-2 text-sm">
                   <Lock className="w-4 h-4 text-[#EA3A20]" />
-                  敏感字段脱敏加密与商业机密保护
+                  <span>敏感字段脱敏保护</span>
                 </h4>
 
                 <div className="space-y-2.5">
                   <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-2">
-                        <span>客户联系方式强制脱敏保护 (防飞单防私撬)</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                          安全推荐
-                        </span>
+                      <div className="font-bold text-slate-800">
+                        客户联系方式脱敏
                       </div>
                       <div className="text-slate-500 text-[11px] mt-1">
-                        开启后，该角色查阅客户详情与询盘时，海外买家电话、邮箱、WhatsApp 账号自动掩码显示（如 <code className="font-mono text-slate-700 bg-white px-1 py-0.5 rounded border border-slate-200">+1 646***2918</code>），杜绝销售离职私带客户。
+                        海外买家手机号、邮箱及 WhatsApp 账号掩码显示
                       </div>
                     </div>
                     <button
@@ -619,14 +607,11 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
 
                   <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-2">
-                        <span>工厂出厂成本与最低毛利率脱敏保护</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                          商业机密
-                        </span>
+                      <div className="font-bold text-slate-800">
+                        出厂底价与最低毛利率保护
                       </div>
                       <div className="text-slate-500 text-[11px] mt-1">
-                        开启后，在 BOQ 报价与定制算法中隐藏工厂真实出厂成本底价与利润率红线，业务员仅可查看对外指导 FOB 价格与标准阶梯折扣。
+                        隐藏工厂真实出厂底价与利润率，仅展示对外指导 FOB 价格
                       </div>
                     </div>
                     <button
@@ -658,13 +643,10 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
             <div className="space-y-6">
               
               <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-emerald-600" />
-                    各业务模块功能细粒度操作权限
-                  </h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5">控制具体业务流中的核心按键、批量操作、审核终审与管理敏感动作</p>
-                </div>
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-emerald-600" />
+                  <span>业务操作权限</span>
+                </h4>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
@@ -676,7 +658,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                     }}
                     className="px-3 py-1 rounded-lg text-xs font-bold text-emerald-700 hover:bg-emerald-50 cursor-pointer transition-colors"
                   >
-                    全部授权
+                    全部开启
                   </button>
                   <span className="text-slate-300">|</span>
                   <button
@@ -703,7 +685,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                     }}
                     className="px-3 py-1 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 cursor-pointer transition-colors"
                   >
-                    恢复标准安全预设
+                    重置预设
                   </button>
                 </div>
               </div>
@@ -712,7 +694,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
               <div className="p-4.5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-3">
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-orange-500" />
-                  <span>售前客服与询盘管理</span>
+                  <span>售前客服与询盘</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   
@@ -724,8 +706,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800">询盘人工改派与指派</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">将未分流或公共询盘指派给指定业务员</div>
+                      <div className="font-bold text-slate-800">询盘人工改派</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">将未分流或公共询盘指派给指定人员</div>
                     </div>
                   </label>
 
@@ -737,8 +719,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800">强制接管 AI / 转交会话</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">打断 AI 自动接待并强制接入人工客服</div>
+                      <div className="font-bold text-slate-800">强制接管 AI 会话</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">暂停 AI 接待并介入人工会话</div>
                     </div>
                   </label>
 
@@ -750,11 +732,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-1">
-                        <span>批量导出询盘明细</span>
-                        <span className="text-[9px] bg-red-100 text-red-600 px-1 py-0.2 rounded font-bold">敏感</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">导出包含买家画像与采购需求的 Excel</div>
+                      <div className="font-bold text-slate-800">导出询盘明细</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">导出买家需求与线索报表</div>
                     </div>
                   </label>
 
@@ -765,7 +744,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
               <div className="p-4.5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-3">
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  <span>销售助手与客户跟进</span>
+                  <span>客户与销售</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   
@@ -777,8 +756,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800">客户公私海划转与转交</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">将客户移入公海池或转让给其他同事</div>
+                      <div className="font-bold text-slate-800">公私海划转与转交</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">客户在公海与私海之间划转流转</div>
                     </div>
                   </label>
 
@@ -790,11 +769,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-1">
-                        <span>生成特批底价报价单</span>
-                        <span className="text-[9px] bg-amber-100 text-amber-800 px-1 py-0.2 rounded font-bold">核心定价</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">越过常规折扣生成特批工程 FOB 价格</div>
+                      <div className="font-bold text-slate-800">生成工程特批底价单</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">越过常规折扣生成特批工程报价</div>
                     </div>
                   </label>
 
@@ -806,8 +782,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800">强制修改客户生命周期标签</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">变更客户意向等级与商机跟进阶段</div>
+                      <div className="font-bold text-slate-800">变更客户阶段与标签</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">调整客户生命周期与意向状态</div>
                     </div>
                   </label>
 
@@ -818,7 +794,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
               <div className="p-4.5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-3">
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-pink-500" />
-                  <span>运营助手与海外社媒矩阵</span>
+                  <span>营销与运营</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   
@@ -830,11 +806,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-1">
-                        <span>社媒发布计划终审与驳回</span>
-                        <span className="text-[9px] bg-purple-100 text-purple-800 px-1 py-0.2 rounded font-bold">内容终审</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">审核 TikTok/YouTube 图文视频发布</div>
+                      <div className="font-bold text-slate-800">社媒发布审核</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">审核海外矩阵内容发布计划</div>
                     </div>
                   </label>
 
@@ -846,8 +819,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800">直连社媒 API 一键发布</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">免审核直接推送内容至海外官方账号</div>
+                      <div className="font-bold text-slate-800">直连社媒一键发布</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">直接推送到海外官方社交账号</div>
                     </div>
                   </label>
 
@@ -859,8 +832,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800">批量调用 AI 生成视频与文案</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">高频批量生成多语种外贸种草脚本</div>
+                      <div className="font-bold text-slate-800">批量生成视频与文案</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">批量生成多语种营销内容</div>
                     </div>
                   </label>
 
@@ -871,7 +844,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
               <div className="p-4.5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-3">
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span>知识库管理与核心资产</span>
+                  <span>知识库管理</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   
@@ -883,11 +856,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-1">
-                        <span>工艺词条免审直接发布上线</span>
-                        <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold">直接生效</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">知识库更新无需主管审批即刻进 RAG 库</div>
+                      <div className="font-bold text-slate-800">免审发布知识词条</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">知识条目更新无需审批即生效</div>
                     </div>
                   </label>
 
@@ -899,11 +869,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-1">
-                        <span>触发向量库全量重建</span>
-                        <span className="text-[9px] bg-red-100 text-red-700 px-1 py-0.2 rounded font-bold">高危算力</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">对十万级知识切片执行 Embedding 重新切分</div>
+                      <div className="font-bold text-slate-800">触发向量库全量重建</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">执行切片重新分块与向量重建</div>
                     </div>
                   </label>
 
@@ -915,11 +882,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-1">
-                        <span>导出外贸定制工艺百科</span>
-                        <span className="text-[9px] bg-red-100 text-red-700 px-1 py-0.2 rounded font-bold">核心资产</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">导出包含激光封边/五金配置的企业全量资料</div>
+                      <div className="font-bold text-slate-800">导出外贸工艺百科</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">导出包含工艺与材质的企业资料</div>
                     </div>
                   </label>
 
@@ -930,7 +894,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
               <div className="p-4.5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-3">
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-purple-500" />
-                  <span>员工管理与系统安全</span>
+                  <span>员工与系统</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   
@@ -942,8 +906,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800">手动全量同步企业微信</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">触发企微通讯录 API 同步接口</div>
+                      <div className="font-bold text-slate-800">手动同步企业微信</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">触发通讯录数据实时拉取</div>
                     </div>
                   </label>
 
@@ -955,11 +919,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-1">
-                        <span>分配与变更员工角色</span>
-                        <span className="text-[9px] bg-red-100 text-red-700 px-1 py-0.2 rounded font-bold">高权</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">为企微同步员工授予系统角色</div>
+                      <div className="font-bold text-slate-800">分配与配置角色</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">为员工分配角色及授权范围</div>
                     </div>
                   </label>
 
@@ -971,8 +932,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800">调整员工每日 AI 算力上限</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">设定员工单日调用大模型次数</div>
+                      <div className="font-bold text-slate-800">调整员工算力限额</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">设定员工每日大模型调用上限</div>
                     </div>
                   </label>
 
@@ -984,11 +945,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                       className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 w-4 h-4 cursor-pointer"
                     />
                     <div>
-                      <div className="font-bold text-slate-800 flex items-center gap-1">
-                        <span>导出全平台审计日志</span>
-                        <span className="text-[9px] bg-red-100 text-red-700 px-1 py-0.2 rounded font-bold">合规安全</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">导出操作轨迹与 IP 访问流水</div>
+                      <div className="font-bold text-slate-800">导出审计日志</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">导出操作日志与访问流水</div>
                     </div>
                   </label>
 
@@ -1001,27 +959,20 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-7 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50">
-          <div className="text-xs text-slate-500 flex items-center gap-2">
-            <Info className="w-4 h-4 text-slate-400" />
-            <span>配置完成后，所有归属于「{roleName}」的员工权限在下一次刷新时自动同步生效。</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onClose}
-              className="px-5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/60 cursor-pointer transition-colors"
-            >
-              取消
-            </button>
-            <button
-              onClick={handleSave}
-              className="px-6 py-2 rounded-xl bg-[#EA3A20] hover:bg-[#d0311a] text-white text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer transition-all"
-            >
-              <Check className="w-4 h-4" />
-              <span>保存权限配置</span>
-            </button>
-          </div>
+        <div className="px-7 py-4 border-t border-slate-100 flex items-center justify-end gap-2.5 bg-slate-50">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200/60 cursor-pointer transition-colors"
+          >
+            取消
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-6 py-2 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-all active:scale-95"
+          >
+            <Check className="w-4 h-4" />
+            <span>保存权限</span>
+          </button>
         </div>
 
       </div>

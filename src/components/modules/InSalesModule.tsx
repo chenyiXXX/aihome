@@ -55,7 +55,12 @@ import {
   Quote,
   CheckSquare,
   Square,
-  Paperclip
+  Paperclip,
+  FileSpreadsheet,
+  Plus,
+  Trash2,
+  Download,
+  Package
 } from 'lucide-react';
 import { SessionItem, ChatMessage, ScriptItem } from '../../types';
 import { useVoiceToText } from '../../hooks/useVoiceToText';
@@ -314,118 +319,6 @@ export const mockWhatsAppChats: ExternalSocialChat[] = [
   }
 ];
 
-// Vector SVG QR Code for WhatsApp multi-device link
-const WhatsAppQrCodeSvg: React.FC<{ isScanning?: boolean }> = ({ isScanning }) => {
-  return (
-    <div className="relative p-2.5 bg-white rounded-2xl shadow-sm border border-slate-200 inline-block overflow-hidden group">
-      <svg className="w-36 h-36" viewBox="0 0 160 160" fill="currentColor">
-        {/* Top-left finder pattern */}
-        <rect x="10" y="10" width="36" height="36" rx="4" fill="#1E293B" />
-        <rect x="16" y="16" width="24" height="24" rx="2" fill="#FFFFFF" />
-        <rect x="22" y="22" width="12" height="12" rx="1.5" fill="#1E293B" />
-
-        {/* Top-right finder pattern */}
-        <rect x="114" y="10" width="36" height="36" rx="4" fill="#1E293B" />
-        <rect x="120" y="16" width="24" height="24" rx="2" fill="#FFFFFF" />
-        <rect x="126" y="22" width="12" height="12" rx="1.5" fill="#1E293B" />
-
-        {/* Bottom-left finder pattern */}
-        <rect x="10" y="114" width="36" height="36" rx="4" fill="#1E293B" />
-        <rect x="16" y="120" width="24" height="24" rx="2" fill="#FFFFFF" />
-        <rect x="22" y="126" width="12" height="12" rx="1.5" fill="#1E293B" />
-
-        {/* Data modules */}
-        <rect x="52" y="14" width="6" height="6" fill="#1E293B" />
-        <rect x="64" y="14" width="6" height="6" fill="#1E293B" />
-        <rect x="76" y="14" width="6" height="6" fill="#1E293B" />
-        <rect x="88" y="14" width="6" height="6" fill="#1E293B" />
-        <rect x="100" y="14" width="6" height="6" fill="#1E293B" />
-
-        <rect x="52" y="26" width="6" height="6" fill="#1E293B" />
-        <rect x="70" y="26" width="6" height="6" fill="#1E293B" />
-        <rect x="88" y="26" width="6" height="6" fill="#1E293B" />
-
-        <rect x="14" y="52" width="6" height="6" fill="#1E293B" />
-        <rect x="26" y="52" width="6" height="6" fill="#1E293B" />
-        <rect x="38" y="52" width="6" height="6" fill="#1E293B" />
-        <rect x="52" y="52" width="6" height="6" fill="#1E293B" />
-        <rect x="64" y="52" width="6" height="6" fill="#1E293B" />
-        <rect x="88" y="52" width="6" height="6" fill="#1E293B" />
-        <rect x="106" y="52" width="6" height="6" fill="#1E293B" />
-        <rect x="120" y="52" width="6" height="6" fill="#1E293B" />
-        <rect x="138" y="52" width="6" height="6" fill="#1E293B" />
-
-        <rect x="14" y="64" width="6" height="6" fill="#1E293B" />
-        <rect x="32" y="64" width="6" height="6" fill="#1E293B" />
-        <rect x="52" y="64" width="6" height="6" fill="#1E293B" />
-        <rect x="100" y="64" width="6" height="6" fill="#1E293B" />
-        <rect x="114" y="64" width="6" height="6" fill="#1E293B" />
-        <rect x="132" y="64" width="6" height="6" fill="#1E293B" />
-
-        <rect x="20" y="76" width="6" height="6" fill="#1E293B" />
-        <rect x="38" y="76" width="6" height="6" fill="#1E293B" />
-        <rect x="52" y="76" width="6" height="6" fill="#1E293B" />
-        <rect x="100" y="76" width="6" height="6" fill="#1E293B" />
-        <rect x="120" y="76" width="6" height="6" fill="#1E293B" />
-        <rect x="138" y="76" width="6" height="6" fill="#1E293B" />
-
-        <rect x="14" y="88" width="6" height="6" fill="#1E293B" />
-        <rect x="26" y="88" width="6" height="6" fill="#1E293B" />
-        <rect x="52" y="88" width="6" height="6" fill="#1E293B" />
-        <rect x="106" y="88" width="6" height="6" fill="#1E293B" />
-        <rect x="126" y="88" width="6" height="6" fill="#1E293B" />
-
-        <rect x="14" y="100" width="6" height="6" fill="#1E293B" />
-        <rect x="32" y="100" width="6" height="6" fill="#1E293B" />
-        <rect x="52" y="100" width="6" height="6" fill="#1E293B" />
-        <rect x="64" y="100" width="6" height="6" fill="#1E293B" />
-        <rect x="76" y="100" width="6" height="6" fill="#1E293B" />
-        <rect x="88" y="100" width="6" height="6" fill="#1E293B" />
-        <rect x="100" y="100" width="6" height="6" fill="#1E293B" />
-        <rect x="114" y="100" width="6" height="6" fill="#1E293B" />
-        <rect x="138" y="100" width="6" height="6" fill="#1E293B" />
-
-        <rect x="52" y="114" width="6" height="6" fill="#1E293B" />
-        <rect x="70" y="114" width="6" height="6" fill="#1E293B" />
-        <rect x="88" y="114" width="6" height="6" fill="#1E293B" />
-        <rect x="106" y="114" width="6" height="6" fill="#1E293B" />
-        <rect x="120" y="114" width="6" height="6" fill="#1E293B" />
-        <rect x="132" y="114" width="6" height="6" fill="#1E293B" />
-
-        <rect x="52" y="126" width="6" height="6" fill="#1E293B" />
-        <rect x="64" y="126" width="6" height="6" fill="#1E293B" />
-        <rect x="82" y="126" width="6" height="6" fill="#1E293B" />
-        <rect x="100" y="126" width="6" height="6" fill="#1E293B" />
-        <rect x="114" y="126" width="6" height="6" fill="#1E293B" />
-        <rect x="138" y="126" width="6" height="6" fill="#1E293B" />
-
-        <rect x="52" y="138" width="6" height="6" fill="#1E293B" />
-        <rect x="76" y="138" width="6" height="6" fill="#1E293B" />
-        <rect x="94" y="138" width="6" height="6" fill="#1E293B" />
-        <rect x="126" y="138" width="6" height="6" fill="#1E293B" />
-
-        {/* Center WhatsApp emblem */}
-        <rect x="60" y="60" width="40" height="40" rx="8" fill="#25D366" />
-        <path
-          d="M80 67 C73.37 67 68 72.37 68 79 C68 81.33 68.68 83.5 69.86 85.34 L68.5 90.5 L73.79 89.14 C75.57 90.22 77.72 90.86 80 90.86 C86.63 90.86 92 85.49 92 78.86 C92 72.23 86.63 67 80 67 Z"
-          fill="#FFFFFF"
-        />
-        <path
-          d="M76.5 73.5 C76.1 72.7 75.6 72.7 75.1 72.7 C74.8 72.7 74.4 72.7 74.1 73 C73.8 73.3 72.9 74.1 72.9 75.8 C72.9 77.5 74.1 79.1 74.3 79.3 C74.5 79.5 76.7 82.9 80 84.4 C82.8 85.6 83.4 85.3 84 85.2 C84.8 85.1 86.4 84.2 86.8 83.1 C87.2 82 87.2 81 87.1 80.8 C87 80.6 86.6 80.5 86 80.2 C85.4 79.9 82.8 78.6 82.3 78.4 C81.8 78.2 81.5 78.1 81.1 78.6 C80.7 79.1 79.8 80.2 79.5 80.5 C79.2 80.8 78.9 80.8 78.3 80.5 C77.7 80.2 75.9 79.6 73.8 77.7 C72.1 76.2 71 74.4 70.7 73.9 C70.4 73.4 70.7 73.1 71 72.8 C71.3 72.5 71.6 72.1 71.9 71.7 C72.2 71.3 72.3 71 72.5 70.6 C72.7 70.2 72.6 69.8 72.4 69.5 C72.2 69.2 71.2 66.8 70.8 65.8"
-          fill="#25D366"
-        />
-      </svg>
-
-      {/* Laser Scanning Animation bar */}
-      <div
-        className={`absolute left-0 right-0 h-0.5 bg-emerald-500 shadow-[0_0_8px_#10B981] transition-all ${
-          isScanning ? 'animate-bounce opacity-100' : 'opacity-60 top-1/2'
-        }`}
-      />
-    </div>
-  );
-};
-
 interface InSalesModuleProps {
   sessions: SessionItem[];
   chatMessages: ChatMessage[];
@@ -447,6 +340,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   });
   const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(false);
   const [isRightProfileCollapsed, setIsRightProfileCollapsed] = useState<boolean>(false);
+  const [showQuoteDetailsModal, setShowQuoteDetailsModal] = useState<boolean>(false);
   
   // Replace the direct customer chat with an AI Copilot chat
   const initialAiMessages: ChatMessage[] = [
@@ -490,8 +384,20 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
         }
       ],
       citations: [
-        { id: 'kb-01', title: '《柜体板材防潮防水性能对比白皮书》', version: 'v2.1' },
-        { id: 'kb-02', title: '《工厂实验室测试数据标准手册》', version: 'v1.4' }
+        {
+          id: 'kb-01',
+          title: '《柜体板材防潮防水性能对比白皮书》',
+          version: 'v2.1',
+          category: '基材工艺标准',
+          excerpt: '经 SGS 浸水检测：多层实木在 PUR 封边工艺下，耐水泡膨胀率<0.5%，达到欧标 EN312 P3 级防水防潮要求。'
+        },
+        {
+          id: 'kb-02',
+          title: '《工厂实验室测试数据标准手册》',
+          version: 'v1.4',
+          category: '实验室质检规范',
+          excerpt: '72小时恒温恒湿循环浸泡实验中，多层实木结构胶合强度≥1.0MPa，无开裂分层现象。'
+        }
       ]
     },
     {
@@ -525,7 +431,13 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     }
   ];
   const [messages, setMessages] = useState<ChatMessage[]>(initialAiMessages);
-  const [expandedCitations, setExpandedCitations] = useState<string[]>([]);
+  const [activeCitationModal, setActiveCitationModal] = useState<{
+    id: string;
+    title: string;
+    version: string;
+    category?: string;
+    excerpt?: string;
+  } | null>(null);
   const [inputMessage, setInputMessage] = useState('');
   const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
   const [previewModalImage, setPreviewModalImage] = useState<{ url: string; name: string } | null>(null);
@@ -583,9 +495,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     }
   };
 
-  const toggleCitations = (msgId: string) => {
-    setExpandedCitations(prev => prev.includes(msgId) ? prev.filter(id => id !== msgId) : [...prev, msgId]);
-  };
   const [profileTab, setProfileTab] = useState<'history' | 'tags' | 'assets' | 'knowledge'>('history');
   const [activeTab, setActiveTab] = useState<'企微' | 'WhatsApp' | '线下对接'>('企微');
   const [statusFilter, setStatusFilter] = useState<string>('跟进中');
@@ -629,9 +538,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   // Audio Playback simulation
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  // Social chat sync & WhatsApp auth state
-  const [isWhatsAppAuthorized, setIsWhatsAppAuthorized] = useState<boolean>(false);
-  const [isQrScanning, setIsQrScanning] = useState<boolean>(false);
+  // Social chat sync state
   const [selectedExternalChatId, setSelectedExternalChatId] = useState<string | null>(null);
   const [externalChatFilter, setExternalChatFilter] = useState<'all' | 'personal' | 'group'>('all');
   const [externalChatSearch, setExternalChatSearch] = useState<string>('');
@@ -715,6 +622,53 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   const singleCbm = (cbmLength * cbmWidth * cbmHeight) / 1000000;
   const totalCbm = singleCbm * cbmQty;
   const fillRate = Math.min(100, Math.round((totalCbm / 68.0) * 100));
+
+  // Quotation / Proforma Invoice (PI) Generator Modal
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [quoteCustomerName, setQuoteCustomerName] = useState('Franklin Jr (Miami Villa)');
+  const [quoteProjectName, setQuoteProjectName] = useState('迈阿密顶层复式全案整木高定');
+  const [quoteCurrency, setQuoteCurrency] = useState<'USD' | 'EUR' | 'CNY'>('USD');
+  const [quoteTradeTerm, setQuoteTradeTerm] = useState('CIF Miami');
+  const [quoteDesignFiles, setQuoteDesignFiles] = useState<Array<{ name: string; size: string; type: string }>>([
+    { name: 'Miami_Villa_Kitchen_Cabinet_v2.dwg', size: '4.8 MB', type: 'dwg' },
+    { name: 'Master_WalkIn_Wardrobe_Renderings.pdf', size: '12.4 MB', type: 'pdf' }
+  ]);
+  const [quoteItems, setQuoteItems] = useState<Array<{
+    id: string;
+    name: string;
+    spec: string;
+    qty: number;
+    unit: string;
+    price: number;
+  }>>([
+    {
+      id: 'qi-1',
+      name: '主厨现代极简橱柜定制 (含中岛台)',
+      spec: '进口爱格板W1000 + 45°斜切无拉手 + 纯白岩板台面',
+      qty: 12.5,
+      unit: '延米',
+      price: 680
+    },
+    {
+      id: 'qi-2',
+      name: '主卧实木步入式衣帽间系统',
+      spec: '多层实木高定柜体 + 铝框茶玻门 + 嵌入式暖光感应灯带',
+      qty: 24,
+      unit: '㎡',
+      price: 450
+    },
+    {
+      id: 'qi-3',
+      name: '奥地利百隆 (Blum) 原装阻尼五金系统',
+      spec: '集成顶配阻尼缓冲铰链 48只 + 豪华骑马抽屉 12套',
+      qty: 1,
+      unit: '套',
+      price: 1850
+    }
+  ]);
+  const [quoteDepositPercent, setQuoteDepositPercent] = useState<number>(30);
+  const [quoteLeadTime, setQuoteLeadTime] = useState<string>('25~30 工作日 (确认图纸与色板后)');
+  const [quoteExportSuccess, setQuoteExportSuccess] = useState<string | null>(null);
 
   const handleSendMessage = (textToSend?: string) => {
     const text = textToSend || inputMessage;
@@ -875,8 +829,20 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
               messageType: 'text_file',
               attachments: attachments,
               citations: [
-                { id: 'kb-03', title: '《外贸高定RAL色卡与表面烤漆工艺规范》', version: 'v2.0' },
-                { id: 'kb-04', title: '《外贸报价单与合同转化标准话术手册》', version: 'v1.5' }
+                {
+                  id: 'kb-03',
+                  title: '《外贸高定RAL色卡与表面烤漆工艺规范》',
+                  version: 'v2.0',
+                  category: '高定表面处理工艺',
+                  excerpt: '技术规范：RAL 5004（海军蓝）采用底漆两遍+面漆三遍纳米哑光烘烤工艺，附着力达 0 级，耐磨耐划。'
+                },
+                {
+                  id: 'kb-04',
+                  title: '《外贸报价单与合同转化标准话术手册》',
+                  version: 'v1.5',
+                  category: '商务谈判指南',
+                  excerpt: '商务指引：外贸定制柜体标准条款 30% T/T 定金锁定船期排产，交期25-30工作日，出厂前提供完整试装视频。'
+                }
               ]
             };
           }
@@ -911,14 +877,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   const handleClearExternalChatSelection = () => {
     setSelectedExternalChatId(null);
     setIsChatPickerOpen(false);
-  };
-
-  const handleSimulateWhatsAppScan = () => {
-    setIsQrScanning(true);
-    setTimeout(() => {
-      setIsQrScanning(false);
-      setIsWhatsAppAuthorized(true);
-    }, 1200);
   };
 
   const handleCreateSession = (e: React.FormEvent) => {
@@ -973,35 +931,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
       setRawRecordText(`[导入聊天文件: ${file.name}]\n客户：“你好，我们在广州珠江新城有一套360平米的顶复豪宅，需要全案定制。主卧需要爱格W1000板材的步入式衣帽间，客厅整面要做碳晶护墙板和磁吸隐藏门。预算大概50万以内，要求下个月15号前打样确认并排期进场。”\n销售：“收到！我们有德国百隆五金和爱格官方授权，可提供1:1节点图与色板包邮送样。”`);
     } else {
       setRawRecordText(`[语音识别音频文件: ${file.name} | 时长: 03分42秒]\n【客户发言】：我们是杭州极简美学设计院的李工，负责千岛湖高端度假独栋项目。对墙板防潮和柜体环保等级要求极高（必须达到ENF级或日本F4星）。你们实木贴皮和碳晶板的阻燃报告（BS5852 / B1级）能否下周附在报价单里？\n【销售回应】：没问题李工，我们所有工程板材均具备国家阻燃及环保双重认证，随时可安排打样专函寄送。`);
-    }
-  };
-
-  // Preset Sample Loader for quick demo testing
-  const loadPresetDemo = (preset: 'chat_villa' | 'audio_hotel' | 'whatsapp_export') => {
-    setIsAiAnalyzing(false);
-    setAiAnalysisCompleted(false);
-    
-    if (preset === 'chat_villa') {
-      setRecordInputMode('chat_upload');
-      setUploadedFileName('微信聊天记录_深圳湾一号业主张先生_202608.txt');
-      setUploadedFileSize('128 KB');
-      setRawRecordText(`【微信聊天记录导录】
-张先生(14:22): 你好，朋友推荐你们家做高定很专业。我深圳湾一号280平大平层准备开工，全屋需要做隐形门系统和爱格板衣帽间。
-销售(14:25): 张总您好！非常荣幸，深圳湾一号我们刚做完两套同户型全案，对承重墙及中央空调隐藏式回风口收口非常熟练。
-张先生(14:30): 太好了，我预算在35-45万左右，希望能尽快看到碳晶护墙板实物小样和爱格板色卡，下周三能否安排上门量尺？
-销售(14:32): 没问题张总，已为您锁定资深深化设计师，周三上午10点准时携带色板箱前往现场量尺！`);
-    } else if (preset === 'audio_hotel') {
-      setRecordInputMode('audio_upload');
-      setUploadedFileName('展会面谈录音_迪拜精品酒店定制采购总监_2026.mp3');
-      setUploadedFileSize('8.6 MB');
-      setRawRecordText(`【面谈现场录音转写】
-客户代表(Tariq): We are sourcing customized joinery and fire-rated wall panels for a 45-villa resort in Palm Jumeirah. All woodwork must meet BS5852 standard with PVD titanium brass trims. Total volume estimated around 12x 40HQ containers.
-销售业务员(Sophia): Excellent, Tariq. We have full ISO and British Standard test reports for all our fire-resistant core panels, and our in-house PVD coating line ensures exact color consistency. We can dispatch master sample boxes to your Dubai office within 4 business days.`);
-    } else {
-      setRecordInputMode('chat_upload');
-      setUploadedFileName('WhatsApp_Chat_Apex_Architecture_US.txt');
-      setUploadedFileSize('64 KB');
-      setRawRecordText(`David Miller (Apex Arch US): Can you supply customized oak veneer fluted panels for our Miami penthouse project? Total ceiling height 3.2m, need seamless joint detailing. Budget is around $80,000 USD for the wood package.`);
     }
   };
 
@@ -1258,24 +1187,18 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         </span>
                       </div>
 
-                      {/* Quick Status Pill */}
-                      <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <select
-                          value={sess.status}
-                          onChange={(e) => handleStatusChange(sess.id, e.target.value)}
-                          className={`appearance-none h-5 pl-2 pr-5 rounded-full border text-[10px] font-bold focus:outline-none cursor-pointer transition-colors ${
-                            sess.status === '跟进中' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                            sess.status === '已报价' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                            sess.status === '已成交' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                      {/* Status Badge */}
+                      <div className="shrink-0">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                            sess.status === '跟进中' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                            sess.status === '已报价' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                            sess.status === '已成交' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                             'bg-slate-100 text-slate-600 border-slate-200'
                           }`}
                         >
-                          <option value="跟进中">跟进中</option>
-                          <option value="已报价">已报价</option>
-                          <option value="已成交">已成交</option>
-                          <option value="已流失">已流失</option>
-                        </select>
-                        <ChevronDown className="w-2.5 h-2.5 text-slate-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          {sess.status}
+                        </span>
                       </div>
                     </div>
 
@@ -1310,25 +1233,10 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
             )}
           </div>
 
-          {/* Left Footer: Count & Pagination */}
+          {/* Left Footer: Session count & status */}
           <div className="p-2.5 px-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-[11px] text-slate-500">
-            <span>共 {filteredSessions.length} 条会话</span>
-            <div className="flex items-center gap-1.5">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="px-2 py-0.5 rounded border border-slate-200 text-[11px] text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white cursor-pointer"
-              >
-                上一页
-              </button>
-              <span className="px-1.5 font-bold text-slate-700">1</span>
-              <button
-                disabled={true}
-                className="px-2 py-0.5 rounded border border-slate-200 text-[11px] text-slate-400 disabled:opacity-40 cursor-not-allowed"
-              >
-                下一页
-              </button>
-            </div>
+            <span>共 {filteredSessions.length} 个活跃会话</span>
+            <span className="text-[10px] text-slate-400">实时同步</span>
           </div>
         </div>
 
@@ -1501,28 +1409,54 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                 )}
                                 
                                 {m.citations && m.citations.length > 0 && (
-                                  <div className="mt-3 pt-2 border-t border-slate-100">
-                                    <button 
-                                      onClick={() => toggleCitations(m.id)}
-                                      className="text-[10px] text-slate-500 hover:text-indigo-600 flex items-center gap-1 font-bold cursor-pointer transition-colors"
-                                    >
-                                      <BookOpen className="w-3 h-3" /> 查看知识库引用 ({m.citations.length})
-                                      <ChevronDown className={`w-3 h-3 transition-transform ${expandedCitations.includes(m.id) ? 'rotate-180' : ''}`} />
-                                    </button>
-                                    
-                                    {expandedCitations.includes(m.id) && (
-                                      <div className="flex flex-col gap-1.5 mt-2">
-                                        {m.citations.map(cit => (
-                                          <div key={cit.id} className="flex items-center justify-between px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-md hover:bg-indigo-50 hover:border-indigo-200 cursor-pointer transition-colors group">
-                                            <div className="flex items-center gap-2">
-                                              <FileText className="w-3.5 h-3.5 text-indigo-500" />
-                                              <span className="text-[11px] text-slate-700 font-bold group-hover:text-indigo-700">{cit.title}</span>
+                                  <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1 shrink-0">
+                                      <BookOpen className="w-3 h-3 text-slate-400" />
+                                      引用来源
+                                    </span>
+                                    {m.citations.map((cit, citIdx) => (
+                                      <div key={cit.id} className="relative group/cit">
+                                        <button
+                                          type="button"
+                                          onClick={() => setActiveCitationModal(cit)}
+                                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100/90 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200/80 hover:border-indigo-200 text-[10px] font-medium transition-colors cursor-pointer"
+                                        >
+                                          <span className="font-mono font-bold text-indigo-600">[{citIdx + 1}]</span>
+                                          <span className="max-w-[130px] truncate">{cit.title.replace(/^《|》$/g, '')}</span>
+                                        </button>
+
+                                        {/* Floating lightweight popover on hover */}
+                                        <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover/cit:flex flex-col z-50 w-72 p-3 bg-white rounded-xl shadow-xl border border-slate-200 text-left animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                          <div className="flex items-start justify-between gap-2 pb-1.5 border-b border-slate-100">
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                              <span className="shrink-0 w-4 h-4 rounded bg-indigo-50 text-indigo-600 font-mono text-[10px] font-bold flex items-center justify-center">
+                                                {citIdx + 1}
+                                              </span>
+                                              <span className="text-xs font-bold text-slate-800 truncate">
+                                                {cit.title}
+                                              </span>
                                             </div>
-                                            <span className="text-[10px] text-slate-400 font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200 group-hover:border-indigo-200">{cit.version}</span>
+                                            <span className="text-[9px] font-mono px-1 py-0.5 bg-slate-100 text-slate-500 rounded border border-slate-200 shrink-0">
+                                              {cit.version}
+                                            </span>
                                           </div>
-                                        ))}
+                                          {cit.category && (
+                                            <div className="mt-1 text-[10px] text-indigo-600 font-semibold">
+                                              分类: {cit.category}
+                                            </div>
+                                          )}
+                                          <p className="mt-1 text-[11px] text-slate-600 leading-relaxed">
+                                            {cit.excerpt || '收录于企业工艺与标准知识库，经工厂实验室验证与专家审核的权威依据。'}
+                                          </p>
+                                          <div className="mt-2 pt-1.5 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-400">
+                                            <span>点击查看完整来源</span>
+                                            <span className="text-indigo-600 font-medium flex items-center gap-0.5">
+                                              权威知识库 <ArrowRight className="w-2.5 h-2.5" />
+                                            </span>
+                                          </div>
+                                        </div>
                                       </div>
-                                    )}
+                                    ))}
                                   </div>
                                 )}
                               </div>
@@ -1579,10 +1513,17 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     <div className="flex items-center justify-between text-xs text-slate-500 pb-1">
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => setShowCbmCalc(true)}
-                          className="flex items-center gap-1 hover:text-[#EA3A20] cursor-pointer font-bold transition-colors"
+                          onClick={() => setShowQuoteModal(true)}
+                          className="flex items-center gap-1 hover:text-[#EA3A20] text-slate-700 cursor-pointer font-bold transition-colors"
                         >
-                          <Calculator className="w-3.5 h-3.5 text-amber-500" /> 生成报价单
+                          <FileSpreadsheet className="w-3.5 h-3.5 text-[#EA3A20]" /> 生成报价单 (PI)
+                        </button>
+
+                        <button
+                          onClick={() => setShowCbmCalc(true)}
+                          className="flex items-center gap-1 hover:text-[#EA3A20] text-slate-700 cursor-pointer font-bold transition-colors"
+                        >
+                          <Calculator className="w-3.5 h-3.5 text-amber-500" /> CBM 材积测算
                         </button>
 
                         <label className="flex items-center gap-1 hover:text-[#EA3A20] text-slate-500 cursor-pointer font-bold transition-colors">
@@ -1599,110 +1540,90 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                           />
                         </label>
                       </div>
-
-                      {/* Input Method Switcher */}
-                      <div className="flex items-center gap-1 bg-slate-100/90 p-0.5 rounded-xl text-[11px] font-bold">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (isListening) stopListening();
-                            setInputMode('keyboard');
-                          }}
-                          className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                            inputMode === 'keyboard' && !isListening
-                              ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                              : 'text-slate-500 hover:text-slate-800'
-                          }`}
-                        >
-                          <Keyboard className="w-3 h-3 text-slate-600" />
-                          <span>键盘输入</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleToggleVoice}
-                          className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
-                            isListening || inputMode === 'voice'
-                              ? 'bg-[#EA3A20] text-white shadow-2xs font-bold animate-pulse'
-                              : 'text-slate-500 hover:text-[#EA3A20]'
-                          }`}
-                        >
-                          <Mic className="w-3 h-3" />
-                          <span>{isListening ? '录音中...' : '语音转文字'}</span>
-                        </button>
-                      </div>
                     </div>
 
-                    {/* Quoted messages preview pill area */}
+                    {/* Compact Quoted messages preview bar */}
                     {pendingQuotedMessages.length > 0 && (
-                      <div className="p-2.5 bg-rose-50/70 border border-[#EA3A20]/30 rounded-2xl space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-1.5 font-bold text-[#EA3A20]">
-                            <Quote className="w-3.5 h-3.5" />
-                            <span>已引用社媒记录 ({pendingQuotedMessages.length}条) 作为提问上下文：</span>
-                          </div>
+                      <div className="flex items-center justify-between px-3 py-2 bg-rose-50/80 border border-rose-200 rounded-xl text-xs">
+                        <div className="flex items-center gap-2 font-bold text-[#EA3A20] truncate">
+                          <Quote className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">已引用 {pendingQuotedMessages.length} 条社媒记录作为提问上下文</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setShowQuoteDetailsModal(true)}
+                            className="text-[11px] text-[#EA3A20] hover:underline font-bold cursor-pointer"
+                          >
+                            查看 / 管理
+                          </button>
+                          <span className="text-slate-300">|</span>
                           <button
                             type="button"
                             onClick={handleClearAllQuotes}
-                            className="text-[11px] text-slate-500 hover:text-[#EA3A20] font-medium flex items-center gap-0.5 cursor-pointer"
+                            className="text-[11px] text-slate-500 hover:text-red-600 font-medium cursor-pointer"
                           >
-                            <X className="w-3 h-3" /> 清空全部
+                            清空
                           </button>
                         </div>
+                      </div>
+                    )}
 
-                        {/* List of quoted messages */}
-                        <div className="flex flex-col gap-1.5 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
-                          {pendingQuotedMessages.map((qm) => (
-                            <div
-                              key={qm.id}
-                              className="flex items-center justify-between gap-2 p-2 bg-white rounded-xl border border-rose-100 shadow-2xs text-xs"
+                    {/* Modal to view / manage quoted messages */}
+                    {showQuoteDetailsModal && (
+                      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+                        <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                            <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                              <Quote className="w-4 h-4 text-[#EA3A20]" />
+                              已引用的社媒沟通记录 ({pendingQuotedMessages.length}条)
+                            </h3>
+                            <button
+                              onClick={() => setShowQuoteDetailsModal(false)}
+                              className="w-7 h-7 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
                             >
-                              <div className="flex items-center gap-2 min-w-0 flex-1">
-                                <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                  qm.sender === 'sales' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'
-                                }`}>
-                                  {qm.senderName || (qm.sender === 'sales' ? '我' : '客户')}
-                                </span>
-                                <span className="text-slate-700 truncate text-[11px]">
-                                  {qm.content}
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemovePendingQuote(qm.id)}
-                                className="text-slate-400 hover:text-red-500 p-0.5 rounded transition-colors shrink-0 cursor-pointer"
-                                title="移除此条引用"
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="p-4 space-y-2.5 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                            {pendingQuotedMessages.map((qm) => (
+                              <div
+                                key={qm.id}
+                                className="flex items-center justify-between gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs"
                               >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Quick Prompt Presets for quoted context */}
-                        <div className="pt-1 flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] text-slate-500 font-bold">快捷提问建议：</span>
-                          <button
-                            type="button"
-                            onClick={() => handleApplyQuotePromptPreset('针对客户引用的这几条消息，我该如何专业回复？给出中英双语版本与跟进建议。')}
-                            className="px-2 py-0.5 bg-white hover:bg-rose-100/60 text-[#EA3A20] border border-rose-200 rounded-md text-[10px] font-medium transition-colors cursor-pointer"
-                          >
-                            💡 生成中英回复话术
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleApplyQuotePromptPreset('客户提到的定制颜色（RAL 5004 海军蓝），是否需要额外加价？请给出工艺说明与渲染图。')}
-                            className="px-2 py-0.5 bg-white hover:bg-rose-100/60 text-[#EA3A20] border border-rose-200 rounded-md text-[10px] font-medium transition-colors cursor-pointer"
-                          >
-                            🎨 确认调色加价与工艺
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleApplyQuotePromptPreset('根据客户这些提问，分析客户成交意向，并制定下一步逼单策略。')}
-                            className="px-2 py-0.5 bg-white hover:bg-rose-100/60 text-[#EA3A20] border border-rose-200 rounded-md text-[10px] font-medium transition-colors cursor-pointer"
-                          >
-                            📈 分析成交意向与逼单
-                          </button>
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                  <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                    qm.sender === 'sales' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'
+                                  }`}>
+                                    {qm.senderName || (qm.sender === 'sales' ? '我' : '客户')}
+                                  </span>
+                                  <span className="text-slate-700 truncate text-xs">
+                                    {qm.content}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemovePendingQuote(qm.id)}
+                                  className="text-slate-400 hover:text-red-500 p-1 rounded transition-colors shrink-0 cursor-pointer"
+                                  title="移除此条引用"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                            <span className="text-[11px] text-slate-500">
+                              AI 将结合以上引用的真实对话进行高定话术生成
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowQuoteDetailsModal(false)}
+                              className="px-4 py-1.5 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                            >
+                              确定
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1725,8 +1646,8 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         }}
                         placeholder={
                           isListening
-                            ? '正在倾听语音转文字中... 也可以直接在键盘打字输入...'
-                            : '向 AI 销售助手提问，支持键盘打字、Ctrl+V 粘贴图片/文件、直接拖拽文件或点击麦克风语音转文字...'
+                            ? '正在语音录入，Enter 发送...'
+                            : '输入问题或沟通难点，Enter 发送...'
                         }
                         className="flex-1 p-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20] resize-none"
                       />
@@ -1739,7 +1660,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                             ? 'bg-red-600 text-white shadow-xs animate-pulse ring-2 ring-red-300'
                             : 'bg-white hover:bg-slate-200/80 text-slate-600 border border-slate-200/80 shadow-2xs hover:text-[#EA3A20]'
                         }`}
-                        title={isListening ? '点击完成语音录入' : '点击开始语音转文字'}
+                        title={isListening ? '点击完成语音录入' : '语音输入'}
                       >
                         {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                       </button>
@@ -1757,14 +1678,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                       >
                         <Send className="w-3.5 h-3.5" /> 发送
                       </button>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-0.5">
-                      <span>支持 Enter 发送、Shift+Enter 换行、快捷键 Ctrl+V 粘贴图片/文件，或直接鼠标拖拉文件至此发送</span>
-                      <span className="flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                        <span>AI 销售实战辅助 & 合规保密保障</span>
-                      </span>
                     </div>
                   </div>
 
@@ -1898,17 +1811,14 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                       </div>
                                     )}
 
-                                    {/* Hover Quote action hint */}
-                                    <div className="pt-0.5 flex items-center justify-between text-[10px]">
-                                      <span className={`font-medium ${isSelected ? 'text-[#EA3A20]' : 'text-slate-400 group-hover:text-slate-600'}`}>
-                                        {isSelected ? '✓ 已引用至提问框' : '点击引用此条'}
-                                      </span>
-                                      {isSelected && (
-                                        <span className="text-[10px] text-[#EA3A20] bg-white px-1.5 py-0.5 rounded border border-[#EA3A20]/20 font-bold">
-                                          已引用
+                                    {/* Selected indicator badge */}
+                                    {isSelected && (
+                                      <div className="pt-0.5 flex items-center justify-end">
+                                        <span className="text-[10px] text-[#EA3A20] bg-rose-50 px-1.5 py-0.5 rounded font-medium">
+                                          已选入引用
                                         </span>
-                                      )}
-                                    </div>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -2053,13 +1963,9 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    新建AI会话
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#0F4A47]/10 text-[#0F4A47] font-semibold flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-[#EA3A20]" /> 支持 AI 沟通解析
-                    </span>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    新建会话
                   </h3>
-                  <p className="text-[11px] text-slate-400">销售人员建联客户，支持直接关联同步企微/WhatsApp对话或手动录入面谈语音</p>
                 </div>
               </div>
               <button
@@ -2131,7 +2037,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                 </div>
               </div>
 
-              {/* 企微专属：已授权说明 & 紧凑高密度对话选择器 (支持上百个私聊/群聊快速检索与最近推荐) */}
+              {/* 企微专属：紧凑对话选择器 */}
               {newChannel === '企微' && (
                 <div ref={chatPickerRef} className="bg-blue-50/40 rounded-2xl p-3.5 border border-blue-100 space-y-2.5">
                   <div className="flex items-center justify-between">
@@ -2139,17 +2045,9 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                       <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
                       <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                         <Link2 className="w-3.5 h-3.5 text-blue-600" />
-                        关联企业微信对话
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full bg-blue-100/80 text-blue-700 text-[10px] font-medium">
-                        已授权员工账号 (Franklin Jr · 100+ 会话可用)
+                        关联对话
                       </span>
                     </div>
-                    {selectedExternalChatId && (
-                      <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
-                        <Check className="w-3 h-3" /> 已自动载入聊天记录与客户画像
-                      </span>
-                    )}
                   </div>
 
                   {/* 如果已选中对话：展示紧凑优雅的单行已关联卡片（仅高约48px，不占表单空间） */}
@@ -2238,7 +2136,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                           <div className="flex items-center gap-2 text-slate-600 min-w-0">
                             <Search className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                             <span className="text-[11px] text-slate-600 truncate">
-                              点击从企微通讯录搜索或选择对话 (支持 100+ 私聊与群聊)...
+                              搜索或选择企微对话...
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0">
@@ -2463,106 +2361,21 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                 </div>
               )}
 
-              {/* WhatsApp 专属：未授权扫码流程 vs 紧凑高密度对话选择器 */}
+              {/* WhatsApp 专属：紧凑对话选择器 */}
               {newChannel === 'WhatsApp' && (
                 <div ref={chatPickerRef} className="bg-emerald-50/40 rounded-2xl p-3.5 border border-emerald-100 space-y-2.5">
-                  {!isWhatsAppAuthorized ? (
-                    /* 未授权状态：生成二维码让用户扫码授权 */
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                          <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-                            WhatsApp 账号未授权
-                          </span>
-                        </div>
-                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-medium">
-                          需扫码获取对话列表
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <Link2 className="w-3.5 h-3.5 text-emerald-600" />
+                          关联对话
                         </span>
                       </div>
-
-                      <div className="p-2.5 bg-amber-50/80 border border-amber-200/70 rounded-xl text-[11px] text-amber-800 leading-relaxed">
-                        由于员工尚未在系统授权个人 WhatsApp 账号，系统无法自动拉取对话。
-                        请让员工使用手机 WhatsApp 扫描下方二维码完成<strong>「关联设备 (Linked Devices)」</strong>授权，授权后即可同步该账号下的个人及外商项目群聊。
-                      </div>
-
-                      <div className="bg-white p-3.5 rounded-2xl border border-emerald-200/80 flex flex-col md:flex-row items-center gap-4 shadow-2xs">
-                        {/* 二维码生成区 */}
-                        <div className="flex flex-col items-center shrink-0">
-                          <WhatsAppQrCodeSvg isScanning={isQrScanning} />
-                          <div className="mt-1.5 text-center">
-                            <div className="text-[10px] text-slate-500 font-medium flex items-center gap-1 justify-center">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                              {isQrScanning ? '手机正在握手配对中...' : '等待员工手机扫码中 (动态密钥有效)'}
-                            </div>
-                            <div className="text-[9px] text-slate-400 mt-0.5">每 30 秒自动刷新配对安全码</div>
-                          </div>
-                        </div>
-
-                        {/* 扫码步骤与模拟扫码按钮 */}
-                        <div className="flex-1 space-y-2.5 text-left">
-                          <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                            <Smartphone className="w-4 h-4 text-emerald-600" />
-                            手机扫码授权步骤指引：
-                          </div>
-                          <ol className="space-y-1 text-[11px] text-slate-600 list-decimal list-inside leading-relaxed">
-                            <li>员工在手机打开 <strong>WhatsApp</strong> 应用</li>
-                            <li>进入「<strong>设置 (Settings)</strong>」&gt;「<strong>已关联设备 (Linked Devices)</strong>」</li>
-                            <li>点击「<strong>关联设备 (Link a Device)</strong>」，对准左侧屏幕二维码扫描</li>
-                          </ol>
-
-                          <div className="pt-2 border-t border-slate-100 flex items-center gap-3">
-                            <button
-                              type="button"
-                              onClick={handleSimulateWhatsAppScan}
-                              disabled={isQrScanning}
-                              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                            >
-                              {isQrScanning ? (
-                                <>
-                                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  <span>正在完成 WhatsApp 设备握手...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <QrCode className="w-3.5 h-3.5" />
-                                  <span>📱 模拟员工手机扫码完成授权</span>
-                                </>
-                              )}
-                            </button>
-                            <span className="text-[10px] text-slate-400">扫码成功后将自动解锁对话列表</span>
-                          </div>
-                        </div>
-                      </div>
                     </div>
-                  ) : (
-                    /* 已授权状态：紧凑高密度对话选择器 */
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                          <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                            <Link2 className="w-3.5 h-3.5 text-emerald-600" />
-                            关联 WhatsApp 海外对话
-                          </span>
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-medium flex items-center gap-1">
-                            <Check className="w-3 h-3 text-emerald-700" /> 已授权 (+86 138-2841-8899 · Franklin Jr)
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setIsWhatsAppAuthorized(false)}
-                            className="text-[10px] text-slate-400 hover:text-slate-600 underline cursor-pointer"
-                            title="重新模拟未授权扫码流程"
-                          >
-                            重新扫码/解绑
-                          </button>
-                        </div>
-                      </div>
 
-                      {/* 如果已选中对话：展示紧凑优雅的单行已关联卡片 */}
+                    {/* 如果已选中对话：展示紧凑优雅的单行已关联卡片 */}
                       {selectedExternalChatId && (() => {
                         const selectedChat = mockWhatsAppChats.find(c => c.id === selectedExternalChatId);
                         if (!selectedChat) return null;
@@ -2648,7 +2461,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                               <div className="flex items-center gap-2 text-slate-600 min-w-0">
                                 <Search className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                                 <span className="text-[11px] text-slate-600 truncate">
-                                  点击搜索或关联 WhatsApp 对话 (支持 Miami、Dubai 等外贸客商与项目群)...
+                                  搜索或选择 WhatsApp 对话...
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
@@ -2871,17 +2684,8 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         )}
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* 线下对接专属说明 */}
-              {newChannel === '线下对接' && (
-                <div className="bg-purple-50/50 rounded-2xl p-3 border border-purple-100 flex items-center gap-2 text-purple-800 text-[11px]">
-                  <AlertCircle className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>线下对接（展会面谈、展厅接待或工地量尺）无需绑定线上社媒，请在下方直接填写客户姓名、关联工程及标签，或上传/录制面谈语音。</span>
-                </div>
-              )}
+                  </div>
+                )}
 
               {/* 客户姓名 & 负责销售人员 */}
               <div className="grid grid-cols-2 gap-3">
@@ -2912,12 +2716,12 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                 </div>
               </div>
 
-              {/* 初始需求 / 建联记录 (支持手动输入 / 上传聊天记录 / 上传面谈录音 + AI解析) */}
+              {/* 客户需求备忘 (支持手动输入 / 上传聊天记录 / 上传面谈录音 + AI解析) */}
               <div className="space-y-2.5 pt-1">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <label className="text-slate-800 font-bold flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-[#0F4A47]" />
-                    初始需求 / 建联记录
+                    客户需求备忘
                   </label>
 
                   {/* 录入模式切换 Tab（企微和 WhatsApp 仅保留手动输入，线下对接才显示另外两项） */}
@@ -2974,29 +2778,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
                           <MessageSquare className="w-4 h-4" />
                         </div>
-                        <div>
-                          <div className="text-xs font-bold text-slate-800">上传客户聊天沟通内容</div>
-                          <div className="text-[10px] text-slate-400">支持微信/企微/WhatsApp 聊天截图、.txt 导录、文本或 PDF</div>
-                        </div>
-                      </div>
-
-                      {/* 快速演示样本 */}
-                      <div className="flex items-center gap-1.5 text-[10px]">
-                        <span className="text-slate-400">测试示例:</span>
-                        <button
-                          type="button"
-                          onClick={() => loadPresetDemo('chat_villa')}
-                          className="px-2 py-0.5 bg-white hover:bg-indigo-100 text-indigo-600 rounded-md font-bold border border-indigo-200 cursor-pointer"
-                        >
-                          豪宅私宅沟通
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => loadPresetDemo('whatsapp_export')}
-                          className="px-2 py-0.5 bg-white hover:bg-indigo-100 text-indigo-600 rounded-md font-bold border border-indigo-200 cursor-pointer"
-                        >
-                          WhatsApp 外贸
-                        </button>
+                        <div className="text-xs font-bold text-slate-800">上传客户聊天沟通内容</div>
                       </div>
                     </div>
 
@@ -3016,11 +2798,10 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     {!uploadedFileName ? (
                       <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-white/70 hover:bg-white rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5"
+                        className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-white/70 hover:bg-white rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1"
                       >
-                        <UploadCloud className="w-6 h-6 text-indigo-500" />
-                        <span className="text-xs font-bold text-slate-700">点击或拖拽聊天记录文件至此</span>
-                        <span className="text-[10px] text-slate-400">支持 .txt / .doc / .pdf / 微信截图</span>
+                        <UploadCloud className="w-5 h-5 text-indigo-500" />
+                        <span className="text-xs font-medium text-slate-600">点击或拖拽聊天记录文件至此</span>
                       </div>
                     ) : (
                       <div className="bg-white border border-indigo-200 rounded-xl p-2.5 flex items-center justify-between shadow-2xs">
@@ -3098,22 +2879,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
                           <Mic className="w-4 h-4" />
                         </div>
-                        <div>
-                          <div className="text-xs font-bold text-slate-800">上传面谈录音音频内容</div>
-                          <div className="text-[10px] text-slate-400">支持展会面谈、展厅验厂、电话会议音频（MP3 / M4A / WAV）</div>
-                        </div>
-                      </div>
-
-                      {/* 快速演示样本 */}
-                      <div className="flex items-center gap-1.5 text-[10px]">
-                        <span className="text-slate-400">测试示例:</span>
-                        <button
-                          type="button"
-                          onClick={() => loadPresetDemo('audio_hotel')}
-                          className="px-2 py-0.5 bg-white hover:bg-emerald-100 text-emerald-700 rounded-md font-bold border border-emerald-200 cursor-pointer"
-                        >
-                          展会面谈录音(迪拜)
-                        </button>
+                        <div className="text-xs font-bold text-slate-800">上传面谈录音音频内容</div>
                       </div>
                     </div>
 
@@ -3124,8 +2890,8 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                       className="hidden"
                       accept=".mp3,.wav,.m4a,.aac,.ogg"
                       onChange={(e) => {
-                        const file不易 = e.target.files?.[0];
-                        if (file不易) handleFileUpload(file不易, 'audio');
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'audio');
                       }}
                     />
 
@@ -3133,11 +2899,10 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     {!uploadedFileName ? (
                       <div
                         onClick={() => audioInputRef.current?.click()}
-                        className="border-2 border-dashed border-emerald-200 hover:border-emerald-400 bg-white/70 hover:bg-white rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5"
+                        className="border-2 border-dashed border-emerald-200 hover:border-emerald-400 bg-white/70 hover:bg-white rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1"
                       >
-                        <Mic className="w-6 h-6 text-emerald-600" />
-                        <span className="text-xs font-bold text-slate-700">点击或拖拽录音文件至此</span>
-                        <span className="text-[10px] text-slate-400">支持 MP3, M4A, WAV, AAC (最大 50MB)</span>
+                        <Mic className="w-5 h-5 text-emerald-600" />
+                        <span className="text-xs font-medium text-slate-600">点击或拖拽录音文件至此</span>
                       </div>
                     ) : (
                       <div className="bg-white border border-emerald-200 rounded-xl p-3 space-y-2 shadow-2xs">
@@ -3243,7 +3008,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     <div className="flex items-center justify-between text-xs font-bold text-slate-900">
                       <div className="flex items-center gap-1.5 text-amber-800">
                         <Sparkles className="w-4 h-4 text-[#EA3A20]" />
-                        <span>AI 智能解析成功！已提取客户核心意向并整理结构化需求</span>
+                        <span>已提取核心意向与需求</span>
                       </div>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
                         意向度: {aiExtractedSummary.urgencyLevel}
@@ -3252,11 +3017,11 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   </div>
                 )}
 
-                {/* 初始需求/建联记录 最终整理结果输入区 */}
+                {/* 需求备忘内容 */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] text-slate-500 font-medium">
-                      结构化客户需求摘要（保存后将作为初始沟通备忘录）：
+                      需求摘要与备忘：
                     </span>
                     {initialNote && (
                       <button
@@ -3272,7 +3037,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     rows={3}
                     value={initialNote}
                     onChange={(e) => setInitialNote(e.target.value)}
-                    placeholder="如：客户在展会了解碳晶板与实木定制，约定今日提供色板与CAD报价清单...（可直接输入，也可使用上方 AI 自动解析生成）"
+                    placeholder="输入或补充客户沟通要点与定制需求..."
                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20] leading-relaxed"
                   />
                 </div>
@@ -3390,6 +3155,457 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                 className="w-full py-2.5 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 插入核算结果至对话框
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quotation / Proforma Invoice (PI) Modal */}
+      {showQuoteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-6 flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-rose-50 text-[#EA3A20] flex items-center justify-center font-bold">
+                  <FileSpreadsheet className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-slate-900">生成外贸高定报价单 (Proforma Invoice / PI)</h3>
+                    <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 font-mono text-[10px] font-bold">
+                      PI-2026-F089
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    关联设计图纸/方案、设定定制品类规格与贸易结算条款，生成标准化正式 PI 单据
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowQuoteModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left 7 cols: Config form */}
+              <div className="lg:col-span-7 space-y-4">
+                {/* 1. Client & Project info */}
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-3">
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-[#EA3A20]" />
+                    客户与定制项目信息
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] text-slate-500 font-medium">客户抬头 (Bill To)</label>
+                      <input
+                        type="text"
+                        value={quoteCustomerName}
+                        onChange={(e) => setQuoteCustomerName(e.target.value)}
+                        className="w-full mt-1 p-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#EA3A20]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-slate-500 font-medium">工程项目名称</label>
+                      <input
+                        type="text"
+                        value={quoteProjectName}
+                        onChange={(e) => setQuoteProjectName(e.target.value)}
+                        className="w-full mt-1 p-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#EA3A20]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] text-slate-500 font-medium">结算币种 (Currency)</label>
+                      <select
+                        value={quoteCurrency}
+                        onChange={(e) => setQuoteCurrency(e.target.value as any)}
+                        className="w-full mt-1 p-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#EA3A20]"
+                      >
+                        <option value="USD">USD ($) - 美元结算</option>
+                        <option value="EUR">EUR (€) - 欧元结算</option>
+                        <option value="CNY">CNY (¥) - 人民币含税</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-slate-500 font-medium">贸易术语 (Incoterms)</label>
+                      <select
+                        value={quoteTradeTerm}
+                        onChange={(e) => setQuoteTradeTerm(e.target.value)}
+                        className="w-full mt-1 p-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#EA3A20]"
+                      >
+                        <option value="CIF Miami">CIF Miami (含海运及保险到迈阿密港)</option>
+                        <option value="FOB Shenzhen">FOB Shenzhen (深圳盐田港离岸价)</option>
+                        <option value="EXW Factory">EXW Factory (佛山工厂出厂交货)</option>
+                        <option value="DDP Los Angeles">DDP Los Angeles (双清含税到门)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Upload / Select Design Files */}
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Paperclip className="w-3.5 h-3.5 text-indigo-500" />
+                      关联设计图纸 / CAD / 效果图
+                    </div>
+                    <label className="text-[11px] text-indigo-600 hover:text-indigo-700 font-bold cursor-pointer flex items-center gap-1">
+                      <Plus className="w-3 h-3" /> 上传图纸文件
+                      <input
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            const newFiles = Array.from(e.target.files).map(f => ({
+                              name: f.name,
+                              size: `${(f.size / (1024 * 1024)).toFixed(1)} MB`,
+                              type: f.name.split('.').pop() || 'file'
+                            }));
+                            setQuoteDesignFiles(prev => [...prev, ...newFiles]);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {quoteDesignFiles.map((df, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200/80 text-xs"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-mono font-bold uppercase">
+                            {df.type}
+                          </span>
+                          <span className="text-slate-700 font-medium truncate text-xs">{df.name}</span>
+                          <span className="text-slate-400 text-[10px] shrink-0 font-mono">({df.size})</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setQuoteDesignFiles(prev => prev.filter((_, i) => i !== idx))}
+                          className="text-slate-400 hover:text-red-500 p-0.5 transition-colors cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Product Specification Lines */}
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Package className="w-3.5 h-3.5 text-amber-500" />
+                      定制产品配置清单
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuoteItems(prev => [
+                          ...prev,
+                          {
+                            id: `qi-${Date.now()}`,
+                            name: '客餐厅高定玄关柜系统',
+                            spec: '欧标E0级多层实木 + 进口哑光烤漆 + 百隆阻尼铰链',
+                            qty: 1,
+                            unit: '套',
+                            price: 1200
+                          }
+                        ]);
+                      }}
+                      className="text-[11px] text-[#EA3A20] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" /> 添加定制品类
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {quoteItems.map((it, idx) => (
+                      <div key={it.id} className="p-2.5 bg-white rounded-xl border border-slate-200/80 space-y-2 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-[10px] shrink-0">
+                            {idx + 1}
+                          </span>
+                          <input
+                            type="text"
+                            value={it.name}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setQuoteItems(prev => prev.map(item => item.id === it.id ? { ...item, name: val } : item));
+                            }}
+                            className="flex-1 p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800 text-xs"
+                            placeholder="品类名称 (如：主厨极简橱柜定制)"
+                          />
+                          {quoteItems.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setQuoteItems(prev => prev.filter(item => item.id !== it.id))}
+                              className="text-slate-400 hover:text-red-500 p-1 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        <div>
+                          <input
+                            type="text"
+                            value={it.spec}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setQuoteItems(prev => prev.map(item => item.id === it.id ? { ...item, spec: val } : item));
+                            }}
+                            className="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 text-[11px]"
+                            placeholder="材质说明 (如：爱格W1000/烤漆/百隆五金)"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-slate-500 shrink-0">数量:</span>
+                            <input
+                              type="number"
+                              value={it.qty}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setQuoteItems(prev => prev.map(item => item.id === it.id ? { ...item, qty: val } : item));
+                              }}
+                              className="w-14 p-1 bg-slate-50 border border-slate-200 rounded text-center font-bold"
+                            />
+                            <input
+                              type="text"
+                              value={it.unit}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setQuoteItems(prev => prev.map(item => item.id === it.id ? { ...item, unit: val } : item));
+                              }}
+                              className="w-12 p-1 bg-slate-50 border border-slate-200 rounded text-center text-[11px]"
+                            />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-slate-500 shrink-0">单价:</span>
+                            <input
+                              type="number"
+                              value={it.price}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setQuoteItems(prev => prev.map(item => item.id === it.id ? { ...item, price: val } : item));
+                              }}
+                              className="w-full p-1 bg-slate-50 border border-slate-200 rounded font-bold text-right"
+                            />
+                          </div>
+                          <div className="flex items-center justify-end font-mono font-bold text-slate-900 text-xs">
+                            <span>小计: {quoteCurrency === 'USD' ? '$' : quoteCurrency === 'EUR' ? '€' : '¥'}{(it.qty * it.price).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Payment Terms & Delivery */}
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-2.5">
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    商务结算与交期约定
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label className="text-[11px] text-slate-500 font-medium">首期定金比例 (%)</label>
+                      <input
+                        type="number"
+                        value={quoteDepositPercent}
+                        onChange={(e) => setQuoteDepositPercent(Number(e.target.value))}
+                        className="w-full mt-1 p-2 bg-white border border-slate-200 rounded-xl font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-slate-500 font-medium">工厂生产交期</label>
+                      <input
+                        type="text"
+                        value={quoteLeadTime}
+                        onChange={(e) => setQuoteLeadTime(e.target.value)}
+                        className="w-full mt-1 p-2 bg-white border border-slate-200 rounded-xl text-xs font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right 5 cols: Live PI Document Preview */}
+              <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+                <div className="bg-white border-2 border-slate-200 rounded-2xl p-5 shadow-sm space-y-4 font-sans text-xs">
+                  {/* PI Sheet Header */}
+                  <div className="border-b border-slate-200 pb-3 flex items-start justify-between">
+                    <div>
+                      <div className="text-sm font-extrabold tracking-wider text-slate-900">PROFORMA INVOICE</div>
+                      <div className="text-[10px] text-slate-400 font-mono">形式发票与外贸定制报价单</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-mono text-xs font-bold text-[#EA3A20]">PI-2026-F089</div>
+                      <div className="text-[10px] text-slate-400">{new Date().toISOString().split('T')[0]}</div>
+                    </div>
+                  </div>
+
+                  {/* Customer Information */}
+                  <div className="space-y-1 text-[11px] border-b border-slate-100 pb-2">
+                    <div className="text-slate-400 font-medium">CUSTOMER / 采购客户:</div>
+                    <div className="font-bold text-slate-800">{quoteCustomerName}</div>
+                    <div className="text-slate-600">{quoteProjectName}</div>
+                    <div className="text-indigo-600 font-medium">交货条件: {quoteTradeTerm}</div>
+                  </div>
+
+                  {/* Items List */}
+                  <div className="space-y-2">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex justify-between">
+                      <span>定制品类明细</span>
+                      <span>小计金额 ({quoteCurrency})</span>
+                    </div>
+                    <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                      {quoteItems.map((item) => (
+                        <div key={item.id} className="flex items-start justify-between text-[11px] gap-2">
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-800 truncate">{item.name}</div>
+                            <div className="text-[10px] text-slate-400 truncate">{item.qty} {item.unit} × {quoteCurrency === 'USD' ? '$' : quoteCurrency === 'EUR' ? '€' : '¥'}{item.price}</div>
+                          </div>
+                          <div className="font-mono font-bold text-slate-900 shrink-0">
+                            {quoteCurrency === 'USD' ? '$' : quoteCurrency === 'EUR' ? '€' : '¥'}{(item.qty * item.price).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Totals & Payments */}
+                  <div className="border-t border-slate-200 pt-3 space-y-1.5">
+                    <div className="flex justify-between text-xs text-slate-600">
+                      <span>报价总计 (Grand Total):</span>
+                      <span className="font-mono font-bold text-slate-900 text-sm">
+                        {quoteCurrency === 'USD' ? '$' : quoteCurrency === 'EUR' ? '€' : '¥'}
+                        {quoteItems.reduce((acc, cur) => acc + cur.qty * cur.price, 0).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-[11px] text-slate-500">
+                      <span>首期预付定金 ({quoteDepositPercent}% T/T):</span>
+                      <span className="font-mono font-semibold text-emerald-700">
+                        {quoteCurrency === 'USD' ? '$' : quoteCurrency === 'EUR' ? '€' : '¥'}
+                        {Math.round(quoteItems.reduce((acc, cur) => acc + cur.qty * cur.price, 0) * (quoteDepositPercent / 100)).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-[11px] text-slate-500">
+                      <span>尾款余额 (发货前结清):</span>
+                      <span className="font-mono font-semibold text-slate-700">
+                        {quoteCurrency === 'USD' ? '$' : quoteCurrency === 'EUR' ? '€' : '¥'}
+                        {Math.round(quoteItems.reduce((acc, cur) => acc + cur.qty * cur.price, 0) * (1 - quoteDepositPercent / 100)).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Summary footer */}
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                    <span>已关联图纸: {quoteDesignFiles.length} 份</span>
+                    <span className="text-emerald-600 font-medium">品质质保 5 年</span>
+                  </div>
+                </div>
+
+                {/* Bottom Actions */}
+                <div className="space-y-2 pt-1">
+                  {quoteExportSuccess && (
+                    <div className="p-2 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-xl flex items-center gap-1.5 border border-emerald-200">
+                      <CheckCircle2 className="w-4 h-4" /> {quoteExportSuccess}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const total = quoteItems.reduce((acc, cur) => acc + cur.qty * cur.price, 0);
+                        const currSym = quoteCurrency === 'USD' ? '$' : quoteCurrency === 'EUR' ? '€' : '¥';
+                        const summaryText = `【形式发票与定制报价单 / Proforma Invoice】\nPI 单号: PI-2026-F089 | 项目: ${quoteProjectName}\n客户: ${quoteCustomerName} | 条款: ${quoteTradeTerm}\n\n品类明细:\n${quoteItems.map((it, i) => `${i+1}. ${it.name} (${it.spec}) - ${it.qty}${it.unit} × ${currSym}${it.price} = ${currSym}${(it.qty*it.price).toLocaleString()}`).join('\n')}\n\n总金额: ${currSym}${total.toLocaleString()} (${quoteCurrency})\n结算方式: ${quoteDepositPercent}% 定金 (${currSym}${Math.round(total * (quoteDepositPercent/100)).toLocaleString()})，生产交期 ${quoteLeadTime}。\n已绑定设计图纸: ${quoteDesignFiles.map(f => f.name).join(', ')}`;
+                        setInputMessage(prev => prev ? `${prev}\n\n${summaryText}` : summaryText);
+                        setShowQuoteModal(false);
+                      }}
+                      className="flex-1 py-2.5 bg-[#EA3A20] hover:bg-[#c42810] text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <FileCheck className="w-4 h-4" /> 填入对话框并发送
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuoteExportSuccess('已成功导出 PI 形式发票 (PDF & Excel 格式)');
+                        setTimeout(() => setQuoteExportSuccess(null), 3000);
+                      }}
+                      className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                      title="导出正式 PI 单据"
+                    >
+                      <Download className="w-4 h-4" /> 导出 PI
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Citation Detail Modal for clicking a citation badge */}
+      {activeCitationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-5 shadow-2xl border border-slate-100 space-y-4">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">{activeCitationModal.title}</h3>
+                  <div className="text-[10px] text-slate-400 font-mono flex items-center gap-2">
+                    <span>版本: {activeCitationModal.version}</span>
+                    {activeCitationModal.category && <span>· 分类: {activeCitationModal.category}</span>}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveCitationModal(null)}
+                className="w-7 h-7 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-700 leading-relaxed">
+              <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">权威引述摘录 (Authoritative Excerpt)</div>
+              <p>{activeCitationModal.excerpt || '收录于企业工艺与标准知识库，经实验室与权威质检认证。'}</p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => setActiveCitationModal(null)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                关闭
+              </button>
+              <button
+                onClick={() => {
+                  setActiveCitationModal(null);
+                  setProfileTab('knowledge');
+                }}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+              >
+                在右侧知识库中查阅 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>

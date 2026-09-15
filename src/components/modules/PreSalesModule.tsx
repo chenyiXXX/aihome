@@ -255,55 +255,54 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
         </div>
       )}
 
-      {/* 1. Top WhatsApp Reception Header */}
-      <div className="bg-white rounded-3xl p-4.5 border border-slate-100 shadow-[0_2px_14px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0">
+      {/* 1. Top Header */}
+      <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
             <MessageCircle className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">WhatsApp 售前询盘助手</h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                售前机器人接待在线
+              <h2 className="text-base font-bold text-slate-900">售前询盘</h2>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                在线接待中
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              售前询盘主要用于查看接入 WhatsApp 的询盘客户名单及售前机器人的交互聊天记录，支持按询盘时间筛选与一键批量导出。
+            <p className="text-xs text-slate-400 mt-0.5">
+              海外多渠道询盘买家名单与会话记录
             </p>
           </div>
         </div>
 
         {/* Action Buttons: Batch Export, Config, Create */}
-        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
           <button
             onClick={handleBatchExport}
-            className="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
-            title="批量导出询盘客户列表及机器人接待摘要到本地 Excel"
+            className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <FileSpreadsheet className="w-3.5 h-3.5 text-slate-500" />
             <span>
               {selectedRows.length > 0
-                ? `批量导出选中 (${selectedRows.length}条) 到 Excel`
-                : `批量导出 Excel (共 ${filteredInquiries.length}条)`}
+                ? `导出选中 (${selectedRows.length})`
+                : '导出 Excel'}
             </span>
           </button>
 
           <button
             onClick={() => setIsChannelConfigOpen(true)}
-            className="px-3.5 py-2 rounded-full border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
           >
-            <Sliders className="w-3.5 h-3.5 text-emerald-600" />
-            <span>WhatsApp 网关与接待规则</span>
+            <Sliders className="w-3.5 h-3.5 text-slate-500" />
+            <span>渠道配置</span>
           </button>
 
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>接入/录入新询盘</span>
+            <span>录入询盘</span>
           </button>
         </div>
       </div>
@@ -313,24 +312,24 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
         <InquiryChatDetailView inquiry={selectedInquiry} onBack={() => setIsDetailView(false)} />
       ) : (
         <div className="space-y-4">
-          {/* 2.1 Time Range Query & Filter Bar (列表提供询盘时间查询) */}
+          {/* 2.1 Time Range & Filter Bar */}
           <div className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-2xs flex flex-col gap-3 shrink-0">
             {/* Row 1: Time Quick Range Tabs & Custom Date Inputs */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-slate-400 text-xs font-bold flex items-center gap-1">
+                <span className="text-slate-400 text-xs font-semibold flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>询盘时间查询:</span>
+                  <span>询盘时间:</span>
                 </span>
 
                 {/* Quick Date Pills */}
                 {(
                   [
-                    { id: 'ALL', label: '全部时间' },
-                    { id: 'TODAY', label: '今日新进 (08-17)' },
+                    { id: 'ALL', label: '全部' },
+                    { id: 'TODAY', label: '今日 (08-17)' },
                     { id: '7DAYS', label: '近 7 天' },
                     { id: '30DAYS', label: '近 30 天' },
-                    { id: 'THIS_MONTH', label: '本月全部' }
+                    { id: 'THIS_MONTH', label: '本月' }
                   ] as const
                 ).map((tab) => {
                   const isActive = timeQuickRange === tab.id && !startDate && !endDate;
@@ -343,7 +342,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                         setEndDate('');
                         setCurrentPage(1);
                       }}
-                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                         isActive
                           ? 'bg-emerald-600 text-white shadow-2xs'
                           : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
@@ -401,26 +400,26 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="搜索买家姓名、WhatsApp号码、公司、国家或品类..."
+                    placeholder="搜索买家姓名、号码、公司、国家或品类..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-full pl-9 pr-4 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
                 {/* Intent Filter */}
                 <div className="flex items-center gap-1.5 text-xs">
-                  <span className="text-slate-400 text-[11px] font-bold">意向等级:</span>
+                  <span className="text-slate-400 text-[11px] font-semibold">意向等级:</span>
                   <select
                     value={intentFilter}
                     onChange={(e) => {
                       setIntentFilter(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="bg-slate-50 border border-slate-200 rounded-full px-3 py-1 text-xs text-slate-700 font-bold focus:outline-none cursor-pointer"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs text-slate-700 font-medium focus:outline-none cursor-pointer"
                   >
                     <option value="ALL">全部意向</option>
                     <option value="Hot">Hot (S级大单)</option>
@@ -431,83 +430,80 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
               </div>
 
               {/* Sort selector & Reset */}
-              <div className="flex items-center gap-2.5 shrink-0">
-                <span className="text-slate-400 text-[11px] font-bold">排序方式:</span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-slate-400 text-[11px] font-semibold">排序:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-emerald-50 text-emerald-800 font-bold rounded-full px-3 py-1 text-xs border border-emerald-200 focus:outline-none cursor-pointer"
+                  className="bg-slate-50 text-slate-700 rounded-xl px-2.5 py-1 text-xs border border-slate-200 focus:outline-none cursor-pointer"
                 >
-                  <option value="newest">最新询盘时间</option>
-                  <option value="score">AI意向评分从高到低</option>
-                  <option value="budget">采购预算规模</option>
+                  <option value="newest">最新询盘</option>
+                  <option value="score">AI意向评分</option>
+                  <option value="budget">采购预算</option>
                 </select>
 
                 <button
                   onClick={handleResetFilters}
-                  className="px-3 py-1 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+                  className="px-2.5 py-1 text-xs text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
                 >
-                  重置条件
+                  重置
                 </button>
               </div>
             </div>
 
             {/* Batch Action Toolbar when items are selected */}
             {selectedRows.length > 0 && (
-              <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl px-4 py-2 flex items-center justify-between text-xs animate-fade-in">
-                <div className="flex items-center gap-2 text-emerald-900 font-bold">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 flex items-center justify-between text-xs animate-fade-in">
+                <div className="flex items-center gap-2 text-emerald-900 font-semibold">
                   <CheckSquare className="w-4 h-4 text-emerald-600" />
-                  <span>已勾选 {selectedRows.length} 位客户</span>
-                  <span className="text-[11px] text-emerald-700 font-normal">
-                    （可一键批量导出到本地 Excel）
-                  </span>
+                  <span>已选择 {selectedRows.length} 项</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setSelectedRows([])}
                     className="text-slate-500 hover:text-slate-800 text-xs font-medium cursor-pointer"
                   >
-                    取消勾选
+                    取消选择
                   </button>
                   <button
                     onClick={handleBatchExport}
-                    className="px-3.5 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs flex items-center gap-1 cursor-pointer"
+                    className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs flex items-center gap-1 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>导出已选 ({selectedRows.length}条) 到 Excel</span>
+                    <span>批量导出</span>
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* 2.2 Inquiry Customer Table (Focusing on Customers, Bot Reception, Time, and Chat Logs) */}
-          <div className="bg-white rounded-3xl shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100/90 overflow-hidden">
+          {/* 2.2 Inquiry Customer Table */}
+          <div className="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-100 text-slate-900 text-xs font-bold tracking-tight bg-slate-50/50">
-                    <th className="py-4 pl-6 pr-3 w-12 text-center">
+                  <tr className="border-b border-slate-100 text-slate-900 text-xs font-semibold bg-slate-50/50">
+                    <th className="py-3.5 pl-5 pr-3 w-12 text-center">
                       <button
                         onClick={toggleSelectAll}
                         className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                         title="全选 / 反选当前页"
                       >
                         {selectedRows.length === paginatedInquiries.length && paginatedInquiries.length > 0 ? (
-                          <CheckSquare className="w-4.5 h-4.5 text-emerald-600" />
+                          <CheckSquare className="w-4 h-4 text-emerald-600" />
                         ) : (
-                          <Square className="w-4.5 h-4.5 text-slate-300" />
+                          <Square className="w-4 h-4 text-slate-300" />
                         )}
                       </button>
                     </th>
-                    <th className="py-4 px-3 font-bold text-slate-900">询盘编号</th>
-                    <th className="py-4 px-3 font-bold text-slate-900">WhatsApp 客户 / 公司</th>
-                    <th className="py-4 px-3 font-bold text-slate-900">询盘时间</th>
-                    <th className="py-4 px-3 font-bold text-slate-900">采购品类与需求</th>
-                    <th className="py-4 px-3 font-bold text-slate-900">预算与数量</th>
-                    <th className="py-4 px-3 font-bold text-slate-900">AI意向评级</th>
-                    <th className="py-4 px-3 font-bold text-slate-900">售前机器人接待</th>
-                    <th className="py-4 pr-6 pl-2 text-right font-bold text-slate-900">操作</th>
+                    <th className="py-3.5 px-3 font-semibold text-slate-900">询盘编号</th>
+                    <th className="py-3.5 px-3 font-semibold text-slate-900">客户 / 公司</th>
+                    <th className="py-3.5 px-3 font-semibold text-slate-900">询盘时间</th>
+                    <th className="py-3.5 px-3 font-semibold text-slate-900">采购品类与需求</th>
+                    <th className="py-3.5 px-3 font-semibold text-slate-900">预算与规模</th>
+                    <th className="py-3.5 px-3 font-semibold text-slate-900">AI意向</th>
+                    <th className="py-3.5 px-3 font-semibold text-slate-900">接待状态</th>
+                    <th className="py-3.5 pr-5 pl-2 text-right font-semibold text-slate-900">操作</th>
                   </tr>
                 </thead>
 
@@ -630,36 +626,36 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                           {/* Pre-sales Robot Status & Chat Turns */}
                           <td className="py-3.5 px-3">
                             <div className="flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                              <span className="font-semibold text-emerald-800 text-[11px]">
-                                已应答 {turnsCount} 轮对话
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="font-medium text-emerald-800 text-[11px]">
+                                {turnsCount} 轮会话
                               </span>
                             </div>
                             <div className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[140px]">
                               {item.attachments && item.attachments.length > 0
-                                ? '📎 已获取图纸与规范'
-                                : '已提纯需求与FOB'}
+                                ? '含图纸需求'
+                                : '已确认意向'}
                             </div>
                           </td>
 
-                          {/* Actions: View Chat History & Export */}
+                          {/* Actions */}
                           <td
-                            className="py-3.5 pr-6 pl-2 text-right whitespace-nowrap"
+                            className="py-3.5 pr-5 pl-2 text-right whitespace-nowrap"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <div className="flex items-center justify-end gap-1.5">
                               <button
                                 onClick={() => handleSelectInquiry(item)}
-                                className="px-3 py-1 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-[11px] font-bold transition-colors cursor-pointer border border-emerald-200 hover:border-emerald-600 flex items-center gap-1"
+                                className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-[11px] font-semibold transition-colors cursor-pointer border border-emerald-200 hover:border-emerald-600 flex items-center gap-1"
                               >
                                 <MessageCircle className="w-3 h-3" />
-                                <span>查看聊天记录</span>
+                                <span>查看会话</span>
                               </button>
 
                               <button
                                 onClick={(e) => handleExportSingleRow(e, item)}
-                                className="p-1 rounded-full text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
-                                title="导出此客户到 Excel"
+                                className="p-1 rounded-lg text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                                title="导出此记录"
                               >
                                 <Download className="w-3.5 h-3.5" />
                               </button>

@@ -370,8 +370,15 @@ export const VideoClipList: React.FC<VideoClipListProps> = ({
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px] text-slate-400">
-                        <span>{video.publishPlatform}</span>
-                        <span>{video.shots.length} 个分镜镜头</span>
+                        <span className="truncate max-w-[220px] flex items-center gap-1.5">
+                          {video.language && (
+                            <span className="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-bold text-[10px]">
+                              {video.language}
+                            </span>
+                          )}
+                          <span className="truncate">{video.publishPlatform}</span>
+                        </span>
+                        <span className="shrink-0">{video.shots.length} 个分镜镜头</span>
                       </div>
                       <h3 className={`font-bold text-sm text-slate-900 line-clamp-2 leading-snug transition-colors ${
                         !isTrash && 'group-hover:text-[#EA3A20]'
