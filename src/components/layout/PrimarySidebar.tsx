@@ -172,7 +172,7 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       label: '员工权限',
       icon: Users2,
       defaultSubView: '员工列表',
-      subViews: ['员工列表', '角色配置']
+      subViews: ['员工列表', '角色列表']
     },
     {
       id: 'sys_config' as ModuleType,

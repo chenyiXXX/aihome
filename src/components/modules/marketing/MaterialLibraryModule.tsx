@@ -1101,7 +1101,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
           </div>
 
           {/* Quick Storage Meter */}
-          <div className="px-4 py-2.5 bg-[#0F4A47]/5 border-b border-slate-100 flex items-center justify-between text-[11px]">
+          <div className="px-4 py-2.5 bg-[#EA3A20]/5 border-b border-slate-100 flex items-center justify-between text-[11px]">
             <div className="flex items-center gap-1.5 text-slate-600 font-medium">
               <Layers className="w-3.5 h-3.5 text-[#0F4A47]" />
               <span>存储空间</span>
@@ -1120,7 +1120,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   onClick={() => setSelectedFolderId(folder.id)}
                   className={`w-full px-3 py-2 rounded-2xl flex items-center justify-between text-xs font-medium cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-[#0F4A47] text-white font-bold shadow-xs'
+                      ? 'bg-[#EA3A20] text-white font-bold shadow-xs'
                       : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
                   }`}
                 >
@@ -1245,7 +1245,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                   <button
                     type="button"
                     onClick={() => setIsBasketOpen(!isBasketOpen)}
-                    className="h-8 px-3 rounded-full bg-[#0F4A47] hover:bg-[#0b3836] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
+                    className="h-8 px-3 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
                   >
                     <Film className="w-3.5 h-3.5" />
                     <span>已选素材 ({basketAssets.length})</span>
@@ -1632,7 +1632,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                             onClick={(e) => handleToggleBasket(asset, e)}
                             className={`absolute bottom-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-xs z-10 ${
                               isInBasket
-                                ? 'bg-[#0F4A47] text-white'
+                                ? 'bg-[#EA3A20] text-white'
                                 : 'bg-white/90 hover:bg-white text-slate-800'
                             }`}
                             title={isInBasket ? '移除已选' : '加入已选'}
@@ -1737,7 +1737,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                           key={asset.id}
                           onClick={() => handleOpenPreviewModal(asset)}
                           className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
-                            isInBasket ? 'bg-[#0F4A47]/5' : ''
+                            isInBasket ? 'bg-[#EA3A20]/5' : ''
                           }`}
                         >
                           <td className="py-3 pl-4 pr-2 text-center" onClick={(e) => e.stopPropagation()}>
@@ -1877,7 +1877,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                                     onClick={() => handleToggleBasket(asset)}
                                     className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
                                       isInBasket
-                                        ? 'bg-[#0F4A47] text-white'
+                                        ? 'bg-[#EA3A20] text-white'
                                         : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                                     }`}
                                   >
@@ -1952,7 +1952,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
         >
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-[#0F4A47] text-white flex items-center justify-center font-bold text-xs">
+              <div className="w-6 h-6 rounded-lg bg-[#EA3A20] text-white flex items-center justify-center font-bold text-xs">
                 <Film className="w-3.5 h-3.5" />
               </div>
               <span className="text-xs font-bold text-slate-900">
@@ -2107,7 +2107,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                     onClick={() => handleToggleBasket(previewModalAsset)}
                     className={`h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
                       basketAssets.some((b) => b.id === previewModalAsset.id)
-                        ? 'bg-[#0F4A47] text-white'
+                        ? 'bg-[#EA3A20] text-white'
                         : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
                     }`}
                   >
@@ -2750,7 +2750,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
                 type="button"
                 onClick={handleCreateFolder}
                 disabled={!newFolderName.trim()}
-                className="px-4 py-1.5 rounded-full bg-[#0F4A47] hover:bg-[#0b3836] text-white text-xs font-bold cursor-pointer disabled:opacity-50"
+                className="px-4 py-1.5 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold cursor-pointer disabled:opacity-50"
               >
                 创建
               </button>

@@ -780,7 +780,7 @@ export const GraphicTextModule: React.FC = () => {
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap cursor-pointer transition-all ${
                       active
-                        ? 'bg-[#0F4A47] text-white shadow-2xs'
+                        ? 'bg-[#EA3A20] text-white shadow-2xs'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
                     }`}
                   >
@@ -1032,7 +1032,7 @@ export const GraphicTextModule: React.FC = () => {
                           : currentArticle.status === '计划发布'
                           ? 'bg-indigo-50 text-indigo-700 border-indigo-200 focus:ring-indigo-500'
                           : currentArticle.status === '已发布'
-                          ? 'bg-[#0F4A47]/10 text-[#0F4A47] border-[#0F4A47]/30 focus:ring-[#0F4A47]'
+                          ? 'bg-[#EA3A20]/10 text-[#0F4A47] border-[#0F4A47]/30 focus:ring-[#0F4A47]'
                           : 'bg-slate-100 text-slate-700 border-slate-300 focus:ring-slate-500'
                       }`}
                     >
@@ -1065,7 +1065,7 @@ export const GraphicTextModule: React.FC = () => {
                 type="button"
                 onClick={handleSyncToWeChat}
                 disabled={isSyncingWeChat}
-                className="h-8 px-4 rounded-full bg-[#0F4A47] hover:bg-[#0b3836] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs active:scale-95 disabled:opacity-50"
+                className="h-8 px-4 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs active:scale-95 disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{isSyncingWeChat ? '正在同步微信...' : '同步至草稿箱'}</span>
@@ -1246,7 +1246,7 @@ export const GraphicTextModule: React.FC = () => {
             {/* AI Generating Indicator */}
             {isAiThinking && (
               <div className="flex gap-3 max-w-xl animate-fade-in">
-                <div className="w-8 h-8 rounded-full bg-[#0F4A47] flex items-center justify-center text-white shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[#EA3A20] flex items-center justify-center text-white shrink-0">
                   <Loader2 className="w-4 h-4 animate-spin text-emerald-200" />
                 </div>
                 <div className="p-3.5 px-4 rounded-2xl bg-white border border-slate-100 rounded-tl-xs shadow-2xs text-xs text-[#0F4A47] font-medium flex items-center gap-2">
@@ -1470,7 +1470,7 @@ export const GraphicTextModule: React.FC = () => {
           {/* Right Header */}
           <div className="p-3.5 px-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-[#0F4A47]/10 text-[#0F4A47] flex items-center justify-center font-bold">
+              <div className="w-7 h-7 rounded-xl bg-[#EA3A20]/10 text-[#0F4A47] flex items-center justify-center font-bold">
                 <Smartphone className="w-4 h-4" />
               </div>
               <div>
@@ -1523,7 +1523,7 @@ export const GraphicTextModule: React.FC = () => {
               type="button"
               onClick={handleSyncToWeChat}
               disabled={isSyncingWeChat}
-              className="flex-1 py-2 rounded-xl bg-[#0F4A47] hover:bg-[#0b3836] text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+              className="flex-1 py-2 rounded-xl bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
               <span>一键同步微信</span>
@@ -1552,7 +1552,7 @@ export const GraphicTextModule: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col animate-fade-in">
           <div className="h-14 px-6 border-b border-slate-800/80 bg-slate-900/90 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-[#0F4A47] text-white flex items-center justify-center font-bold text-xs">
+              <div className="w-8 h-8 rounded-xl bg-[#EA3A20] text-white flex items-center justify-center font-bold text-xs">
                 <Smartphone className="w-4 h-4" />
               </div>
               <div>
@@ -1703,7 +1703,7 @@ export const GraphicTextModule: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowSyncSuccessModal(false)}
-                className="w-full py-2.5 rounded-full bg-[#0F4A47] hover:bg-[#0c3937] text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
+                className="w-full py-2.5 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
               >
                 完成
               </button>

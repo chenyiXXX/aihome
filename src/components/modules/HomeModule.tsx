@@ -639,7 +639,7 @@ export const HomeModule: React.FC = () => {
             <button
               type="button"
               onClick={handleCreateNewSession}
-              className="h-8 px-3 rounded-full bg-[#0F4A47] text-white hover:bg-[#0b3836] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs active:scale-95"
+              className="h-8 px-3 rounded-full bg-[#EA3A20] text-white hover:bg-[#d6341c] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs active:scale-95"
               title="新建提问会话"
             >
               <UserPlus className="w-3.5 h-3.5" />
@@ -661,7 +661,7 @@ export const HomeModule: React.FC = () => {
                   onClick={() => setFilterCategory(tab.key)}
                   className={`flex-1 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     filterCategory === tab.key
-                      ? 'bg-[#0F4A47] text-white shadow-xs'
+                      ? 'bg-[#EA3A20] text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   }`}
                 >
@@ -713,7 +713,7 @@ export const HomeModule: React.FC = () => {
                     onClick={() => setActiveSessionId(sess.id)}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer relative group ${
                       isSelected
-                        ? 'bg-[#0F4A47]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/30 shadow-xs border-l-[4px] border-l-[#0F4A47]'
+                        ? 'bg-[#EA3A20]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/30 shadow-xs border-l-[4px] border-l-[#0F4A47]'
                         : 'bg-white hover:bg-slate-50/90 border-slate-200/80 hover:border-slate-300'
                     }`}
                   >
@@ -1065,7 +1065,7 @@ export const HomeModule: React.FC = () => {
                 type="button"
                 onClick={() => handleSendMessage()}
                 disabled={loading || (!inputQuery.trim() && pendingAttachments.length === 0)}
-                className="h-10 px-5 bg-[#0F4A47] hover:bg-[#0b3836] text-white rounded-xl font-medium text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-10 px-5 bg-[#EA3A20] hover:bg-[#d6341c] text-white rounded-xl font-medium text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{loading ? '检索中' : '发送'}</span>

@@ -209,7 +209,7 @@ export const VideoClipList: React.FC<VideoClipListProps> = ({
                 onClick={() => setStatusFilter(tab.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-colors whitespace-nowrap flex items-center gap-1.5 ${
                   statusFilter === tab.id
-                    ? 'bg-[#0F4A47] text-white shadow-2xs'
+                    ? 'bg-[#EA3A20] text-white shadow-2xs'
                     : 'bg-slate-50 hover:bg-slate-100 text-slate-600'
                 }`}
               >

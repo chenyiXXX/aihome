@@ -66,7 +66,7 @@ export const initialKBCategoryUsage: KBCategoryUsageStat[] = [
 ];
 
 export const initialChannelUsage: ChannelUsageStat[] = [
-  { channel: '售前AI智能体 (官网/WhatsApp/社媒)', queries: 4520, percentage: 45, color: '#EA3A20' },
+  { channel: '售前AI智能体 (官网/WordPress/社媒)', queries: 4520, percentage: 45, color: '#EA3A20' },
   { channel: '销售顾问助手 (外贸业务谈判辅助)', queries: 2810, percentage: 28, color: '#0F4A47' },
   { channel: '内部员工自查 (新员工/设计师/客服)', queries: 1710, percentage: 17, color: '#F59E0B' },
   { channel: '海外推广运营 (文案/脚本生成匹配)', queries: 1010, percentage: 10, color: '#8B5CF6' }

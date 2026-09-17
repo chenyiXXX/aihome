@@ -113,7 +113,7 @@ export const initialStaffTrainingRecords: StaffTrainingRecord[] = [
     courseTitle: 'TikTok & Instagram 海外定制家具爆款矩阵操盘',
     mentorName: '苏总监',
     mentorTitle: '海外新媒体操盘手 · 出海内容总监',
-    currentLesson: '第3节：主页引流与WhatsApp高意向私域转化漏斗',
+    currentLesson: '第3节：主页引流与WordPress高意向私域转化漏斗',
     completedLessons: 3,
     totalLessons: 3,
     progressPercent: 100,

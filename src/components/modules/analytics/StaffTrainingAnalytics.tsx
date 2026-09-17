@@ -299,7 +299,7 @@ export const StaffTrainingAnalytics: React.FC = () => {
               <span className="w-3 h-1 bg-[#EA3A20] rounded-full inline-block" /> 导师答疑互动数
             </span>
             <span className="flex items-center gap-1.5 text-slate-500">
-              <span className="w-3 h-1 bg-[#0F4A47] rounded-full inline-block" /> 学习时长 (小时)
+              <span className="w-3 h-1 bg-[#EA3A20] rounded-full inline-block" /> 学习时长 (小时)
             </span>
           </div>
         </div>

@@ -74,41 +74,15 @@ export const SystemConfigModule: React.FC<SystemConfigModuleProps> = ({
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
-      {/* Top Header & Tab Selector Bar */}
-      <div className="flex items-center justify-between py-4 mb-2 shrink-0 border-b border-slate-200/80">
-        <div className="flex items-center gap-4">
-          <div className="bg-white rounded-2xl p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-200/80 flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => handleTabChange('Agent 配置')}
-              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                activeTab === 'Agent 配置'
-                  ? 'bg-[#EA3A20] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-              }`}
-            >
-              <Bot className="w-4 h-4" />
-              <span>Agent 配置</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleTabChange('Skill 配置')}
-              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                activeTab === 'Skill 配置'
-                  ? 'bg-[#EA3A20] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-              }`}
-            >
-              <Wrench className="w-4 h-4" />
-              <span>Skill 配置</span>
-            </button>
-          </div>
-
-          <div className="hidden xl:flex items-center gap-2 text-xs text-slate-400">
-            <HelpCircle className="w-3.5 h-3.5" />
-            <span>智能体基础设置：涵盖 Agent 核心模型底座参数与 Skill 专业外贸算力工具库</span>
-          </div>
+      {/* Top Header Bar */}
+      <div className="flex items-center justify-between py-3 mb-2 shrink-0 border-b border-slate-200/80">
+        <div className="flex items-center gap-3">
+          <h2 className="text-base font-bold text-slate-900">
+            {activeTab}
+          </h2>
+          <span className="text-xs text-slate-500 font-medium">
+            {activeTab === 'Agent 配置' ? '智能体基础设置：涵盖 Agent 核心模型底座参数与全局算力' : 'Skill 专业外贸算力与工具库配置'}
+          </span>
         </div>
 
         {/* Right Actions */}
@@ -135,7 +109,7 @@ export const SystemConfigModule: React.FC<SystemConfigModuleProps> = ({
       </div>
 
       {/* Dynamic Content Area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar pt-2 pr-1">
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col pt-2 pr-1">
         {activeTab === 'Agent 配置' && (
           <AgentConfigView
             config={agentConfig}

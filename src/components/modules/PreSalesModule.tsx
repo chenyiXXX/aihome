@@ -39,7 +39,6 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
 }) => {
   const [inquiriesList, setInquiriesList] = useState<InquiryItem[]>(initialInquiriesProp);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [intentFilter, setIntentFilter] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState<'newest' | 'score' | 'budget'>('newest');
 
   // Time Range Filter States (列表提供询盘时间查询)
@@ -96,6 +95,35 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
     return isNaN(d.getTime()) ? null : d;
   };
 
+  const getChineseCountryName = (country?: string, countryCode?: string): string => {
+    const map: Record<string, string> = {
+      'United States': '美国',
+      'US': '美国',
+      'Germany': '德国',
+      'DE': '德国',
+      'United Kingdom': '英国',
+      'UK': '英国',
+      'GB': '英国',
+      'United Arab Emirates': '阿拉伯联合酋长国',
+      'AE': '阿拉伯联合酋长国',
+      'Australia': '澳大利亚',
+      'AU': '澳大利亚',
+      'France': '法国',
+      'FR': '法国',
+      'Spain': '西班牙',
+      'ES': '西班牙',
+      'Italy': '意大利',
+      'IT': '意大利',
+      'Japan': '日本',
+      'JP': '日本',
+      'Switzerland': '瑞士',
+      'CH': '瑞士'
+    };
+    if (country && map[country]) return map[country];
+    if (countryCode && map[countryCode]) return map[countryCode];
+    return country || '海外';
+  };
+
   // Filtered & Sorted Inquiries
   const filteredInquiries = useMemo(() => {
     return inquiriesList
@@ -121,12 +149,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
           }
         }
 
-        // 2. Intent Level Filter
-        if (intentFilter !== 'ALL' && !item.intentLevel?.includes(intentFilter)) {
-          return false;
-        }
-
-        // 3. Time Range Filter (询盘时间查询)
+        // 2. Time Range Filter (询盘时间查询)
         const itemDateStr = (item.createdAt || item.receivedAt || '').split(' ')[0];
         if (startDate && itemDateStr < startDate) {
           return false;
@@ -159,7 +182,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
         }
         return (b.createdAt || '').localeCompare(a.createdAt || '');
       });
-  }, [inquiriesList, searchQuery, intentFilter, startDate, endDate, timeQuickRange, sortBy]);
+  }, [inquiriesList, searchQuery, startDate, endDate, timeQuickRange, sortBy]);
 
   // Paginated Inquiries
   const totalPages = Math.ceil(filteredInquiries.length / pageSize) || 1;
@@ -204,7 +227,6 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
 
   const handleResetFilters = () => {
     setSearchQuery('');
-    setIntentFilter('ALL');
     setTimeQuickRange('ALL');
     setStartDate('');
     setEndDate('');
@@ -212,37 +234,6 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
     setCurrentPage(1);
     setSelectedRows([]);
     showToast('已重置所有查询条件');
-  };
-
-  const renderIntentBadge = (intent: string, score: number) => {
-    if (intent.includes('Hot') || intent.includes('S级')) {
-      return (
-        <div className="flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-red-100 text-[#EA3A20] border border-red-200">
-            Hot S级
-          </span>
-          <span className="text-[11px] font-mono font-bold text-red-600">{score}分</span>
-        </div>
-      );
-    }
-    if (intent.includes('Warm') || intent.includes('A级')) {
-      return (
-        <div className="flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
-            Warm A级
-          </span>
-          <span className="text-[11px] font-mono font-semibold text-amber-700">{score}分</span>
-        </div>
-      );
-    }
-    return (
-      <div className="flex items-center gap-1.5">
-        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
-          Standard B级
-        </span>
-        <span className="text-[11px] font-mono text-slate-500">{score}分</span>
-      </div>
-    );
   };
 
   return (
@@ -255,57 +246,29 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
         </div>
       )}
 
-      {/* 1. Top Header */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
-            <MessageCircle className="w-5 h-5" />
+      {/* 1. Top Header (Only on list view) */}
+      {!isDetailView && (
+        <div className="flex items-center justify-between py-3 mb-2 shrink-0">
+          <div className="flex items-center gap-3">
+            <h2 className="text-base font-bold text-slate-900">售前询盘</h2>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">售前询盘</h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                在线接待中
+
+          {/* Action Buttons: Batch Export */}
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={handleBatchExport}
+              className="h-9 px-4 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs active:scale-95"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>
+                {selectedRows.length > 0
+                  ? `导出选中 (${selectedRows.length})`
+                  : '导出 Excel'}
               </span>
-            </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              海外多渠道询盘买家名单与会话记录
-            </p>
+            </button>
           </div>
         </div>
-
-        {/* Action Buttons: Batch Export, Config, Create */}
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-          <button
-            onClick={handleBatchExport}
-            className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-slate-500" />
-            <span>
-              {selectedRows.length > 0
-                ? `导出选中 (${selectedRows.length})`
-                : '导出 Excel'}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setIsChannelConfigOpen(true)}
-            className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-          >
-            <Sliders className="w-3.5 h-3.5 text-slate-500" />
-            <span>渠道配置</span>
-          </button>
-
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>录入询盘</span>
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* 2. Detail View vs. Inquiries List */}
       {isDetailView ? (
@@ -344,7 +307,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                       }}
                       className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-emerald-600 text-white shadow-2xs'
+                          ? 'bg-[#EA3A20] text-white shadow-2xs'
                           : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                       }`}
                     >
@@ -410,23 +373,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                   />
                 </div>
 
-                {/* Intent Filter */}
-                <div className="flex items-center gap-1.5 text-xs">
-                  <span className="text-slate-400 text-[11px] font-semibold">意向等级:</span>
-                  <select
-                    value={intentFilter}
-                    onChange={(e) => {
-                      setIntentFilter(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs text-slate-700 font-medium focus:outline-none cursor-pointer"
-                  >
-                    <option value="ALL">全部意向</option>
-                    <option value="Hot">Hot (S级大单)</option>
-                    <option value="Warm">Warm (A级工程)</option>
-                    <option value="Standard">Standard (B级询价)</option>
-                  </select>
-                </div>
+
               </div>
 
               {/* Sort selector & Reset */}
@@ -467,7 +414,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                   </button>
                   <button
                     onClick={handleBatchExport}
-                    className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs flex items-center gap-1 cursor-pointer"
+                    className="px-3 py-1 rounded-lg bg-[#EA3A20] hover:bg-[#d6341c] text-white font-semibold text-xs shadow-xs flex items-center gap-1 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>批量导出</span>
@@ -497,11 +444,10 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                       </button>
                     </th>
                     <th className="py-3.5 px-3 font-semibold text-slate-900">询盘编号</th>
-                    <th className="py-3.5 px-3 font-semibold text-slate-900">客户 / 公司</th>
+                    <th className="py-3.5 px-3 font-semibold text-slate-900">客户</th>
+                    <th className="py-3.5 px-3 font-semibold text-slate-900">国家</th>
                     <th className="py-3.5 px-3 font-semibold text-slate-900">询盘时间</th>
                     <th className="py-3.5 px-3 font-semibold text-slate-900">采购品类与需求</th>
-                    <th className="py-3.5 px-3 font-semibold text-slate-900">预算与规模</th>
-                    <th className="py-3.5 px-3 font-semibold text-slate-900">AI意向</th>
                     <th className="py-3.5 px-3 font-semibold text-slate-900">接待状态</th>
                     <th className="py-3.5 pr-5 pl-2 text-right font-semibold text-slate-900">操作</th>
                   </tr>
@@ -510,7 +456,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                 <tbody className="divide-y divide-slate-100 text-xs">
                   {paginatedInquiries.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-12 text-center text-slate-400">
+                      <td colSpan={8} className="py-12 text-center text-slate-400">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <MessageCircle className="w-8 h-8 text-slate-300" />
                           <p className="text-xs font-semibold">未找到符合该时间或筛选条件的询盘客户</p>
@@ -561,12 +507,9 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
 
                           {/* Buyer & WhatsApp Phone */}
                           <td className="py-3.5 px-3">
-                            <div className="min-w-[160px]">
-                              <div className="font-bold text-slate-900 truncate flex items-center gap-1.5">
+                            <div className="min-w-[140px]">
+                              <div className="font-bold text-slate-900 truncate">
                                 <span>{item.buyerName}</span>
-                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">
-                                  {item.countryCode}
-                                </span>
                               </div>
                               <div
                                 onClick={(e) => handleCopyPhone(e, item.contactNumber, item.id)}
@@ -579,10 +522,14 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                                   <span className="text-[9px] text-emerald-600 font-sans font-bold">已复制</span>
                                 )}
                               </div>
-                              <div className="text-[10px] text-slate-400 truncate max-w-[170px]" title={item.companyName}>
-                                {item.companyName}
-                              </div>
                             </div>
+                          </td>
+
+                          {/* Country */}
+                          <td className="py-3.5 px-3">
+                            <span className="font-semibold text-slate-800 text-xs">
+                              {getChineseCountryName(item.country, item.countryCode)}
+                            </span>
                           </td>
 
                           {/* Inquiry Time (询盘时间) */}
@@ -603,25 +550,11 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                             >
                               {item.furnitureCategory}
                             </div>
-                            <div className="text-[10px] text-slate-400 truncate max-w-[200px]">
-                              {item.rawContent || item.content}
-                            </div>
                           </td>
 
-                          {/* Budget & Quantity */}
-                          <td className="py-3.5 px-3">
-                            <div>
-                              <div className="font-bold text-slate-900 font-mono">{item.budget}</div>
-                              <div className="text-[11px] text-slate-400 truncate max-w-[130px]">
-                                {item.quantity}
-                              </div>
-                            </div>
-                          </td>
 
-                          {/* AI Intent Badge */}
-                          <td className="py-3.5 px-3">
-                            {renderIntentBadge(item.intentLevel, item.aiScore)}
-                          </td>
+
+
 
                           {/* Pre-sales Robot Status & Chat Turns */}
                           <td className="py-3.5 px-3">
@@ -630,11 +563,6 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                               <span className="font-medium text-emerald-800 text-[11px]">
                                 {turnsCount} 轮会话
                               </span>
-                            </div>
-                            <div className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[140px]">
-                              {item.attachments && item.attachments.length > 0
-                                ? '含图纸需求'
-                                : '已确认意向'}
                             </div>
                           </td>
 
@@ -700,7 +628,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                     onClick={() => setCurrentPage(page)}
                     className={`w-8 h-8 rounded-full text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
                       isActive
-                        ? 'bg-emerald-600 text-white shadow-xs scale-105'
+                        ? 'bg-[#EA3A20] text-white shadow-xs scale-105'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-white'
                     }`}
                   >
@@ -712,10 +640,10 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
               <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className={`px-4 py-1.5 rounded-full border border-emerald-300 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
+                className={`px-4 py-1.5 rounded-full border border-red-300 text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
                   currentPage === totalPages || totalPages === 0
                     ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800'
+                    : 'bg-red-50 hover:bg-red-100 text-[#EA3A20]'
                 }`}
               >
                 下一页

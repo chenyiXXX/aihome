@@ -219,7 +219,7 @@ export const GeneralKnowledgeQAAnalytics: React.FC = () => {
                 <span className="w-3 h-1 bg-[#EA3A20] rounded-full inline-block" /> 问答调用量
               </span>
               <span className="flex items-center gap-1.5 text-slate-500">
-                <span className="w-3 h-1 bg-[#0F4A47] rounded-full inline-block" /> 命中率(%)
+                <span className="w-3 h-1 bg-[#EA3A20] rounded-full inline-block" /> 命中率(%)
               </span>
               <span className="flex items-center gap-1.5 text-slate-500">
                 <span className="w-3 h-1 bg-[#F59E0B] rounded-full inline-block" /> 直答解决率(%)
@@ -369,7 +369,7 @@ export const GeneralKnowledgeQAAnalytics: React.FC = () => {
                           q.rank === 1
                             ? 'bg-[#EA3A20] text-white'
                             : q.rank === 2
-                            ? 'bg-[#0F4A47] text-white'
+                            ? 'bg-[#EA3A20] text-white'
                             : q.rank === 3
                             ? 'bg-[#F59E0B] text-white'
                             : 'bg-slate-100 text-slate-600'

@@ -51,7 +51,7 @@ export const PhoneMockupArticle: React.FC<PhoneMockupArticleProps> = ({
   const colorStyles = {
     emerald: {
       accent: 'text-[#0F4A47]',
-      bgAccent: 'bg-[#0F4A47]',
+      bgAccent: 'bg-[#EA3A20]',
       borderAccent: 'border-[#0F4A47]',
       badgeBg: 'bg-emerald-50 text-emerald-800 border-emerald-200',
       highlightBox: 'bg-[#F4F9F8] border-[#0F4A47]/30 text-[#0F4A47]',
@@ -274,7 +274,7 @@ export const PhoneMockupArticle: React.FC<PhoneMockupArticleProps> = ({
 
           {/* Official WeChat Brand Card / Contact CTA */}
           <div className="bg-gradient-to-br from-slate-50 to-emerald-50/40 border border-emerald-100/80 rounded-3xl p-6 text-center space-y-3 mt-6">
-            <div className="w-12 h-12 rounded-full bg-[#0F4A47] text-white flex items-center justify-center mx-auto shadow-md shadow-emerald-900/10 font-serif font-bold text-base">
+            <div className="w-12 h-12 rounded-full bg-[#EA3A20] text-white flex items-center justify-center mx-auto shadow-md shadow-emerald-900/10 font-serif font-bold text-base">
               HC
             </div>
             <div className="font-bold text-sm text-slate-900">HomeCraft 高定工程全球交付中心</div>
@@ -282,7 +282,7 @@ export const PhoneMockupArticle: React.FC<PhoneMockupArticleProps> = ({
               支持高定门墙柜一体化外贸定制、1:1 实景打样及全套 CAD/3D 施工深化图。
             </p>
             <div className="pt-1">
-              <button className="px-6 py-2 rounded-full bg-[#0F4A47] text-white text-xs font-bold shadow-xs cursor-pointer hover:bg-[#0c3937] transition-all">
+              <button className="px-6 py-2 rounded-full bg-[#EA3A20] text-white text-xs font-bold shadow-xs cursor-pointer hover:bg-[#d6341c] transition-all">
                 预约工程样板房沟通
               </button>
             </div>
@@ -331,7 +331,7 @@ export const PhoneMockupArticle: React.FC<PhoneMockupArticleProps> = ({
         {onToggleFullScreen && !isFullScreen && (
           <button
             onClick={onToggleFullScreen}
-            className="absolute -top-3 -right-3 z-50 px-3 py-1.5 bg-[#0F4A47] hover:bg-[#0c3937] text-white text-[11px] font-bold rounded-full shadow-lg flex items-center gap-1.5 cursor-pointer opacity-90 group-hover:opacity-100 transition-all hover:scale-105"
+            className="absolute -top-3 -right-3 z-50 px-3 py-1.5 bg-[#EA3A20] hover:bg-[#d6341c] text-white text-[11px] font-bold rounded-full shadow-lg flex items-center gap-1.5 cursor-pointer opacity-90 group-hover:opacity-100 transition-all hover:scale-105"
             title="在页面全屏展示"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -529,7 +529,7 @@ export const PhoneMockupArticle: React.FC<PhoneMockupArticleProps> = ({
 
             {/* Official WeChat Brand Card / Contact CTA */}
             <div className="bg-gradient-to-br from-slate-50 to-emerald-50/40 border border-emerald-100/80 rounded-2xl p-4 text-center space-y-2 mt-4">
-              <div className="w-10 h-10 rounded-full bg-[#0F4A47] text-white flex items-center justify-center mx-auto shadow-md shadow-emerald-900/10 font-serif font-bold text-sm">
+              <div className="w-10 h-10 rounded-full bg-[#EA3A20] text-white flex items-center justify-center mx-auto shadow-md shadow-emerald-900/10 font-serif font-bold text-sm">
                 HC
               </div>
               <div className="font-bold text-xs text-slate-900">HomeCraft 高定工程全球交付中心</div>
@@ -537,7 +537,7 @@ export const PhoneMockupArticle: React.FC<PhoneMockupArticleProps> = ({
                 支持高定门墙柜一体化外贸定制、1:1 实景打样及全套 CAD/3D 施工深化图。
               </p>
               <div className="pt-1">
-                <button className="px-4 py-1.5 rounded-full bg-[#0F4A47] text-white text-[11px] font-bold shadow-xs cursor-pointer hover:bg-[#0c3937] transition-all">
+                <button className="px-4 py-1.5 rounded-full bg-[#EA3A20] text-white text-[11px] font-bold shadow-xs cursor-pointer hover:bg-[#d6341c] transition-all">
                   预约工程样板房沟通
                 </button>
               </div>

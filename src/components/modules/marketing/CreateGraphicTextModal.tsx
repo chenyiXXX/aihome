@@ -303,7 +303,7 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
                   >
                     <div
                       className={`w-4 h-4 rounded-md mt-0.5 flex items-center justify-center shrink-0 ${
-                        isSelected ? 'bg-[#0F4A47] text-white' : 'border border-slate-300 bg-white'
+                        isSelected ? 'bg-[#EA3A20] text-white' : 'border border-slate-300 bg-white'
                       }`}
                     >
                       {isSelected && <Check className="w-3 h-3" />}
@@ -353,7 +353,7 @@ export const CreateGraphicTextModal: React.FC<CreateGraphicTextModalProps> = ({
                       </div>
                     </div>
                     {isSelected && (
-                      <div className="w-5 h-5 rounded-full bg-[#0F4A47] text-white flex items-center justify-center shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-[#EA3A20] text-white flex items-center justify-center shrink-0">
                         <Check className="w-3 h-3" />
                       </div>
                     )}

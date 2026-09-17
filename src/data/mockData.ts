@@ -29,7 +29,7 @@ import {
 } from '../types';
 import { initialSalesAgents, initialSalesSkills } from './salesAgentData';
 
-// Mock 2.1 & 2.2 Inquiries (售前询盘 - WhatsApp 专属通道)
+// Mock 2.1 & 2.2 Inquiries (售前询盘 - WordPress 专属通道)
 export const initialInquiries: InquiryItem[] = [
   {
     id: 'INQ-2026-001',
@@ -38,7 +38,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Apex Architecture & Interior Group',
     country: 'United States',
     countryCode: 'US',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+1 (415) 890-2134',
     email: 'david.miller@apex-interior.com',
     furnitureCategory: '全屋实木橱柜定制 Solid Wood Kitchen Cabinets',
@@ -49,7 +49,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-17 19:42',
     assignedSales: 'Sophia (外贸主管)',
     title: 'California 3 Luxury Villas Solid Wood Kitchen Cabinetry Project',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-17 19:42',
     targetDelivery: '45 Days / CIF Los Angeles',
     rawContent: 'Hi, we are looking for a OEM custom furniture supplier in China for 3 luxury residential villas in California. Need solid white oak cabinets with soft-close hinges (Blum/DTC), waterproof sink base, E0 grade eco-friendly plywood carcass. Attached floor plan CAD. Please provide FOB Shenzhen quotation and production lead time.',
@@ -58,13 +58,13 @@ export const initialInquiries: InquiryItem[] = [
       { name: 'Villa_A_Kitchen_CAD_Floorplan.pdf', url: '#', size: '4.2 MB', type: 'pdf' },
       { name: 'Material_Spec_Sheet_Oak_Veneer.png', url: '#', size: '1.8 MB', type: 'image' }
     ],
-    aiReplyDraft: `Dear David Miller,\n\nThank you for contacting HomeCraft via WhatsApp! We have reviewed your CAD floorplans for the 3 California Villa projects.\n\nHere is our initial proposal:\n1. Carcass: 18mm E0 Grade Eucalyptus Plywood with Waterproof Melamine Finish.\n2. Door Panel: 20mm European Solid White Oak with Natural Matte PU Lacquer Finish.\n3. Hardware: Blum 3D Adjustable Soft-close Hinges & Undermount Drawer Runners.\n4. Estimated FOB Shenzhen Price: $78,500 for 3 Villa sets.\n5. Production Lead Time: 28 Days upon CAD approval & 30% deposit.\n\nWe can provide physical wood finish swatches & 3D renderings within 24 hours.`,
+    aiReplyDraft: `Dear David Miller,\n\nThank you for contacting HomeCraft via WordPress! We have reviewed your CAD floorplans for the 3 California Villa projects.\n\nHere is our initial proposal:\n1. Carcass: 18mm E0 Grade Eucalyptus Plywood with Waterproof Melamine Finish.\n2. Door Panel: 20mm European Solid White Oak with Natural Matte PU Lacquer Finish.\n3. Hardware: Blum 3D Adjustable Soft-close Hinges & Undermount Drawer Runners.\n4. Estimated FOB Shenzhen Price: $78,500 for 3 Villa sets.\n5. Production Lead Time: 28 Days upon CAD approval & 30% deposit.\n\nWe can provide physical wood finish swatches & 3D renderings within 24 hours.`,
     aiScore: 95,
     aiAnalysis: {
       intentLevel: 'Hot (S级大单)',
       confidenceScore: 0.96,
-      summary: '买家为加利福尼亚州注册建筑设计事务所合伙人，通过WhatsApp发来豪宅工程需求。附带完整建筑CAD与百隆五金规范，对环保等级(E0)与交期敏感，属于极高转化价值标杆客户。',
-      suggestedReply: `Dear David Miller,\n\nThank you for contacting HomeCraft via WhatsApp! We have reviewed your CAD floorplans for the 3 California Villa projects.\n\nHere is our initial proposal:\n1. Carcass: 18mm E0 Grade Eucalyptus Plywood with Waterproof Melamine Finish.\n2. Door Panel: 20mm European Solid White Oak with Natural Matte PU Lacquer Finish.\n3. Hardware: Blum 3D Adjustable Soft-close Hinges & Undermount Drawer Runners.\n4. Estimated FOB Shenzhen Price: $78,500 for 3 Villa sets.\n5. Production Lead Time: 28 Days upon CAD approval & 30% deposit.\n\nWe can provide physical wood finish swatches & 3D renderings within 24 hours.`
+      summary: '买家为加利福尼亚州注册建筑设计事务所合伙人，通过WordPress发来豪宅工程需求。附带完整建筑CAD与百隆五金规范，对环保等级(E0)与交期敏感，属于极高转化价值标杆客户。',
+      suggestedReply: `Dear David Miller,\n\nThank you for contacting HomeCraft via WordPress! We have reviewed your CAD floorplans for the 3 California Villa projects.\n\nHere is our initial proposal:\n1. Carcass: 18mm E0 Grade Eucalyptus Plywood with Waterproof Melamine Finish.\n2. Door Panel: 20mm European Solid White Oak with Natural Matte PU Lacquer Finish.\n3. Hardware: Blum 3D Adjustable Soft-close Hinges & Undermount Drawer Runners.\n4. Estimated FOB Shenzhen Price: $78,500 for 3 Villa sets.\n5. Production Lead Time: 28 Days upon CAD approval & 30% deposit.\n\nWe can provide physical wood finish swatches & 3D renderings within 24 hours.`
     }
   },
   {
@@ -74,7 +74,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Wohnkultur Möbel Import GmbH',
     country: 'Germany',
     countryCode: 'DE',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+49 171 8921102',
     email: 'k.schmidt@wohnkultur-ffm.de',
     furnitureCategory: '意式极简真皮沙发 Italian Minimalist Leather Sofas',
@@ -85,7 +85,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-17 15:20',
     assignedSales: 'Alex (高级业务员)',
     title: 'Modular Sectional Top-Grain Leather Sofas 1x40HQ Container Inquiry',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-17 15:20',
     targetDelivery: '35 Days / FOB Ningbo',
     rawContent: 'Guten Tag, we require high-end modular sectional sofas with top-grain Italian leather (1.4-1.6mm thickness) and high-density memory foam (45kg/m³). Must comply with BS5852 / CAL117 fire retardant standards and FSC timber frames. Need 1x40HQ container load optimization (CBM calculation).',
@@ -98,7 +98,7 @@ export const initialInquiries: InquiryItem[] = [
     aiAnalysis: {
       intentLevel: 'Hot (S级采购)',
       confidenceScore: 0.94,
-      summary: '德国法兰克福老牌高端家具进口商，通过WhatsApp询价整柜集装箱采购需求，对木材FSC证书与阻燃等级测试要求严格，排柜容积率已由计算Skill自动测算。',
+      summary: '德国法兰克福老牌高端家具进口商，通过WordPress询价整柜集装箱采购需求，对木材FSC证书与阻燃等级测试要求严格，排柜容积率已由计算Skill自动测算。',
       suggestedReply: `Dear Mr. Schmidt,\n\nGreetings from HomeCraft! Our Italian Leather Sofa series strictly adheres to BS5852 fire-retardant standards and FSC certified kiln-dried larch inner wood frames.\n\nCBM Container Optimization for 1x40HQ:\n- Model SL-802 Sectional: 38 Sets (Total 66.8 CBM, Fill rate 98.2%)\n- Leather Option: Top Grain Italian Aniline Leather (#218 Saddle Tan)\n- FOB Ningbo Unit Price: €1,150 / set\n\nSample leather swatches are ready for express delivery via DHL.`
     }
   },
@@ -109,7 +109,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Royal Horizon Hospitality Dubai',
     country: 'United Arab Emirates',
     countryCode: 'AE',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+971 50 123 4567',
     email: 'tariq@royalhorizon.ae',
     furnitureCategory: '酒店工程定制工程款 Hotel Bedroom & Public Area Sets',
@@ -120,7 +120,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-17 11:05',
     assignedSales: 'Sophia (外贸主管)',
     title: 'Dubai Marina 4-Star Boutique Hotel 120 Guestrooms Full Joinery Package',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-17 11:05',
     targetDelivery: '60 Days / CIF Dubai Port',
     rawContent: 'Looking for contract furniture manufacturer for a 4-star boutique hotel in Dubai Marina. Headboards, nightstands, wardrobe with brass stainless steel inlay, and writing desk. Need mock-up room sample within 15 days.',
@@ -144,7 +144,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Sydney Home Studio',
     country: 'Australia',
     countryCode: 'AU',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+61 2 9821 4455',
     email: 'emma@sydneyhomestudio.com.au',
     furnitureCategory: '现代板式隐形衣柜 Custom Modern Sliding Wardrobes',
@@ -155,7 +155,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-16 18:30',
     assignedSales: 'Leo (业务员)',
     title: 'Custom Modern Aluminium Frame Wardrobe Sliding Doors with Sensor LED',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-16 18:30',
     targetDelivery: '25 Days / FOB Guangzhou',
     rawContent: 'Inquiring about aluminium frame glass doors custom wardrobe with LED sensor lights. Must meet AS/NZS 1859 Australian eco standards.',
@@ -175,7 +175,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Atelier Parisien de Design',
     country: 'France',
     countryCode: 'FR',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+33 1 42 68 55 00',
     email: 'p.dubois@atelier-parisien.fr',
     furnitureCategory: '巴黎豪华顶层公寓定制衣帽间与胡桃木饰面系统 Walk-in Closet',
@@ -186,7 +186,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-16 14:15',
     assignedSales: 'Sophia (外贸主管)',
     title: 'Paris 8th Arrondissement Penthouse Luxury Walk-in Closet & Walnut Paneling',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-16 14:15',
     targetDelivery: '40 Days / CIF Le Havre',
     rawContent: 'Bonjour, we are managing a luxury renovation project near Champs-Élysées. Requesting detailed quotation for natural canaletto walnut veneer wall panels and bespoke island wardrobe with integrated leather watch drawer inserts. CAD elevations attached.',
@@ -195,12 +195,12 @@ export const initialInquiries: InquiryItem[] = [
       { name: 'Paris_Penthouse_Closet_Elevations.pdf', url: '#', size: '5.6 MB', type: 'pdf' },
       { name: 'Walnut_Veneer_Sample_Ref.jpg', url: '#', size: '1.2 MB', type: 'image' }
     ],
-    aiReplyDraft: `Cher M. Dubois,\n\nMerci pour votre message WhatsApp! Notre usine maîtrise parfaitement le plaquage en noyer canaletto sélectionné et les finitions cuir cousu main.\n\nNous vous enverrons le devis détaillé CIF Le Havre sous 24h.`,
+    aiReplyDraft: `Cher M. Dubois,\n\nMerci pour votre message WordPress! Notre usine maîtrise parfaitement le plaquage en noyer canaletto sélectionné et les finitions cuir cousu main.\n\nNous vous enverrons le devis détaillé CIF Le Havre sous 24h.`,
     aiScore: 93,
     aiAnalysis: {
       intentLevel: 'Hot (S级高奢项目)',
       confidenceScore: 0.95,
-      summary: '巴黎香榭丽舍大街附近顶奢私宅改造工程，WhatsApp直发附带立面剖面图。要求北美黑胡桃(Canaletto)自然拼花与真皮首饰收纳抽屉，溢价空间大。'
+      summary: '巴黎香榭丽舍大街附近顶奢私宅改造工程，WordPress直发附带立面剖面图。要求北美黑胡桃(Canaletto)自然拼花与真皮首饰收纳抽屉，溢价空间大。'
     }
   },
   {
@@ -210,7 +210,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Marbella Luxury Resorts S.L.',
     country: 'Spain',
     countryCode: 'ES',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+34 952 77 12 34',
     email: 'carlos@marbella-resorts.es',
     furnitureCategory: '地中海度假村柚木户外与餐厅实木家具 Teak Wood Sets',
@@ -221,18 +221,18 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-16 10:20',
     assignedSales: 'Alex (高级业务员)',
     title: 'Costa del Sol Resort Grade A Teak Outdoor Dining & Lounge Furniture',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-16 10:20',
     targetDelivery: '30 Days / FOB Shenzhen',
     rawContent: 'Hola amigo, we need marine-grade Myanmar teak outdoor dining tables and sun loungers for our beach club in Marbella. Must withstand high UV, salt spray and rain. Quick shipping before high season in November.',
     content: 'Hola amigo, we need marine-grade Myanmar teak outdoor dining tables and sun loungers for our beach club in Marbella. Must withstand high UV, salt spray and rain. Quick shipping before high season in November.',
     attachments: [],
-    aiReplyDraft: `Estimado Carlos,\n\n¡Gracias por contactarnos por WhatsApp! Suministramos madera de teca de grado A tratada con aceite impermeabilizante marino que resiste perfectamente el ambiente salino de Marbella.`,
+    aiReplyDraft: `Estimado Carlos,\n\n¡Gracias por contactarnos por WordPress! Suministramos madera de teca de grado A tratada con aceite impermeabilizante marino que resiste perfectamente el ambiente salino de Marbella.`,
     aiScore: 89,
     aiAnalysis: {
       intentLevel: 'Warm (A级急迫询盘)',
       confidenceScore: 0.91,
-      summary: '西班牙太阳海岸度假区买家，通过WhatsApp发来紧急采购需求。交期敏感（要求11月旺季前交付），防盐雾耐候工艺已自动匹配涂装标准。'
+      summary: '西班牙太阳海岸度假区买家，通过WordPress发来紧急采购需求。交期敏感（要求11月旺季前交付），防盐雾耐候工艺已自动匹配涂装标准。'
     }
   },
   {
@@ -242,7 +242,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Milan Interior Architecture Studio',
     country: 'Italy',
     countryCode: 'IT',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+39 02 8712 9901',
     email: 'm.rossi@milano-arch.it',
     furnitureCategory: '极简无框隐形门与极窄铝框联动移门 Pocket Doors',
@@ -253,11 +253,11 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-15 16:45',
     assignedSales: 'Sophia (外贸主管)',
     title: 'Concealed Magnetic Lock Flush-to-Wall Doors Project',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-15 16:45',
     targetDelivery: '45 Days / CIF Genoa',
-    rawContent: 'Following up on our WhatsApp chat. We inspected your flush-to-wall concealed door samples with Italian AGB magnetic locks. Ready to place initial pilot order for 250 sets.',
-    content: 'Following up on our WhatsApp chat. We inspected your flush-to-wall concealed door samples with Italian AGB magnetic locks. Ready to place initial pilot order for 250 sets.',
+    rawContent: 'Following up on our WordPress chat. We inspected your flush-to-wall concealed door samples with Italian AGB magnetic locks. Ready to place initial pilot order for 250 sets.',
+    content: 'Following up on our WordPress chat. We inspected your flush-to-wall concealed door samples with Italian AGB magnetic locks. Ready to place initial pilot order for 250 sets.',
     attachments: [
       { name: 'Door_Specifications_AGB_Lock.pdf', url: '#', size: '1.4 MB', type: 'pdf' }
     ],
@@ -265,7 +265,7 @@ export const initialInquiries: InquiryItem[] = [
     aiAnalysis: {
       intentLevel: 'Hot (S级已签约)',
       confidenceScore: 0.99,
-      summary: '意大利建筑工程商，通过WhatsApp沟通并确认图纸细节，磁吸静音锁与壁可贴暗铰链工艺完全通过审核。'
+      summary: '意大利建筑工程商，通过WordPress沟通并确认图纸细节，磁吸静音锁与壁可贴暗铰链工艺完全通过审核。'
     }
   },
   {
@@ -275,7 +275,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Tokyo Urban Living Co., Ltd.',
     country: 'Japan',
     countryCode: 'JP',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+81 90 5521 8890',
     email: 'sato@tokyo-urban-living.co.jp',
     furnitureCategory: '日式极简收纳榻榻米与隐藏式五金床架 Tatami Modular Storage',
@@ -286,7 +286,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-15 11:30',
     assignedSales: 'Leo (业务员)',
     title: 'Tokyo Compact Micro-Apartment Modular Tatami & Wall Bed System',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-15 11:30',
     targetDelivery: '30 Days / FOB Shanghai',
     rawContent: 'Hello, we develop micro-studios in Shinjuku, Tokyo. Need modular tatami storage boxes and hydraulic lift wall beds. Must pass Japan JIS F☆☆☆☆ formaldehyde emission tests.',
@@ -306,7 +306,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Celtic Crest Hospitality UK',
     country: 'United Kingdom',
     countryCode: 'GB',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+44 7700 900192',
     email: 'liam@celtic-crest.co.uk',
     furnitureCategory: '英国爱丁堡精品酒店80间客房家具工程 Boutique Hotel Casegoods',
@@ -317,7 +317,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-14 17:10',
     assignedSales: 'Alex (高级业务员)',
     title: 'Edinburgh Boutique Hotel Refurbishment: Bedheads, Desks & Wardrobes',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-14 17:10',
     targetDelivery: '40 Days / CIF Southampton',
     rawContent: 'Looking for a reliable factory to supply casegoods for 80 rooms in Edinburgh. Crib 5 fire retardant fabric upholstery and contract grade scratch-resistant melamine surfaces.',
@@ -327,7 +327,7 @@ export const initialInquiries: InquiryItem[] = [
     aiAnalysis: {
       intentLevel: 'Warm (A级英国工程)',
       confidenceScore: 0.89,
-      summary: '英国爱丁堡老牌酒店翻新工程，通过WhatsApp发送客房改造清单，明确要求软包满足英标 BS 7176 / Crib 5 阻燃规范。'
+      summary: '英国爱丁堡老牌酒店翻新工程，通过WordPress发送客房改造清单，明确要求软包满足英标 BS 7176 / Crib 5 阻燃规范。'
     }
   },
   {
@@ -337,7 +337,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Manhattan Penthouse Renovations',
     country: 'United States',
     countryCode: 'US',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+1 (212) 650-8822',
     email: 'sarah@manhattan-renovations.com',
     furnitureCategory: '曼哈顿私宅奢华中岛台与岩板水盆柜 Island Cabinets with Sintered Stone',
@@ -348,7 +348,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-14 09:30',
     assignedSales: 'Sophia (外贸主管)',
     title: 'Tribeca Luxury Loft Sintered Stone Waterfall Island & Lacquer Kitchen',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-14 09:30',
     targetDelivery: '35 Days / Air Cargo & Ocean',
     rawContent: 'Inquiry from our Manhattan Tribeca project. Need 3.6m seamless waterfall sintered stone kitchen island with custom matte metallic lacquer drawer fronts and automated servo-drive touch latches.',
@@ -360,7 +360,7 @@ export const initialInquiries: InquiryItem[] = [
     aiAnalysis: {
       intentLevel: 'Hot (S级高定)',
       confidenceScore: 0.97,
-      summary: '纽约曼哈顿Tribeca豪宅项目，通过WhatsApp直发需求。需要3.6米超长大板无缝岩板中岛与金属漆面，具备超高工艺附加值。'
+      summary: '纽约曼哈顿Tribeca豪宅项目，通过WordPress直发需求。需要3.6米超长大板无缝岩板中岛与金属漆面，具备超高工艺附加值。'
     }
   },
   {
@@ -370,7 +370,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Zurich Alpine Chalets AG',
     country: 'Switzerland',
     countryCode: 'CH',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+41 79 211 4455',
     email: 'h.weber@alpine-chalets.ch',
     furnitureCategory: '瑞士高山木屋全屋落叶松原木定制家具 Alpine Larch Solid Wood',
@@ -381,7 +381,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-13 15:40',
     assignedSales: 'Alex (高级业务员)',
     title: 'Zermatt Ski Chalet Bespoke Brushed Larch Timber Bedroom & Dining Project',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-13 15:40',
     targetDelivery: '50 Days / CIF Basel',
     rawContent: 'Grüezi, seeking skilled woodworking manufacturer for two luxury ski chalets in Zermatt. Brushed alpine larch solid wood with natural beeswax finish. Detailed joinery schedules ready for tender.',
@@ -393,7 +393,7 @@ export const initialInquiries: InquiryItem[] = [
     aiAnalysis: {
       intentLevel: 'Hot (S级瑞士高端大单)',
       confidenceScore: 0.98,
-      summary: '瑞士采尔马特滑雪木屋全案高定，通过WhatsApp发来招标图纸。要求欧洲落叶松拉丝工艺与纯天然蜂蜡表面处理。'
+      summary: '瑞士采尔马特滑雪木屋全案高定，通过WordPress发来招标图纸。要求欧洲落叶松拉丝工艺与纯天然蜂蜡表面处理。'
     }
   },
   {
@@ -403,7 +403,7 @@ export const initialInquiries: InquiryItem[] = [
     companyName: 'Dubai Marina Residences',
     country: 'United Arab Emirates',
     countryCode: 'AE',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactNumber: '+971 52 981 3344',
     email: 'elena.rostova@gmail.com',
     furnitureCategory: '轻奢真皮弧形沙发与天然大理石茶几 Curved Sofa & Marble Tables',
@@ -414,7 +414,7 @@ export const initialInquiries: InquiryItem[] = [
     createdAt: '2026-08-13 10:15',
     assignedSales: 'Sophia (外贸主管)',
     title: 'Curved Boucle/Leather Sofa & Calacatta Marble Tables Inquiry',
-    platform: 'WhatsApp Business API',
+    platform: 'WordPress Business API',
     receivedAt: '2026-08-13 10:15',
     targetDelivery: '30 Days / CIF Jebel Ali',
     rawContent: 'Saw your catalog showcasing the curved sofa with Italian Calacatta Viola marble coffee tables! We need 3 sets for our Dubai penthouse projects. Can you quote FOB and shipping?',
@@ -424,7 +424,7 @@ export const initialInquiries: InquiryItem[] = [
     aiAnalysis: {
       intentLevel: 'Warm (A级高意向)',
       confidenceScore: 0.92,
-      summary: '迪拜滨海豪宅买家通过WhatsApp咨询高溢价弧形沙发与天然大理石茶几，前置处理智能体已自动打标并完成初筛。'
+      summary: '迪拜滨海豪宅买家通过WordPress咨询高溢价弧形沙发与天然大理石茶几，前置处理智能体已自动打标并完成初筛。'
     }
   }
 ];
@@ -435,7 +435,7 @@ export const initialSessions: SessionItem[] = [
     id: 'SESS-101',
     customerName: 'Apex Architecture & Interiors LLC',
     avatar: 'DM',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactInfo: '+1 (415) 890-2134',
     companyName: 'Apex Architecture & Interiors LLC',
     unreadCount: 2,
@@ -463,7 +463,7 @@ export const initialSessions: SessionItem[] = [
     id: 'SESS-103',
     customerName: 'Klaus Schmidt',
     avatar: 'KS',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactInfo: '+49 171 8921102',
     companyName: 'Wohnkultur Frankfurt GmbH',
     unreadCount: 0,
@@ -491,7 +491,7 @@ export const initialSessions: SessionItem[] = [
     id: 'SESS-105',
     customerName: 'Dubai Royal Oasis Hotel Project',
     avatar: 'TA',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     contactInfo: '+971 50 123 4567',
     companyName: 'Royal Oasis Hospitality Group',
     unreadCount: 1,
@@ -1865,13 +1865,13 @@ export const initialKBArticles: KBArticle[] = [
   },
   {
     id: 'KB-STAGE-1-WHATSAPP',
-    title: '海外WhatsApp与官网LiveChat进线10秒黄金首问与客户甄别话术',
+    title: '海外WordPress与官网LiveChat进线10秒黄金首问与客户甄别话术',
     category: '销售话术 / 跟进阶段话术 / 第一阶段：首次进店/咨询（破冰建信）',
     code: 'KB-STAGE-1-CHAT',
     version: 'v2.3.0',
     author: 'Alex (外贸业务员)',
     updatedAt: '2026-08-18',
-    content: '针对线上海外询盘的高转化模板：1. 快速确认国家/港口；2. 索取建筑平面CAD图纸；3. 告知品爱全球工程案例背书与免费3D深化设计支持，迅速引导添加WhatsApp进一步发送选色手册。',
+    content: '针对线上海外询盘的高转化模板：1. 快速确认国家/港口；2. 索取建筑平面CAD图纸；3. 告知品爱全球工程案例背书与免费3D深化设计支持，迅速引导添加WordPress进一步发送选色手册。',
     status: '已发布',
     viewCount: 1560,
     fileType: 'DOCX',

@@ -368,6 +368,7 @@ export function App() {
                   employees={initialEmployees}
                   roles={initialRoles}
                   subView="员工列表"
+                  onSelectSubView={handleSelectSubView}
                 />
               }
             />
@@ -377,7 +378,8 @@ export function App() {
                 <StaffModule
                   employees={initialEmployees}
                   roles={initialRoles}
-                  subView="角色配置"
+                  subView="角色管理"
+                  onSelectSubView={handleSelectSubView}
                 />
               }
             />

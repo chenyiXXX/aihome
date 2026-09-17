@@ -11,7 +11,7 @@ export const initialSalesAgents: SalesAgentItem[] = [
     role: '全渠道进线清洗、语种智能识别与会话去噪中继',
     category: '前置接入',
     description:
-      '负责海外官网独立站浮窗、WhatsApp、邮件等各渠道买家第一跳接入。对买家原始文本/语音转写进行拼写规范化、语种自动判别（如英/德/法/西/阿/俄）、会话上下文去噪，并初判买家采购情绪（焦虑/急迫/审慎/比价）。',
+      '负责海外官网独立站浮窗、WordPress、邮件等各渠道买家第一跳接入。对买家原始文本/语音转写进行拼写规范化、语种自动判别（如英/德/法/西/阿/俄）、会话上下文去噪，并初判买家采购情绪（焦虑/急迫/审慎/比价）。',
     status: 'active',
     geminiModel: 'gemini-2.5-flash',
     temperature: 0.2,
@@ -448,12 +448,12 @@ export const initialSalesSkills: AgentSkill[] = [
     code: 'chat_stream_sync',
     category: '通信与同步',
     description:
-      '对接企业海外即时通讯矩阵（官网独立站 WebChat、WhatsApp Business、邮件工单与企微），实现双向消息毫秒级流式推送、打字状态（typing...）模拟与心跳保活。',
+      '对接企业海外即时通讯矩阵（官网独立站 WebChat、WordPress Business、邮件工单与企微），实现双向消息毫秒级流式推送、打字状态（typing...）模拟与心跳保活。',
     version: 'v3.0.1',
     status: 'enabled',
     iconName: 'Radio',
     triggerType: '流水线串联',
-    triggerKeywords: ['流式传输', '实时同步', 'WhatsApp', '打字态', '推送', 'Webhook'],
+    triggerKeywords: ['流式传输', '实时同步', 'WordPress', '打字态', '推送', 'Webhook'],
     associatedAgents: ['前置处理智能体', '意图分发智能体'],
     inputSchemaSummary:
       '{\n  channel: "webchat" | "whatsapp" | "email",\n  sessionId: string,\n  streamChunk: string,\n  isCompleted: boolean\n}',

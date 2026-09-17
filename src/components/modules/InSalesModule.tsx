@@ -1053,7 +1053,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                 setRecordInputMode('manual');
                 setShowCreateModal(true);
               }}
-              className="h-8 px-3 rounded-full bg-[#0F4A47] text-white hover:bg-[#0b3836] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs active:scale-95"
+              className="h-8 px-3 rounded-full bg-[#EA3A20] text-white hover:bg-[#d6341c] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs active:scale-95"
               title="新建AI会话"
             >
               <UserPlus className="w-3.5 h-3.5" />
@@ -1148,7 +1148,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     }}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer relative group ${
                       isSelected
-                        ? 'bg-[#0F4A47]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/30 shadow-xs border-l-[5px] border-l-[#0F4A47]'
+                        ? 'bg-[#EA3A20]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/30 shadow-xs border-l-[5px] border-l-[#0F4A47]'
                         : 'bg-white hover:bg-slate-50/90 border-slate-200/80 hover:border-slate-300'
                     }`}
                   >
@@ -1940,7 +1940,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   setNewChannel(activeTab);
                   setShowCreateModal(true);
                 }}
-                className="px-5 py-2 rounded-full bg-[#0F4A47] hover:bg-[#0b3836] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 <span>立即新建AI会话</span>

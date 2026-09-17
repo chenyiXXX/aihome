@@ -183,13 +183,13 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                     }}
                     className={`p-3 rounded-2xl border text-left cursor-pointer transition-all relative flex flex-col justify-between min-h-[82px] ${
                       isSelected
-                        ? 'bg-[#0F4A47]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/20 shadow-2xs'
+                        ? 'bg-[#EA3A20]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/20 shadow-2xs'
                         : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-2">
-                        <div className={`w-7 h-7 rounded-xl flex items-center justify-center ${isSelected ? 'bg-[#0F4A47] text-white' : 'bg-slate-100 text-slate-600'}`}>
+                        <div className={`w-7 h-7 rounded-xl flex items-center justify-center ${isSelected ? 'bg-[#EA3A20] text-white' : 'bg-slate-100 text-slate-600'}`}>
                           <IconComponent className="w-3.5 h-3.5" />
                         </div>
                         <span className={`text-xs font-bold ${isSelected ? 'text-[#0F4A47]' : 'text-slate-800'}`}>
@@ -197,7 +197,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                         </span>
                       </div>
                       {isSelected && (
-                        <span className="w-4 h-4 rounded-full bg-[#0F4A47] text-white flex items-center justify-center text-[10px]">
+                        <span className="w-4 h-4 rounded-full bg-[#EA3A20] text-white flex items-center justify-center text-[10px]">
                           <Check className="w-2.5 h-2.5" />
                         </span>
                       )}
@@ -250,7 +250,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           <button
             type="button"
             onClick={handleConfirm}
-            className="h-8 px-5 rounded-xl bg-[#0F4A47] hover:bg-[#0b3836] text-white text-xs font-bold cursor-pointer transition-all shadow-xs"
+            className="h-8 px-5 rounded-xl bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold cursor-pointer transition-all shadow-xs"
           >
             确认创建
           </button>

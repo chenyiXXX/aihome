@@ -337,151 +337,113 @@ Regarding your inquiry on environmental compliance:
   );
 
   return (
-    <div className="space-y-6">
-      {/* View Mode Switcher Header */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-2 flex flex-wrap items-center justify-between gap-3 shadow-xs">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setViewMode('matrix')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-              viewMode === 'matrix'
-                ? 'bg-[#EA3A20] text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Bot className="w-4 h-4" />
-            <span>销售类智能体矩阵 (7大协同智能体)</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                viewMode === 'matrix' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-              }`}
-            >
-              核心集群
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode('global')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-              viewMode === 'global'
-                ? 'bg-[#EA3A20] text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Sliders className="w-4 h-4" />
-            <span>全局兜底与推理底座</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleSaveCurrentAgent}
-            className="px-4 py-1.5 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
-          >
-            {savedTip ? <Check className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
-            <span>{savedTip ? '已保存配置！' : '保存当前智能体配置'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* MATRIX VIEW: 7 大销售类智能体 */}
-      {viewMode === 'matrix' && (
-        <div className="space-y-6">
-          {/* Agent Selector Grid & Filter Bar */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
+    <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden space-y-4">
+      {/* MATRIX VIEW: Dual Column Split Layout */}
+      <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
+        {/* Left: 2-Level Category & Agent List */}
+        <div className="w-72 sm:w-80 shrink-0 bg-white border border-slate-100 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col overflow-hidden">
+          {/* Header & Search */}
+          <div className="p-3.5 border-b border-slate-100 space-y-2 shrink-0">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <span>销售类智能体列表</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
-                    共 7 个协同智能体
-                  </span>
-                </h3>
+                <Bot className="w-4 h-4 text-[#EA3A20]" />
+                <span className="text-xs font-bold text-slate-900">智能体 2 级分类矩阵</span>
               </div>
-
-              {/* Search */}
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="搜索智能体名称/角色/模型..."
-                  value={agentSearch}
-                  onChange={(e) => setAgentSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] w-64 shadow-2xs"
-                />
-              </div>
+              <span className="text-[11px] font-mono text-slate-400">
+                共 {filteredAgents.length} 个智能体
+              </span>
             </div>
-
-            {/* Horizontal Agent Cards Ribbon */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-              {filteredAgents.map((agent) => {
-                const Icon = getAgentIcon(agent.code);
-                const isSelected = agent.id === selectedAgentId;
-                const isActive = agent.status === 'active';
-
-                return (
-                  <div
-                    key={agent.id}
-                    onClick={() => setSelectedAgentId(agent.id)}
-                    className={`bg-white border rounded-2xl p-3.5 cursor-pointer transition-all flex flex-col justify-between shadow-2xs ${
-                      isSelected
-                        ? 'border-[#EA3A20] ring-2 ring-[#EA3A20]/20 bg-[#FFF4F2]/30'
-                        : 'border-slate-200 hover:border-slate-300 hover:shadow-xs'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div
-                          className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                            isSelected ? 'bg-[#EA3A20] text-white' : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                        </div>
-
-                        {/* Status badge toggle */}
-                        <button
-                          type="button"
-                          onClick={(e) => handleToggleAgentStatus(agent.id, e)}
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors cursor-pointer ${
-                            isActive
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-slate-100 text-slate-500 border border-slate-200'
-                          }`}
-                          title="点击切换运行/停用状态"
-                        >
-                          {isActive ? '运行中' : '已停用'}
-                        </button>
-                      </div>
-
-                      <h4 className="text-xs font-bold text-slate-900 truncate mb-0.5">{agent.name}</h4>
-                      <p className="text-[10px] text-slate-500 font-mono truncate mb-2">{agent.code}</p>
-
-                      <div className="flex items-center gap-1 flex-wrap mb-2">
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">
-                          {agent.category}
-                        </span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 font-mono">
-                          {agent.geminiModel.replace('gemini-2.5-', '')}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                      <span>24h: {agent.throughput24h}</span>
-                      <span>{agent.avgLatencyMs}ms</span>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="relative">
+              <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="筛选智能体..."
+                value={agentSearch}
+                onChange={(e) => setAgentSearch(e.target.value)}
+                className="w-full pl-7 pr-6 py-1 bg-slate-50 border border-slate-200/80 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
+              />
             </div>
           </div>
 
-          {/* 3. Deep Configuration Panel for the Selected Agent */}
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-6">
+          {/* 2-Level List */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-3">
+            {[
+              {
+                groupName: '售前接入与调度集群',
+                categories: ['前置接入', '中枢路由']
+              },
+              {
+                groupName: '核心专家集群',
+                categories: ['核心专家']
+              },
+              {
+                groupName: '商务与策略集群',
+                categories: ['商务报价', '策略推进']
+              },
+              {
+                groupName: '风控与售后集群',
+                categories: ['合规风控', '售后保障']
+              }
+            ].map((group) => {
+              const groupAgents = filteredAgents.filter((a) => group.categories.includes(a.category));
+              if (groupAgents.length === 0) return null;
+              return (
+                <div key={group.groupName} className="space-y-1">
+                  <div className="px-2 py-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-slate-100 pb-1 mb-1">
+                    <span>{group.groupName}</span>
+                    <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.2 rounded font-mono">
+                      {groupAgents.length}
+                    </span>
+                  </div>
+                  <div className="space-y-1 pl-1">
+                    {groupAgents.map((agent) => {
+                      const Icon = getAgentIcon(agent.code);
+                      const isSelected = agent.id === selectedAgentId;
+                      const isActive = agent.status === 'active';
+                      return (
+                        <div
+                          key={agent.id}
+                          onClick={() => setSelectedAgentId(agent.id)}
+                          className={`flex items-center justify-between p-2.5 rounded-xl text-xs cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-[#EA3A20]/10 text-[#EA3A20] font-bold shadow-2xs border border-[#EA3A20]/20'
+                              : 'hover:bg-slate-100/80 text-slate-700 font-medium border border-transparent'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                                isSelected ? 'bg-[#EA3A20] text-white' : 'bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold truncate">{agent.name}</div>
+                              <div className="text-[10px] text-slate-400 font-mono truncate">
+                                {agent.category} · {agent.geminiModel.replace('gemini-2.5-', '')}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                isActive ? 'bg-emerald-500' : 'bg-slate-300'
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right: Detailed Configuration Panel */}
+        <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-6 overflow-y-auto custom-scrollbar shadow-[0_2px_12px_rgba(0,0,0,0.02)] space-y-6">
             {/* Header of Selected Agent */}
             <div className="flex items-start justify-between gap-4 flex-wrap pb-5 border-b border-slate-100">
               <div className="flex items-start gap-3.5">
@@ -904,96 +866,6 @@ Regarding your inquiry on environmental compliance:
             </div>
           </div>
         </div>
-      )}
-
-      {/* GLOBAL VIEW: 全局默认底座参数 (Fallback Configuration) */}
-      {viewMode === 'global' && (
-        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">系统全局默认 Agent 底座与回退配置</h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                当未指定具体销售类智能体承接时，系统默认采用的综合人设与基础语言、出港口岸参数
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={handleSaveCurrentAgent}
-              className="px-4 py-1.5 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
-            >
-              {savedTip ? <Check className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
-              <span>保存全局底座</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">系统默认智能体集群主名称</label>
-                <input
-                  type="text"
-                  value={agentName}
-                  onChange={(e) => setAgentName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">多语种自动同传与翻译模式</label>
-                <select
-                  value={languageMode}
-                  onChange={(e) => setLanguageMode(e.target.value as any)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800"
-                >
-                  <option value="中英双语 (默认)">中英双语 (默认 - 海外英文答复，内部中文对照)</option>
-                  <option value="多国语言自动翻译">多国语言自动翻译 (德语/西语/阿语实时映射)</option>
-                  <option value="纯英文纯粹视角">纯英文纯粹视角 (严格纯正外贸商务信函)</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">默认 FOB 海运始发港口</label>
-                <input
-                  type="text"
-                  value={config.fobDefaultPort || 'Shenzhen / Yantian (深圳盐田港)'}
-                  readOnly
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 font-mono"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">默认行文语气基调</label>
-                <select
-                  value={toneStyle}
-                  onChange={(e) => setToneStyle(e.target.value as any)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800"
-                >
-                  <option value="严谨专业">严谨专业 (强调结构力学与环保认证，推荐)</option>
-                  <option value="高层商务">高层商务 (典雅沉稳，适合大宗工程开发商)</option>
-                  <option value="工程顾问">工程顾问 (深入节点图纸与五金公差)</option>
-                  <option value="热情亲切">热情亲切 (敏捷响应，侧重打样签板)</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">自动回复拟人化延迟</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    defaultValue={3}
-                    min={0}
-                    max={30}
-                    className="w-24 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-right"
-                  />
-                  <span className="text-xs text-slate-500">秒 (模拟人工打字状态，提升买家信任感)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Skill Mount Modal */}
       <SkillMountModal

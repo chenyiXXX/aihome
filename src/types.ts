@@ -34,7 +34,7 @@ export interface QAMessage {
 
 // 2. Pre-sales Inquiry Types (售前询盘)
 export type InquiryChannel =
-  | 'WhatsApp'
+  | 'WordPress'
   | 'Alibaba'
   | 'Made-in-China'
   | 'Official Website'
@@ -98,8 +98,8 @@ export interface SessionItem {
   id: string;
   customerName: string;
   avatar: string;
-  channel: '企微' | 'WhatsApp' | '线下对接' | '企业微信' | string;
-  contactInfo?: string; // 手机号/企微ID/WA号码
+  channel: '企微' | 'WordPress' | '线下对接' | '企业微信' | string;
+  contactInfo?: string; // 手机号/企微ID/WordPress号码
   companyName?: string; // 企业或项目名称
   unreadCount: number;
   lastMessage: string;

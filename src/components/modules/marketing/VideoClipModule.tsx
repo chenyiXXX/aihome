@@ -650,7 +650,7 @@ export const VideoClipModule: React.FC<VideoClipModuleProps> = ({ onNavigateToPl
                     onClick={() => setSelectedCategory(cat.key)}
                     className={`px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                       selectedCategory === cat.key
-                        ? 'bg-[#0F4A47] text-white shadow-2xs'
+                        ? 'bg-[#EA3A20] text-white shadow-2xs'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-transparent'
                     }`}
                   >

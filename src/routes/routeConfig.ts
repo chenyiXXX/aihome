@@ -160,9 +160,9 @@ export const ROUTE_DEFINITIONS: RouteDefinition[] = [
   {
     path: '/employee/roles',
     moduleId: 'employee',
-    subView: '角色配置',
+    subView: '角色列表',
     moduleTitle: '员工权限',
-    pageTitle: '角色配置'
+    pageTitle: '角色列表'
   },
   // 9. 智能体基础设置
   {
@@ -244,6 +244,9 @@ export function parseRoute(pathname: string): {
     return ROUTE_DEFINITIONS.find((r) => r.path === '/analytics/sales')!;
   }
   if (normalized.startsWith('/employee')) {
+    if (normalized.includes('roles')) {
+      return ROUTE_DEFINITIONS.find((r) => r.path === '/employee/roles')!;
+    }
     return ROUTE_DEFINITIONS.find((r) => r.path === '/employee/list')!;
   }
   if (normalized.startsWith('/system')) {

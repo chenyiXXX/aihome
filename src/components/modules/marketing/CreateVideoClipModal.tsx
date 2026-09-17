@@ -494,7 +494,7 @@ export const CreateVideoClipModal: React.FC<CreateVideoClipModalProps> = ({
                     onClick={() => handleLanguageChange('中文')}
                     className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       videoLanguage === '中文'
-                        ? 'bg-[#0F4A47] border-[#0F4A47] text-white shadow-xs'
+                        ? 'bg-[#EA3A20] border-[#0F4A47] text-white shadow-xs'
                         : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                     }`}
                   >
@@ -507,7 +507,7 @@ export const CreateVideoClipModal: React.FC<CreateVideoClipModalProps> = ({
                     onClick={() => handleLanguageChange('英文')}
                     className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       videoLanguage === '英文'
-                        ? 'bg-[#0F4A47] border-[#0F4A47] text-white shadow-xs'
+                        ? 'bg-[#EA3A20] border-[#0F4A47] text-white shadow-xs'
                         : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                     }`}
                   >

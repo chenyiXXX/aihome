@@ -25,7 +25,9 @@ import {
   AlertCircle,
   Eye,
   Info,
-  Crown
+  Crown,
+  Trash2,
+  X
 } from 'lucide-react';
 import { EmployeeItem, RoleConfig, WeComDept, OrgDeptNode } from '../../types';
 import { initialWeComDepts, initialOrgTree } from '../../data/mockData';
@@ -37,16 +39,16 @@ interface StaffModuleProps {
   employees: EmployeeItem[];
   roles: RoleConfig[];
   subView: string;
+  onSelectSubView?: (subView: string) => void;
 }
 
 export const StaffModule: React.FC<StaffModuleProps> = ({
   employees: propEmployees,
   roles: propRoles,
-  subView
+  subView,
+  onSelectSubView
 }) => {
-  const [activeTab, setActiveTab] = useState<'员工列表' | '角色配置'>(
-    subView.includes('角色') ? '角色配置' : '员工列表'
-  );
+  const isRoleView = subView.includes('角色');
 
   // State
   const [employees, setEmployees] = useState<EmployeeItem[]>(propEmployees);
@@ -60,6 +62,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
   );
   const [deptSearchQuery, setDeptSearchQuery] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleSearchQuery, setRoleSearchQuery] = useState('');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('全部角色');
   const [selectedLeaderFilter, setSelectedLeaderFilter] = useState<string>('全部');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('全部状态');
@@ -73,17 +76,10 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
   // Modals
   const [isWeComModalOpen, setIsWeComModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<RoleConfig | null>(null);
+  const [isCreatingNewRole, setIsCreatingNewRole] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<EmployeeItem | null>(null);
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (subView.includes('角色')) {
-      setActiveTab('角色配置');
-    } else {
-      setActiveTab('员工列表');
-    }
-  }, [subView]);
 
   // Sync WeCom action
   const handleTriggerWeComSync = () => {
@@ -117,12 +113,13 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
     setTimeout(() => setSyncToast(null), 3000);
   };
 
-  // Create new role
+  // Create new role (Only configure menu permissions)
   const handleCreateNewRole = () => {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newRole: RoleConfig = {
-      id: `ROLE-CUSTOM-${Date.now()}`,
-      roleName: '新权限角色',
-      description: '自定义外贸业务权限角色',
+      id: `ROLE_CUSTOM_${randomSuffix}`,
+      roleName: '',
+      description: '',
       userCount: 0,
       permissions: [
         { module: '知识问答', view: true, edit: false, delete: false, export: false },
@@ -160,8 +157,34 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
         auditExport: false
       }
     };
+    setIsCreatingNewRole(true);
     setEditingRole(newRole);
     setIsRoleModalOpen(true);
+  };
+
+  // Edit existing role
+  const handleEditRole = (role: RoleConfig) => {
+    setIsCreatingNewRole(false);
+    setEditingRole(role);
+    setIsRoleModalOpen(true);
+  };
+
+  // Delete role
+  const handleDeleteRole = (roleId: string, roleName: string) => {
+    if (roleId === 'ROLE-ADMIN') {
+      setSyncToast('⚠️ 超级管理员为系统核心内置角色，不可删除！');
+      setTimeout(() => setSyncToast(null), 3000);
+      return;
+    }
+    const roleToDelete = roles.find((r) => r.id === roleId);
+    if (roleToDelete && roleToDelete.userCount > 0) {
+      setSyncToast(`⚠️ 角色「${roleName}」当前有 ${roleToDelete.userCount} 名员工使用中，请先转移员工角色后再删除！`);
+      setTimeout(() => setSyncToast(null), 3500);
+      return;
+    }
+    setRoles((prev) => prev.filter((r) => r.id !== roleId));
+    setSyncToast(`已成功删除角色「${roleName}」`);
+    setTimeout(() => setSyncToast(null), 3000);
   };
 
   // Employee Save
@@ -413,6 +436,17 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
     return true;
   });
 
+  // Filtered roles for Role Management List
+  const filteredRoles = roles.filter((role) => {
+    if (!roleSearchQuery.trim()) return true;
+    const q = roleSearchQuery.toLowerCase();
+    return (
+      role.roleName.toLowerCase().includes(q) ||
+      role.id.toLowerCase().includes(q) ||
+      role.description.toLowerCase().includes(q)
+    );
+  });
+
   const selectedDeptName = getDeptNameById(selectedDeptId, initialOrgTree) || '全部员工';
 
   return (
@@ -434,73 +468,27 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
         </div>
       )}
 
-      {/* Top Filter Bar */}
+      {/* Top Header Bar */}
       <div className="flex items-center justify-between py-3 mb-2 shrink-0">
-        <div className="bg-white rounded-full p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 flex items-center gap-1">
-          {(['员工列表', '角色配置'] as const).map((tab) => {
-            const isActive = activeTab === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  isActive
-                    ? 'bg-[#EA3A20] text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                }`}
-              >
-                {tab === '员工列表' ? <Users className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                <span>{tab}</span>
-                {tab === '员工列表' && (
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                      isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
-                    }`}
-                  >
-                    {employees.length}
-                  </span>
-                )}
-                {tab === '角色配置' && (
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                      isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
-                    }`}
-                  >
-                    {roles.length}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-3">
+          <h2 className="text-base font-bold text-slate-900">
+            {isRoleView ? '角色列表' : '员工列表'}
+          </h2>
+          <span className="text-xs text-slate-500 font-medium">
+            {isRoleView ? `共 ${roles.length} 个系统角色` : `共 ${employees.length} 名在职员工`}
+          </span>
         </div>
 
         {/* Right Action Bar */}
         <div className="flex items-center gap-2.5">
-          {activeTab === '员工列表' ? (
-            <>
-              <button
-                onClick={() => setIsWeComModalOpen(true)}
-                className="h-9 px-3.5 rounded-full border border-slate-200 hover:border-slate-300 bg-white text-slate-700 hover:text-slate-900 text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
-              >
-                <Building2 className="w-3.5 h-3.5 text-slate-500" />
-                <span>对接配置</span>
-              </button>
-              <button
-                onClick={handleTriggerWeComSync}
-                disabled={isSyncing}
-                className="h-9 px-4 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                <span>{isSyncing ? '正在同步...' : '同步企微通讯录'}</span>
-              </button>
-            </>
-          ) : (
+          {!isRoleView && (
             <button
-              onClick={handleCreateNewRole}
-              className="h-9 px-4.5 rounded-full bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs active:scale-95"
+              onClick={handleTriggerWeComSync}
+              disabled={isSyncing}
+              className="h-9 px-4 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
             >
-              <Plus className="w-4 h-4" />
-              <span>新增角色</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? '正在同步...' : '同步企微通讯录'}</span>
             </button>
           )}
         </div>
@@ -509,7 +497,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       {/* Main Content Area */}
       <div className="flex-1 overflow-hidden">
         
-        {activeTab === '员工列表' ? (
+        {!isRoleView ? (
           <div className="h-full flex gap-5 overflow-hidden">
             
             {/* Left Column: WeCom Organization Tree (参照截图精确还原) */}
@@ -518,7 +506,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
               {/* Tree Header */}
               <div className="p-4 border-b border-slate-100 bg-white flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-2xs">
+                  <div className="w-7 h-7 rounded-lg bg-[#EA3A20] flex items-center justify-center text-white shadow-2xs">
                     <Building2 className="w-4 h-4" />
                   </div>
                   <div>
@@ -767,7 +755,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                                 onClick={() => handleToggleEmployeeStatus(emp.id)}
                                 title={isEnabled ? "点击操作：禁用该账号" : "点击操作：启用该账号"}
                                 className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                  isEnabled ? 'bg-emerald-600' : 'bg-slate-300'
+                                  isEnabled ? 'bg-[#EA3A20]' : 'bg-slate-300'
                                 }`}
                               >
                                 <span
@@ -776,7 +764,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                                   }`}
                                 />
                               </button>
-                              <span className={`text-xs font-bold ${isEnabled ? 'text-emerald-700' : 'text-slate-400'}`}>
+                              <span className={`text-xs font-bold ${isEnabled ? 'text-[#EA3A20]' : 'text-slate-400'}`}>
                                 {isEnabled ? '启用' : '禁用'}
                               </span>
                             </div>
@@ -815,134 +803,176 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
 
           </div>
         ) : (
-          /* TAB: 角色管理 (功能权限 + 数据权限 + 操作权限) */
-          <div className="h-full overflow-y-auto custom-scrollbar space-y-4 pr-1">
+          /* TAB: 角色管理 (列表形式) */
+          <div className="h-full flex flex-col bg-white rounded-3xl shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
             
-            {/* Role Cards Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-6">
-              {roles.map((role) => {
-                const menuCount = role.permissions.filter((p) => p.view).length;
-                const totalMenu = role.permissions.length;
-                const dataScope = role.dataPermission?.scopeLabel || '未设置数据权限';
-                const maskContact = role.dataPermission?.maskCustomerContact;
-                const maskCost = role.dataPermission?.maskCostPrice;
-                const opPermsCount = role.operationPermissions
-                  ? Object.values(role.operationPermissions).filter(Boolean).length
-                  : 0;
+            {/* Table Header / Toolbar */}
+            <div className="p-4.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/40">
+              <div className="flex items-center gap-3">
+                <div className="relative w-72">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={roleSearchQuery}
+                    onChange={(e) => setRoleSearchQuery(e.target.value)}
+                    placeholder="搜索角色名称、编码或说明..."
+                    className="w-full pl-8.5 pr-8 py-2 rounded-full border border-slate-200 bg-white text-xs placeholder:text-slate-400 focus:outline-none focus:border-[#0F4A47] transition-all"
+                  />
+                  {roleSearchQuery && (
+                    <button
+                      onClick={() => setRoleSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-1 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
 
-                return (
-                  <div
-                    key={role.id}
-                    className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4 hover:border-slate-200 transition-colors"
-                  >
-                    <div>
-                      {/* Card Header */}
-                      <div className="flex items-start justify-between border-b border-slate-100 pb-4">
-                        <div>
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-base font-bold text-slate-900">{role.roleName}</h3>
-                            <span className="px-2.5 py-0.5 text-[10px] bg-slate-100 text-slate-700 font-bold rounded-full font-mono">
-                              {role.userCount} 人正在使用
-                            </span>
-                            {role.id === 'ROLE-ADMIN' && (
-                              <span className="px-2 py-0.5 text-[9px] bg-red-100 text-[#EA3A20] font-bold rounded-full">
-                                超级权限
+                <div className="text-xs text-slate-500 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>共 <strong className="text-slate-800 font-mono">{roles.length}</strong> 个系统角色</span>
+                  {roleSearchQuery && (
+                    <span className="text-slate-400">(匹配筛选到 {filteredRoles.length} 个)</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCreateNewRole}
+                  className="h-8.5 px-4 rounded-full bg-[#EA3A20] hover:bg-[#d6341c] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-2xs active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>新增角色</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Table Container */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <table className="w-full text-left border-collapse">
+                <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs border-b border-slate-100 text-slate-600 text-[11px] font-bold">
+                  <tr>
+                    <th className="py-3.5 px-6 w-56">角色名称</th>
+                    <th className="py-3.5 px-4 min-w-[200px]">角色职责说明</th>
+                    <th className="py-3.5 px-4 min-w-[300px]">菜单功能权限</th>
+                    <th className="py-3.5 px-4 text-center w-28">关联员工</th>
+                    <th className="py-3.5 px-6 text-right w-32">操作</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {filteredRoles.map((role) => {
+                    const menuCount = role.permissions.filter((p) => p.view).length;
+                    const totalMenu = role.permissions.length;
+                    const isSuperAdmin = role.id === 'ROLE-ADMIN';
+
+                    return (
+                      <tr
+                        key={role.id}
+                        className="hover:bg-slate-50/80 transition-colors group"
+                      >
+                        {/* 角色名称 */}
+                        <td className="py-4 px-6">
+                          <span className="font-bold text-slate-900 text-sm">{role.roleName}</span>
+                        </td>
+
+                        {/* 角色职责说明 */}
+                        <td className="py-4 px-4 text-slate-600 leading-relaxed max-w-xs">
+                          {role.description || <span className="text-slate-300">暂无说明</span>}
+                        </td>
+
+                        {/* 菜单功能权限 */}
+                        <td className="py-4 px-4">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-mono">
+                                {menuCount} / {totalMenu} 模块
                               </span>
+                              <span className="text-[11px] text-slate-400">
+                                {menuCount === totalMenu ? '全部菜单开放' : `已配置 ${menuCount} 项菜单`}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {role.permissions
+                                .filter((p) => p.view)
+                                .slice(0, 5)
+                                .map((perm) => (
+                                  <span
+                                    key={perm.module}
+                                    className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200/50"
+                                  >
+                                    {perm.module}
+                                  </span>
+                                ))}
+                              {role.permissions.filter((p) => p.view).length > 5 && (
+                                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-medium text-slate-400 bg-slate-50">
+                                  +{role.permissions.filter((p) => p.view).length - 5}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* 关联员工 */}
+                        <td className="py-4 px-4 text-center">
+                          <button
+                            onClick={() => {
+                              setSelectedRoleFilter(role.roleName);
+                              onSelectSubView?.('员工列表');
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-800 font-bold font-mono text-xs cursor-pointer transition-colors"
+                            title="点击筛选此角色的员工"
+                          >
+                            <Users className="w-3 h-3 text-slate-500" />
+                            <span>{role.userCount}</span>
+                            <span className="text-[10px] font-normal text-slate-500">人</span>
+                          </button>
+                        </td>
+
+                        {/* 操作 */}
+                        <td className="py-4 px-6 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleEditRole(role)}
+                              className="px-2.5 py-1 text-xs font-bold text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50 rounded-lg cursor-pointer transition-colors"
+                            >
+                              配置权限
+                            </button>
+                            {!isSuperAdmin && (
+                              <button
+                                onClick={() => handleDeleteRole(role.id, role.roleName)}
+                                className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                                title="删除角色"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             )}
                           </div>
-                          <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                            {role.description}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setEditingRole(role);
-                            setIsRoleModalOpen(true);
-                          }}
-                          className="px-3.5 py-1.5 bg-[#FFF4F2] text-[#EA3A20] hover:bg-[#ffece6] text-xs font-bold rounded-xl cursor-pointer transition-colors shrink-0"
-                        >
-                          编辑权限
-                        </button>
-                      </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
 
-                      {/* Three Dimensions Overview */}
-                      <div className="grid grid-cols-3 gap-2.5 pt-3">
-                        
-                        {/* 1. Functional Permissions */}
-                        <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                          <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                            <Eye className="w-3 h-3 text-[#EA3A20]" />
-                            <span>功能权限</span>
-                          </div>
-                          <div className="text-xs font-bold text-slate-800">
-                            {menuCount} / {totalMenu} <span className="text-[10px] font-normal text-slate-500">模块</span>
-                          </div>
-                          <div className="text-[10px] text-slate-400 truncate">
-                            {role.permissions.filter((p) => p.view).map((p) => p.module).slice(0, 3).join('、')}
-                          </div>
-                        </div>
+                  {filteredRoles.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-slate-400">
+                        <ShieldCheck className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        <p>未找到符合条件的系统角色</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-                        {/* 2. Data Permissions */}
-                        <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                          <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                            <Database className="w-3 h-3 text-blue-600" />
-                            <span>数据权限</span>
-                          </div>
-                          <div className="text-xs font-bold text-blue-900 truncate" title={dataScope}>
-                            {role.dataPermission?.scope === 'all'
-                              ? '全公司跨部门'
-                              : role.dataPermission?.scope === 'dept_and_sub'
-                              ? '本部门及下级'
-                              : role.dataPermission?.scope === 'dept_only'
-                              ? '本部门数据'
-                              : '仅本人数据'}
-                          </div>
-                          <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                            {maskContact && <span>客户脱敏</span>}
-                            {maskCost && <span>· 底价保护</span>}
-                            {!maskContact && !maskCost && <span>明文查看</span>}
-                          </div>
-                        </div>
-
-                        {/* 3. Operation Permissions */}
-                        <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                          <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                            <Sliders className="w-3 h-3 text-emerald-600" />
-                            <span>操作权限</span>
-                          </div>
-                          <div className="text-xs font-bold text-emerald-900">
-                            {opPermsCount} 项 <span className="text-[10px] font-normal text-slate-500">已开通</span>
-                          </div>
-                          <div className="text-[10px] text-slate-400 truncate">
-                            {role.operationPermissions?.knowledgePublish ? '含免审' : '标准审批'}
-                          </div>
-                        </div>
-
-                      </div>
-
-                      {/* Fast Tag Pills */}
-                      <div className="pt-3 flex flex-wrap gap-1.5">
-                        {role.permissions
-                          .filter((p) => p.view)
-                          .map((perm) => (
-                            <span
-                              key={perm.module}
-                              className="px-2.5 py-0.8 bg-slate-100/80 rounded-lg text-[10px] font-semibold text-slate-700"
-                            >
-                              {perm.module}
-                            </span>
-                          ))}
-                      </div>
-                    </div>
-
-                    {/* Footer Actions */}
-                    <div className="border-t border-slate-100 pt-3 flex items-center justify-between text-xs text-slate-400">
-                      <span>角色ID: <code className="font-mono">{role.id}</code></span>
-                    </div>
-
-                  </div>
-                );
-              })}
+            {/* Table Footer */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
+              <div>
+                提示：新增角色时仅配置<strong>菜单权限</strong>；已有角色可自由调整菜单权限、数据范围与业务操作权限。
+              </div>
+              <div className="font-mono text-[11px] text-slate-400">
+                当前共 {roles.length} 个系统角色
+              </div>
             </div>
 
           </div>
@@ -963,8 +993,12 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
 
       <RolePermissionModal
         isOpen={isRoleModalOpen}
-        onClose={() => setIsRoleModalOpen(false)}
+        onClose={() => {
+          setIsRoleModalOpen(false);
+          setIsCreatingNewRole(false);
+        }}
         role={editingRole}
+        isNewRole={isCreatingNewRole}
         onSaveRole={handleSaveRole}
         allDepts={wecomDepts.map((d) => d.name)}
       />
