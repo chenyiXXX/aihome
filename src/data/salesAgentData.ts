@@ -456,7 +456,7 @@ export const initialSalesSkills: AgentSkill[] = [
     triggerKeywords: ['流式传输', '实时同步', 'WordPress', '打字态', '推送', 'Webhook'],
     associatedAgents: ['前置处理智能体', '意图分发智能体'],
     inputSchemaSummary:
-      '{\n  channel: "webchat" | "whatsapp" | "email",\n  sessionId: string,\n  streamChunk: string,\n  isCompleted: boolean\n}',
+      '{\n  channel: "webchat" | "wordpress" | "email",\n  sessionId: string,\n  streamChunk: string,\n  isCompleted: boolean\n}',
     outputSchemaSummary:
       '{\n  deliveredAt: string,\n  latencyMs: number,\n  status: "STREAMING" | "ACKNOWLEDGED"\n}',
     lastInvoked: '2026-09-07 00:15',

@@ -62,8 +62,8 @@ export const CreateInquiryModal: React.FC<CreateInquiryModalProps> = ({
       companyName: companyName.trim() || 'Horizon Global Interiors Ltd.',
       country: country,
       countryCode: countryCode,
-      channel: 'WhatsApp',
-      platform: 'WhatsApp Business API',
+      channel: 'WordPress',
+      platform: 'WordPress Business API',
       contactNumber: contactNumber.trim() || '+1 (555) 019-2834',
       email: email.trim() || 'inquiry@buyer-corp.com',
       furnitureCategory: furnitureCategory,
@@ -73,9 +73,9 @@ export const CreateInquiryModal: React.FC<CreateInquiryModalProps> = ({
       status: '待跟进',
       createdAt: '刚刚',
       assignedSales: 'Sophia (外贸主管)',
-      title: `${buyerName || 'Client'} WhatsApp Custom Furniture Inquiry`,
-      content: content.trim() || 'Customer sent WhatsApp message requesting custom bespoke joinery quotation with CAD drawing verification.',
-      rawContent: content.trim() || 'Customer sent WhatsApp message requesting custom bespoke joinery quotation with CAD drawing verification.',
+      title: `${buyerName || 'Client'} WordPress Custom Furniture Inquiry`,
+      content: content.trim() || 'Customer sent WordPress message requesting custom bespoke joinery quotation with CAD drawing verification.',
+      rawContent: content.trim() || 'Customer sent WordPress message requesting custom bespoke joinery quotation with CAD drawing verification.',
       attachments: hasCad
         ? [
             { name: 'Floorplan_Project_CAD.pdf', url: '#', size: '3.4 MB', type: 'pdf' },
@@ -86,8 +86,8 @@ export const CreateInquiryModal: React.FC<CreateInquiryModalProps> = ({
       aiAnalysis: {
         intentLevel: 'Hot (S级新进线)',
         confidenceScore: 0.94,
-        summary: `通过 WhatsApp Business 官方通道进线的高意向海外询盘，前置处理智能体已完成初步清洗与采购诉求识别。`,
-        suggestedReply: `Dear ${buyerName || 'Valued Customer'},\n\nThank you for reaching out via WhatsApp! We have reviewed your preliminary specifications for ${furnitureCategory}. Our engineering team is preparing an initial FOB quotation and CAD review.`
+        summary: `通过 WordPress Business 官方通道进线的高意向海外询盘，前置处理智能体已完成初步清洗与采购诉求识别。`,
+        suggestedReply: `Dear ${buyerName || 'Valued Customer'},\n\nThank you for reaching out via WordPress! We have reviewed your preliminary specifications for ${furnitureCategory}. Our engineering team is preparing an initial FOB quotation and CAD review.`
       }
     };
 
@@ -170,7 +170,7 @@ export const CreateInquiryModal: React.FC<CreateInquiryModalProps> = ({
 
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-700 block">
-                WhatsApp 号码 <span className="text-emerald-600">*</span>
+                WordPress 号码 <span className="text-emerald-600">*</span>
               </label>
               <input
                 type="text"
@@ -226,7 +226,7 @@ export const CreateInquiryModal: React.FC<CreateInquiryModalProps> = ({
             </div>
           </div>
 
-          {/* Inbound WhatsApp message content */}
+          {/* Inbound WordPress message content */}
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-700 block">
               进线消息原文

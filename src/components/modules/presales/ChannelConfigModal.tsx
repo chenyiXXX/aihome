@@ -35,11 +35,11 @@ export const ChannelConfigModal: React.FC<ChannelConfigModalProps> = ({
   const [isTestingWebhook, setIsTestingWebhook] = useState(false);
   const [webhookTestSuccess, setWebhookTestSuccess] = useState(false);
 
-  // WhatsApp Configuration State
+  // WordPress Configuration State
   const [wabaId, setWabaId] = useState('109283749102834');
   const [phoneNumber, setPhoneNumber] = useState('+86 757 8890 2133');
   const [phoneNumberId, setPhoneNumberId] = useState('102938475610293');
-  const [webhookUrl, setWebhookUrl] = useState('https://api.homecraft.ai/webhook/v2/whatsapp');
+  const [webhookUrl, setWebhookUrl] = useState('https://api.homecraft.ai/webhook/v2/wordpress');
   const [verifyToken, setVerifyToken] = useState('homecraft_wa_verify_2026_sec');
   const [accessToken, setAccessToken] = useState('EAAO8ZCe4K...9xLq2vZbK91');
 
@@ -95,7 +95,7 @@ export const ChannelConfigModal: React.FC<ChannelConfigModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-900">WhatsApp 渠道设置</h3>
+                <h3 className="text-sm font-bold text-slate-900">WordPress 渠道设置</h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   已连接
@@ -168,7 +168,7 @@ export const ChannelConfigModal: React.FC<ChannelConfigModalProps> = ({
               <div className="space-y-3 pt-1">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-semibold text-slate-700 block mb-1">WhatsApp 商业账号 ID (WABA ID)</label>
+                    <label className="text-[11px] font-semibold text-slate-700 block mb-1">WordPress 商业账号 ID (WABA ID)</label>
                     <input
                       type="text"
                       value={wabaId}

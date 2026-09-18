@@ -1,25 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   Building2,
-  CheckCircle2,
   Shield,
-  Cpu,
   Check,
-  Crown,
-  Database,
-  Zap,
-  TrendingUp,
   UserCheck,
-  UserX
+  UserX,
+  ChevronDown,
+  MessageSquare,
+  Search
 } from 'lucide-react';
-import { EmployeeItem, RoleConfig } from '../../../types';
+import { EmployeeItem, RoleConfig, WhatsAppAccount } from '../../../types';
 
 interface EmployeeDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   employee: EmployeeItem | null;
   roles: RoleConfig[];
+  whatsAppAccounts?: WhatsAppAccount[];
   initialTab?: 'auth' | 'quota';
   onSaveEmployee: (updated: EmployeeItem) => void;
 }
@@ -29,54 +27,72 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   onClose,
   employee,
   roles,
+  whatsAppAccounts = [],
   onSaveEmployee
 }) => {
-  const [selectedRole, setSelectedRole] = useState<string>('销售业务员');
-  const [quotaLimit, setQuotaLimit] = useState<number>(2000);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(['销售业务员']);
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const [roleSearchQuery, setRoleSearchQuery] = useState('');
+  const [selectedWaId, setSelectedWaId] = useState<string>('');
+  const [isWaDropdownOpen, setIsWaDropdownOpen] = useState(false);
   const [accountStatus, setAccountStatus] = useState<'启用' | '已禁用'>('启用');
-  const [isLeader, setIsLeader] = useState<boolean>(false);
-  const [customQuotaInput, setCustomQuotaInput] = useState<string>('2000');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const waDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (employee) {
-      setSelectedRole(employee.role);
-      setQuotaLimit(employee.aiQuotaLimit);
-      setCustomQuotaInput(String(employee.aiQuotaLimit));
+      if (employee.role) {
+        const rolesList = employee.role.split(',').map((s) => s.trim()).filter(Boolean);
+        setSelectedRoles(rolesList.length > 0 ? rolesList : ['销售业务员']);
+      } else {
+        setSelectedRoles(['销售业务员']);
+      }
       setAccountStatus(employee.status === '已禁用' ? '已禁用' : '启用');
-      setIsLeader(Boolean(employee.isDeptLeader));
+      setSelectedWaId(employee.whatsappAccountId || '');
     }
   }, [employee, isOpen]);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsRoleDropdownOpen(false);
+      }
+      if (waDropdownRef.current && !waDropdownRef.current.contains(e.target as Node)) {
+        setIsWaDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (!isOpen || !employee) return null;
 
+  const toggleRole = (roleName: string) => {
+    if (selectedRoles.includes(roleName)) {
+      if (selectedRoles.length === 1) {
+        return; // Keep at least one role
+      }
+      setSelectedRoles(selectedRoles.filter((r) => r !== roleName));
+    } else {
+      setSelectedRoles([...selectedRoles, roleName]);
+    }
+  };
+
   const handleSave = () => {
+    const targetWa = whatsAppAccounts.find((w) => w.id === selectedWaId);
     onSaveEmployee({
       ...employee,
-      role: selectedRole as any,
-      aiQuotaLimit: Number(customQuotaInput) || quotaLimit,
+      role: selectedRoles.join(', '),
+      roles: selectedRoles,
       status: accountStatus,
-      isDeptLeader: isLeader
+      whatsappAccountId: selectedWaId || undefined,
+      whatsappPhone: targetWa ? targetWa.phone : undefined,
+      whatsappAccountName: targetWa ? targetWa.name : undefined
     });
     onClose();
   };
 
-  const handleQuotaPreset = (val: number) => {
-    setQuotaLimit(val);
-    setCustomQuotaInput(String(val));
-  };
-
-  const handleCustomQuotaChange = (val: string) => {
-    setCustomQuotaInput(val);
-    const num = parseInt(val, 10);
-    if (!isNaN(num) && num > 0) {
-      setQuotaLimit(num);
-    }
-  };
-
-  const currentRoleObj = roles.find((r) => r.roleName === selectedRole);
-  const effectiveLimit = Number(customQuotaInput) || quotaLimit;
-  const remaining = Math.max(0, effectiveLimit - employee.aiQuotaUsed);
-  const usagePercent = Math.min(100, Math.round((employee.aiQuotaUsed / Math.max(1, effectiveLimit)) * 100));
+  const currentBoundWa = whatsAppAccounts.find((w) => w.id === selectedWaId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
@@ -91,16 +107,6 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-slate-900">{employee.name}</h3>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <CheckCircle2 className="w-3 h-3" />
-                  企微认证
-                </span>
-                {isLeader && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                    <Crown className="w-3 h-3 text-amber-600" />
-                    部门负责人
-                  </span>
-                )}
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5 font-mono">
                 <span>ID: {employee.wecomUserId || employee.id}</span>
@@ -127,64 +133,256 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-6 custom-scrollbar text-xs flex-1">
           
-          {/* Section 1: Role Assignment */}
-          <div className="space-y-3">
+          {/* Section 1: Role Assignment (Multi-select Dropdown) */}
+          <div className="space-y-3 relative" ref={dropdownRef}>
             <div className="flex items-center justify-between">
               <label className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
                 <Shield className="w-4 h-4 text-[#EA3A20]" />
                 <span>分配系统角色</span>
               </label>
-              <span className="text-slate-400 text-xs">已选：<strong className="text-slate-700">{selectedRole}</strong></span>
+              <span className="text-slate-400 text-xs">已选 {selectedRoles.length} 个角色</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
-              {roles.map((r) => {
-                const isSelected = selectedRole === r.roleName;
-                return (
-                  <div
-                    key={r.id}
-                    onClick={() => setSelectedRole(r.roleName)}
-                    className={`p-3 rounded-2xl border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-[#EA3A20] bg-red-50/40 shadow-xs'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900">{r.roleName}</span>
-                      <div
-                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          isSelected ? 'border-[#EA3A20] bg-[#EA3A20] text-white' : 'border-slate-300'
-                        }`}
+            <div className="relative">
+              <div
+                onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs text-slate-800 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-all shadow-2xs"
+              >
+                <div className="flex items-center gap-1.5 flex-wrap min-h-[24px]">
+                  {selectedRoles.map((r) => (
+                    <span
+                      key={r}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#EA3A20]/10 text-[#EA3A20] font-bold rounded-lg border border-[#EA3A20]/20 text-[11px]"
+                    >
+                      {r}
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleRole(r);
+                        }}
+                        className="hover:bg-[#EA3A20]/20 rounded-full p-0.5 cursor-pointer"
                       >
-                        {isSelected && <Check className="w-2.5 h-2.5" />}
-                      </div>
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-1 line-clamp-1">
-                      {r.description}
+                        <X className="w-3 h-3" />
+                      </span>
+                    </span>
+                  ))}
+                  {selectedRoles.length === 0 && (
+                    <span className="text-slate-400">请选择系统角色（支持多选）...</span>
+                  )}
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isRoleDropdownOpen ? 'rotate-180' : ''}`} />
+              </div>
+
+              {/* Dropdown Menu */}
+              {isRoleDropdownOpen && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-20 overflow-hidden flex flex-col max-h-72">
+                  <div className="p-2 border-b border-slate-100 bg-slate-50/70">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={roleSearchQuery}
+                        onChange={(e) => setRoleSearchQuery(e.target.value)}
+                        placeholder="搜索角色名称或职能..."
+                        className="w-full pl-8 pr-3 py-1.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#EA3A20]"
+                        autoFocus
+                      />
                     </div>
                   </div>
-                );
-              })}
+                  <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
+                    <span>系统角色列表（可勾选多个）</span>
+                    <span className="text-[#EA3A20]">已选 {selectedRoles.length} 个</span>
+                  </div>
+                  <div className="overflow-y-auto custom-scrollbar p-1 space-y-0.5 max-h-52">
+                    {roles
+                      .filter((r) => {
+                        if (!roleSearchQuery.trim()) return true;
+                        const q = roleSearchQuery.toLowerCase();
+                        return (
+                          r.roleName.toLowerCase().includes(q) ||
+                          (r.description && r.description.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((r) => {
+                        const isChecked = selectedRoles.includes(r.roleName);
+                        return (
+                          <div
+                            key={r.id}
+                            onClick={() => toggleRole(r.roleName)}
+                            className={`flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors ${
+                              isChecked ? 'bg-red-50/50 text-[#EA3A20] font-bold' : 'text-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                              <div
+                                className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 ${
+                                  isChecked ? 'border-[#EA3A20] bg-[#EA3A20] text-white' : 'border-slate-300 bg-white'
+                                }`}
+                              >
+                                {isChecked && <Check className="w-3 h-3" />}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="font-bold text-xs truncate">{r.roleName}</div>
+                                <div className="text-[10px] text-slate-400 font-normal truncate">{r.description}</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Current Role Permissions Summary */}
-            {currentRoleObj?.dataPermission && (
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="flex items-center gap-2">
-                  <Database className="w-3.5 h-3.5 text-blue-600" />
-                  <span>数据可见范围：</span>
-                  <span className="font-bold text-slate-800">{currentRoleObj.dataPermission.scopeLabel}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-400">客户脱敏：<strong className={currentRoleObj.dataPermission.maskCustomerContact ? "text-emerald-600" : "text-slate-600"}>{currentRoleObj.dataPermission.maskCustomerContact ? '已开启' : '关闭'}</strong></span>
-                  <span className="text-slate-400">底价保护：<strong className={currentRoleObj.dataPermission.maskCostPrice ? "text-emerald-600" : "text-slate-600"}>{currentRoleObj.dataPermission.maskCostPrice ? '已保护' : '可见'}</strong></span>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Section 2: Account Status & Org Management */}
+          {/* Section 2: WhatsApp Account Binding (1-to-1) */}
+          <div className="space-y-3 pt-1" ref={waDropdownRef}>
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
+                <MessageSquare className="w-4 h-4 text-emerald-600" />
+                <span>绑定 WhatsApp 账号</span>
+              </label>
+              <span className="text-slate-400 text-xs">1对1 独占绑定业务专线</span>
+            </div>
+
+            <div className="relative">
+              <div className="flex items-center gap-2">
+                <div
+                  onClick={() => setIsWaDropdownOpen(!isWaDropdownOpen)}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs text-slate-800 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-all shadow-2xs"
+                >
+                  {currentBoundWa ? (
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900">{currentBoundWa.name}</div>
+                        <div className="text-[11px] font-mono text-emerald-700 mt-0.5">{currentBoundWa.phone}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-slate-400">暂未绑定 WhatsApp 账号（点击展开下拉选择）...</span>
+                  )}
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isWaDropdownOpen ? 'rotate-180' : ''}`} />
+                </div>
+
+                {selectedWaId && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedWaId('');
+                      setIsWaDropdownOpen(false);
+                    }}
+                    className="w-10 h-10 rounded-2xl border border-rose-200 bg-rose-50/80 hover:bg-rose-100 hover:border-rose-300 text-rose-500 hover:text-rose-700 flex items-center justify-center shrink-0 transition-all shadow-2xs cursor-pointer group/cancel"
+                    title="取消绑定 / 绑定错误解绑"
+                  >
+                    <X className="w-4 h-4 stroke-[2.5] group-hover/cancel:scale-110 transition-transform" />
+                  </button>
+                )}
+              </div>
+
+              {/* Dropdown Menu */}
+              {isWaDropdownOpen && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-20 overflow-hidden py-2 max-h-60 overflow-y-auto custom-scrollbar">
+                  <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1 flex items-center justify-between">
+                    <span>选择企业 WhatsApp 客服/销售账号</span>
+                    {selectedWaId && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedWaId('');
+                          setIsWaDropdownOpen(false);
+                        }}
+                        className="text-red-500 hover:text-red-700 text-[11px] cursor-pointer font-medium"
+                      >
+                        解除绑定
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Option: Unbind */}
+                  <div
+                    onClick={() => {
+                      setSelectedWaId('');
+                      setIsWaDropdownOpen(false);
+                    }}
+                    className={`flex items-center justify-between px-3 py-2 hover:bg-slate-50 cursor-pointer transition-colors ${
+                      !selectedWaId ? 'bg-slate-50 text-slate-900 font-bold' : 'text-slate-500'
+                    }`}
+                  >
+                    <span className="text-xs">暂不绑定（恢复为未绑定状态）</span>
+                    {!selectedWaId && <Check className="w-4 h-4 text-slate-600" />}
+                  </div>
+
+                  {/* WhatsApp list - 未被绑定的放在前面 */}
+                  {[...whatsAppAccounts]
+                    .sort((a, b) => {
+                      const aBound = Boolean(a.boundEmployeeId);
+                      const bBound = Boolean(b.boundEmployeeId);
+                      if (!aBound && bBound) return -1;
+                      if (aBound && !bBound) return 1;
+                      return 0;
+                    })
+                    .map((wa) => {
+                    const isSelected = selectedWaId === wa.id;
+                    const isBoundToOther = Boolean(wa.boundEmployeeId && wa.boundEmployeeId !== employee.id);
+
+                    return (
+                      <div
+                        key={wa.id}
+                        onClick={() => {
+                          setSelectedWaId(wa.id);
+                          setIsWaDropdownOpen(false);
+                        }}
+                        className={`flex items-center justify-between px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors ${
+                          isSelected ? 'bg-emerald-50/70 text-emerald-950 font-bold' : 'text-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                            isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            <MessageSquare className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                              <span>{wa.name}</span>
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${wa.status === 'online' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                            </div>
+                            <div className="text-[11px] font-mono text-slate-500 mt-0.5">
+                              {wa.phone}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 text-right">
+                          {isSelected ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 text-white">
+                              <Check className="w-3 h-3" />
+                              当前选择
+                            </span>
+                          ) : isBoundToOther ? (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-500">
+                              已绑：{wa.boundEmployeeName} (选择将转移)
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              空闲可用
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Section 3: Account Status */}
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-between">
               <label className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
@@ -193,126 +391,32 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
               </label>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-2xl border border-slate-200 bg-white flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-slate-800">账号状态</div>
-                  <div className="text-slate-400 text-[11px] mt-0.5">控制该员工是否可登录系统</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setAccountStatus(accountStatus === '启用' ? '已禁用' : '启用')}
-                  className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer flex items-center gap-1.5 ${
-                    accountStatus === '启用'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-red-50 text-red-700 border-red-200'
-                  }`}
-                >
-                  {accountStatus === '启用' ? (
-                    <>
-                      <UserCheck className="w-3.5 h-3.5" />
-                      <span>启用</span>
-                    </>
-                  ) : (
-                    <>
-                      <UserX className="w-3.5 h-3.5" />
-                      <span>禁用</span>
-                    </>
-                  )}
-                </button>
+            <div className="p-4 rounded-2xl border border-slate-200 bg-white flex items-center justify-between">
+              <div>
+                <div className="font-bold text-slate-800">账号状态</div>
+                <div className="text-slate-400 text-[11px] mt-0.5">控制该员工是否可登录系统</div>
               </div>
-
-              <div className="p-3.5 rounded-2xl border border-slate-200 bg-white flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-slate-800">部门负责人</div>
-                  <div className="text-slate-400 text-[11px] mt-0.5">享有下级部门审核与管理权限</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsLeader(!isLeader)}
-                  className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer flex items-center gap-1.5 ${
-                    isLeader
-                      ? 'bg-amber-50 text-amber-700 border-amber-200'
-                      : 'bg-slate-100 text-slate-600 border-slate-200'
-                  }`}
-                >
-                  <Crown className={`w-3.5 h-3.5 ${isLeader ? 'text-amber-600' : 'text-slate-400'}`} />
-                  <span>{isLeader ? '负责人' : '普通成员'}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 2: Daily AI Quota Limit */}
-          <div className="space-y-3 pt-1">
-            <div className="flex items-center justify-between">
-              <label className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
-                <Cpu className="w-4 h-4 text-purple-600" />
-                <span>每日 AI 算力限额</span>
-              </label>
-              <span className="text-xs text-slate-400">次日 00:00 自动刷新</span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-purple-50/40 border border-purple-100/80 space-y-3.5">
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1">
-                  <input
-                    type="number"
-                    value={customQuotaInput}
-                    onChange={(e) => handleCustomQuotaChange(e.target.value)}
-                    placeholder="输入算力上限..."
-                    className="w-full px-3 py-2 text-sm font-bold font-mono rounded-xl border border-purple-200 bg-white text-purple-900 focus:outline-none focus:border-purple-500 shadow-2xs"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium">
-                    次/天
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 font-mono font-bold text-purple-700 bg-white px-3 py-2 rounded-xl border border-purple-200">
-                  <Zap className="w-3.5 h-3.5 text-purple-600" />
-                  <span>{effectiveLimit}</span>
-                  <span className="text-[10px] text-purple-400 font-normal">次/天</span>
-                </div>
-              </div>
-
-              {/* Quick Presets */}
-              <div className="flex items-center gap-1.5">
-                {[1000, 1500, 2000, 3000, 5000, 10000].map((val) => {
-                  const isSelected = Number(customQuotaInput) === val;
-                  return (
-                    <button
-                      key={val}
-                      type="button"
-                      onClick={() => handleQuotaPreset(val)}
-                      className={`flex-1 py-1.5 rounded-xl font-mono text-[11px] font-bold border transition-colors cursor-pointer text-center ${
-                        isSelected
-                          ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
-                          : 'bg-white text-slate-700 border-purple-200/80 hover:bg-purple-100/50'
-                      }`}
-                    >
-                      {val}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Today's Usage Breakdown */}
-              <div className="pt-2 border-t border-purple-100/60 space-y-2">
-                <div className="flex items-center justify-between text-[11px] text-slate-500">
-                  <span className="flex items-center gap-1">
-                    <TrendingUp className="w-3.5 h-3.5 text-slate-400" />
-                    今日已消耗：<strong className="text-slate-800 font-mono">{employee.aiQuotaUsed}</strong> 次
-                  </span>
-                  <span>
-                    剩余：<strong className="text-emerald-700 font-mono">{remaining}</strong> 次
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full transition-all"
-                    style={{ width: `${usagePercent}%` }}
-                  />
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => setAccountStatus(accountStatus === '启用' ? '已禁用' : '启用')}
+                className={`px-4 py-2 rounded-xl font-bold text-xs border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  accountStatus === '启用'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-red-50 text-red-700 border-red-200'
+                }`}
+              >
+                {accountStatus === '启用' ? (
+                  <>
+                    <UserCheck className="w-4 h-4" />
+                    <span>启用</span>
+                  </>
+                ) : (
+                  <>
+                    <UserX className="w-4 h-4" />
+                    <span>禁用</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
 

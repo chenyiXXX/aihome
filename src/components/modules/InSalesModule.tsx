@@ -63,17 +63,18 @@ import {
   Package
 } from 'lucide-react';
 import { SessionItem, ChatMessage, ScriptItem } from '../../types';
+import { initialEmployees, initialWhatsAppAccounts } from '../../data/mockData';
 import { useVoiceToText } from '../../hooks/useVoiceToText';
 import { VoiceInputBanner } from '../common/VoiceInputBanner';
 import { useChatAttachment } from '../../hooks/useChatAttachment';
 import { ChatAttachmentDropZone } from '../common/ChatAttachmentDropZone';
 import { ImagePreviewModal } from '../common/ImagePreviewModal';
 
-// External WeCom / WhatsApp Chat Model
+// External WeCom / WordPress Chat Model
 export interface ExternalSocialChat {
   id: string;
   name: string;
-  channel: '企微' | 'WhatsApp';
+  channel: '企微' | 'WordPress';
   type: 'personal' | 'group';
   memberCount?: number;
   participantsDesc?: string;
@@ -231,11 +232,11 @@ export const mockWeComChats: ExternalSocialChat[] = [
   }
 ];
 
-export const mockWhatsAppChats: ExternalSocialChat[] = [
+export const mockWordPressChats: ExternalSocialChat[] = [
   {
     id: 'wa-1',
     name: 'David Miller',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     type: 'personal',
     subtitle: 'Apex Architecture (Miami, US) · +1 (305) 982-3401',
     lastMessage: 'David: Can you supply customized oak veneer fluted panels? Budget $80k.',
@@ -243,13 +244,13 @@ export const mockWhatsAppChats: ExternalSocialChat[] = [
     unread: 1,
     defaultCompany: 'Apex Architecture (Miami Penthouse)',
     defaultPhone: '+1 (305) 982-3401',
-    recommendedTags: ['外贸大单', 'WhatsApp', '私宅别墅', '待打样', '预算充足'],
-    chatHistorySnippet: `[WhatsApp Direct Chat with David Miller]\nDavid: Hello Franklin, saw your booth at KBIS. Can you supply customized oak veneer fluted panels for our Miami penthouse project? Total ceiling height 3.2m, need seamless joint detailing. Budget is around $80,000 USD for the wood package.\nFranklin Jr: Hi David! Absolutely. We produce 3.2m continuous fluted panels with tongue-and-groove joint profile. We can express ship a master sample box to Florida tomorrow.`
+    recommendedTags: ['外贸大单', 'WordPress', '私宅别墅', '待打样', '预算充足'],
+    chatHistorySnippet: `[WordPress Direct Chat with David Miller]\nDavid: Hello Franklin, saw your booth at KBIS. Can you supply customized oak veneer fluted panels for our Miami penthouse project? Total ceiling height 3.2m, need seamless joint detailing. Budget is around $80,000 USD for the wood package.\nFranklin Jr: Hi David! Absolutely. We produce 3.2m continuous fluted panels with tongue-and-groove joint profile. We can express ship a master sample box to Florida tomorrow.`
   },
   {
     id: 'wa-2',
     name: 'Dubai Villa 45 Joinery Project Group',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     type: 'group',
     memberCount: 8,
     participantsDesc: 'Tariq Al-Mansoor, Project Director, Sophia, QA Engineer',
@@ -259,25 +260,25 @@ export const mockWhatsAppChats: ExternalSocialChat[] = [
     defaultCompany: 'Royal Oasis Hospitality (Dubai)',
     defaultPhone: '+971 50 123 4567',
     recommendedTags: ['外贸大单', '客户群聊', '酒店工程', '待打样', '工期紧急'],
-    chatHistorySnippet: `[WhatsApp Group: Dubai Villa 45 Joinery Project]\nTariq Al-Mansoor: Good morning team. We are sourcing customized joinery and fire-rated wall panels for a 45-villa resort in Palm Jumeirah. All woodwork must meet BS5852 standard with PVD titanium brass trims. Total volume around 12x 40HQ containers.\nFranklin Jr: Good morning Tariq. Master samples and test certifications are dispatched today via DHL express.`
+    chatHistorySnippet: `[WordPress Group: Dubai Villa 45 Joinery Project]\nTariq Al-Mansoor: Good morning team. We are sourcing customized joinery and fire-rated wall panels for a 45-villa resort in Palm Jumeirah. All woodwork must meet BS5852 standard with PVD titanium brass trims. Total volume around 12x 40HQ containers.\nFranklin Jr: Good morning Tariq. Master samples and test certifications are dispatched today via DHL express.`
   },
   {
     id: 'wa-3',
     name: 'Marcus Sterling',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     type: 'personal',
     subtitle: 'Mayfair Luxury Estates (London, UK) · +44 20 7946 0912',
     lastMessage: 'Marcus: Quotation approved for Kensington townhouses, sending deposit.',
     lastTime: '昨天',
     defaultCompany: 'Mayfair Luxury Estates',
     defaultPhone: '+44 20 7946 0912',
-    recommendedTags: ['外贸大单', 'WhatsApp', '全案高定', '预算充足'],
-    chatHistorySnippet: `[WhatsApp Direct Chat with Marcus Sterling]\nMarcus: Hi Franklin, we reviewed your $120,000 proposal for the 6 townhouses in Kensington. Board approved the PET super-matte finish.\nFranklin Jr: Wonderful news Marcus. We will prepare the formal proforma invoice and shop drawings immediately.`
+    recommendedTags: ['外贸大单', 'WordPress', '全案高定', '预算充足'],
+    chatHistorySnippet: `[WordPress Direct Chat with Marcus Sterling]\nMarcus: Hi Franklin, we reviewed your $120,000 proposal for the 6 townhouses in Kensington. Board approved the PET super-matte finish.\nFranklin Jr: Wonderful news Marcus. We will prepare the formal proforma invoice and shop drawings immediately.`
   },
   {
     id: 'wa-4',
     name: 'Sydney Coastal Residence Fitout',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     type: 'group',
     memberCount: 4,
     participantsDesc: 'Oliver Chen (Developer), BuildCo Australia, Sales Team',
@@ -287,25 +288,25 @@ export const mockWhatsAppChats: ExternalSocialChat[] = [
     defaultCompany: 'Sydney Coastal Villa Project',
     defaultPhone: '+61 2 9876 5432',
     recommendedTags: ['外贸大单', '客户群聊', '隐形门系统', '待打样'],
-    chatHistorySnippet: `[WhatsApp Group: Sydney Coastal Residence Fitout]\nOliver Chen: Hey guys, we need 18 sets of floor-to-ceiling invisible doors with concealed hinges for the Vaucluse villa.\nFranklin Jr: Hi Oliver, catalog and CAD drawings sent to your email. Aluminum core structure guarantees no warping up to 3.0 meters.`
+    chatHistorySnippet: `[WordPress Group: Sydney Coastal Residence Fitout]\nOliver Chen: Hey guys, we need 18 sets of floor-to-ceiling invisible doors with concealed hinges for the Vaucluse villa.\nFranklin Jr: Hi Oliver, catalog and CAD drawings sent to your email. Aluminum core structure guarantees no warping up to 3.0 meters.`
   },
   {
     id: 'wa-5',
     name: 'Elena Rostova',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     type: 'personal',
     subtitle: 'Alpine Chalet Interiors (Zurich, CH) · +41 44 234 5678',
     lastMessage: 'Elena: We require natural smoked larix panels for ski resort chalets.',
     lastTime: '昨天',
     defaultCompany: 'Alpine Luxury Chalet Project',
     defaultPhone: '+41 44 234 5678',
-    recommendedTags: ['外贸大单', 'WhatsApp', '酒店工程', '待打样'],
-    chatHistorySnippet: `[WhatsApp Direct Chat with Elena Rostova]\nElena: Franklin, our Swiss ski resort requires alpine rustic smoked wood panels with Class B-s1 fire certification.\nFranklin Jr: Hi Elena, we have tested smoked larix veneers ready in warehouse, express shipping samples to Zurich.`
+    recommendedTags: ['外贸大单', 'WordPress', '酒店工程', '待打样'],
+    chatHistorySnippet: `[WordPress Direct Chat with Elena Rostova]\nElena: Franklin, our Swiss ski resort requires alpine rustic smoked wood panels with Class B-s1 fire certification.\nFranklin Jr: Hi Elena, we have tested smoked larix veneers ready in warehouse, express shipping samples to Zurich.`
   },
   {
     id: 'wa-6',
     name: 'Singapore Sentosa Cove Penthouse Coordination',
-    channel: 'WhatsApp',
+    channel: 'WordPress',
     type: 'group',
     memberCount: 6,
     participantsDesc: 'Kelvin Tan, Lead Architect, Pinai Project Lead',
@@ -315,7 +316,7 @@ export const mockWhatsAppChats: ExternalSocialChat[] = [
     defaultCompany: 'Sentosa Cove Waterfront Villa',
     defaultPhone: '+65 6789 0123',
     recommendedTags: ['外贸大单', '客户群聊', '全案高定', '预算充足'],
-    chatHistorySnippet: `[WhatsApp Group: Sentosa Cove Penthouse Coordination]\nKelvin Tan: Tropical climate durability is critical for Sentosa waterfront. The PUR edge-banded PET panels showed zero peeling after 72h steam test.\nFranklin Jr: Thank you Kelvin! All cabinets will use zero-formaldehyde PUR adhesive and marine-grade plywood substrates.`
+    chatHistorySnippet: `[WordPress Group: Sentosa Cove Penthouse Coordination]\nKelvin Tan: Tropical climate durability is critical for Sentosa waterfront. The PUR edge-banded PET panels showed zero peeling after 72h steam test.\nFranklin Jr: Thank you Kelvin! All cabinets will use zero-formaldehyde PUR adhesive and marine-grade plywood substrates.`
   }
 ];
 
@@ -496,7 +497,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   };
 
   const [profileTab, setProfileTab] = useState<'history' | 'tags' | 'assets' | 'knowledge'>('history');
-  const [activeTab, setActiveTab] = useState<'企微' | 'WhatsApp' | '线下对接'>('企微');
+  const [activeTab, setActiveTab] = useState<'企微' | 'WhatsApp' | 'WordPress' | '线下对接'>('企微');
   const [statusFilter, setStatusFilter] = useState<string>('跟进中');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -510,13 +511,41 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
 
   // Create Session Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newChannel, setNewChannel] = useState<'企微' | 'WhatsApp' | '线下对接'>('企微');
+  const [newChannel, setNewChannel] = useState<'企微' | 'WhatsApp' | 'WordPress' | '线下对接'>('企微');
   const [newCustomerName, setNewCustomerName] = useState('');
   const [newCompanyName, setNewCompanyName] = useState('');
   const [newContactInfo, setNewContactInfo] = useState('');
   const [newAssignedStaff, setNewAssignedStaff] = useState('Franklin Jr');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [initialNote, setInitialNote] = useState('');
+  const [showWaNotBoundModal, setShowWaNotBoundModal] = useState(false);
+  const [waBindingRequestSent, setWaBindingRequestSent] = useState(false);
+
+  // 检查员工是否已关联绑定 WhatsApp 账号
+  const isStaffBoundToWhatsApp = (staffName: string): boolean => {
+    if (!staffName) return false;
+    // Franklin Jr 为当前工作台默认员工账号，默认未绑定 WhatsApp 账号
+    if (staffName.includes('Franklin')) return false;
+    const emp = initialEmployees.find(
+      (e) => e.name === staffName || staffName.includes(e.name)
+    );
+    return Boolean(emp?.whatsappAccountId);
+  };
+
+  // 获取员工绑定的 WhatsApp 账号详情
+  const getStaffBoundWhatsAppInfo = (staffName: string) => {
+    const emp = initialEmployees.find(
+      (e) => e.name === staffName || staffName.includes(e.name)
+    );
+    if (!emp || !emp.whatsappAccountId) return null;
+    const wa = initialWhatsAppAccounts.find((w) => w.id === emp.whatsappAccountId);
+    return {
+      empName: emp.name,
+      waName: wa?.name || emp.whatsappAccountName || emp.name,
+      phone: wa?.phone || emp.whatsappPhone || '已分配专线',
+      region: wa?.region || '欧美与亚太综合'
+    };
+  };
 
   // AI & Upload State for Session Creation
   const [recordInputMode, setRecordInputMode] = useState<'manual' | 'chat_upload' | 'audio_upload'>('manual');
@@ -866,7 +895,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     // 创建AI会话时，先不填写客户标签
     setSelectedTags([]);
 
-    // 企微和 WhatsApp 仅保留手动输入
+    // 企微和 WordPress 仅保留手动输入
     setRecordInputMode('manual');
     setUploadedFileName(null);
     setUploadedFileSize(null);
@@ -882,6 +911,12 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   const handleCreateSession = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCustomerName.trim()) return;
+
+    // 选择 WhatsApp 渠道时，如果员工账号未绑定 WhatsApp，提示联系管理员并拦截
+    if (newChannel === 'WhatsApp' && !isStaffBoundToWhatsApp(newAssignedStaff)) {
+      setShowWaNotBoundModal(true);
+      return;
+    }
 
     const avatarText = newCustomerName.trim().slice(0, 2).toUpperCase();
     const isExternalSync = !!selectedExternalChatId;
@@ -1061,10 +1096,10 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
             </button>
           </div>
 
-          {/* Channel Filter Tabs (企微, WhatsApp, 线下对接) */}
+          {/* Channel Filter Tabs (企微, WhatsApp, WordPress, 线下对接) */}
           <div className="p-3 pb-2 border-b border-slate-100 bg-white">
             <div className="bg-slate-100/90 rounded-full p-1 flex items-center gap-1">
-              {(['企微', 'WhatsApp', '线下对接'] as const).map((tab) => {
+              {(['企微', 'WhatsApp', 'WordPress', '线下对接'] as const).map((tab) => {
                 const count = sessionList.filter(
                   (s) => s.channel === tab || (tab === '企微' && s.channel === '企业微信')
                 ).length;
@@ -1176,7 +1211,9 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                             sess.channel === '企微' || sess.channel === '企业微信'
                               ? 'bg-blue-50 text-blue-600 border-blue-100'
                               : sess.channel === 'WhatsApp'
-                              ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : sess.channel === 'WordPress'
+                              ? 'bg-teal-50 text-teal-700 border-teal-100'
                               : 'bg-purple-50 text-purple-700 border-purple-100'
                           }`}
                         >
@@ -1981,8 +2018,23 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
               
               {/* 渠道选择 */}
               <div>
-                <label className="block text-slate-700 font-bold mb-1.5">接入渠道</label>
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-slate-700 font-bold">接入渠道</label>
+                  {newChannel === 'WhatsApp' && (
+                    <span
+                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                        isStaffBoundToWhatsApp(newAssignedStaff)
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-amber-50 text-amber-700 border border-amber-200'
+                      }`}
+                    >
+                      {isStaffBoundToWhatsApp(newAssignedStaff)
+                        ? '✓ 销售已绑定 WhatsApp'
+                        : '⚠️ 未绑定 WhatsApp 账号'}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-4 gap-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -1993,7 +2045,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                       setIsChatPickerOpen(false);
                       setRecordInputMode('manual');
                     }}
-                    className={`py-2.5 px-3 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
+                    className={`py-2 px-2.5 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
                       newChannel === '企微' || newChannel === ('企业微信' as any)
                         ? 'border-blue-500 bg-blue-50/70 text-blue-700 ring-2 ring-blue-500/20 shadow-xs'
                         : 'border-slate-200 hover:border-slate-300 text-slate-600'
@@ -2011,13 +2063,32 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                       setIsChatPickerOpen(false);
                       setRecordInputMode('manual');
                     }}
-                    className={`py-2.5 px-3 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
+                    className={`py-2 px-2.5 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
                       newChannel === 'WhatsApp'
+                        ? 'border-emerald-600 bg-emerald-50/80 text-emerald-800 ring-2 ring-emerald-600/20 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                    }`}
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>WhatsApp</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewChannel('WordPress');
+                      setSelectedExternalChatId(null);
+                      setExternalChatFilter('all');
+                      setExternalChatSearch('');
+                      setIsChatPickerOpen(false);
+                      setRecordInputMode('manual');
+                    }}
+                    className={`py-2 px-2.5 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
+                      newChannel === 'WordPress'
                         ? 'border-emerald-500 bg-emerald-50/70 text-emerald-700 ring-2 ring-emerald-500/20 shadow-xs'
                         : 'border-slate-200 hover:border-slate-300 text-slate-600'
                     }`}
                   >
-                    <span>WhatsApp</span>
+                    <span>WordPress</span>
                   </button>
                   <button
                     type="button"
@@ -2026,7 +2097,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                       setSelectedExternalChatId(null);
                       setIsChatPickerOpen(false);
                     }}
-                    className={`py-2.5 px-3 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
+                    className={`py-2 px-2.5 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
                       newChannel === '线下对接'
                         ? 'border-purple-500 bg-purple-50/70 text-purple-700 ring-2 ring-purple-500/20 shadow-xs'
                         : 'border-slate-200 hover:border-slate-300 text-slate-600'
@@ -2035,6 +2106,87 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     <span>线下对接</span>
                   </button>
                 </div>
+
+                {/* WhatsApp 渠道专属：检查员工是否绑定 WhatsApp 账号并提示联系管理员 */}
+                {newChannel === 'WhatsApp' && (
+                  <>
+                    {!isStaffBoundToWhatsApp(newAssignedStaff) ? (
+                      <div className="mt-3 p-3.5 rounded-2xl bg-amber-50/95 border border-amber-300/80 text-amber-950 animate-in fade-in slide-in-from-top-1 duration-150 shadow-2xs">
+                        <div className="flex items-start gap-2.5">
+                          <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+                            <AlertTriangle className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-xs text-amber-950">
+                                员工账号未绑定 WhatsApp
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900">
+                                需管理员关联
+                              </span>
+                            </div>
+                            <p className="mt-1 text-xs text-amber-900 leading-relaxed">
+                              当前负责销售人员「<strong className="text-slate-900 font-bold">{newAssignedStaff}</strong>」尚未绑定 WhatsApp 账号。选择 WhatsApp 方式创建会话，需要提示员工联系管理员关联 WhatsApp 账号后再发起会话。
+                            </p>
+                            <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setWaBindingRequestSent(true);
+                                  setTimeout(() => setWaBindingRequestSent(false), 3500);
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                              >
+                                {waBindingRequestSent ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                    <span>已向系统管理员发送关联申请</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                    <span>联系管理员关联 WhatsApp 账号</span>
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setNewAssignedStaff('Sophia')}
+                                className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100/80 text-amber-900 border border-amber-300 font-bold text-xs transition-colors cursor-pointer"
+                              >
+                                切换已绑定 WhatsApp 的销售 (Sophia)
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-3 p-3 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-emerald-950 flex items-center justify-between gap-3 animate-in fade-in duration-150">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                            <Check className="w-4 h-4 stroke-[3]" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-xs text-emerald-950">
+                                员工已绑定 WhatsApp 账号
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-200 text-emerald-900 font-mono font-bold">
+                                {getStaffBoundWhatsAppInfo(newAssignedStaff)?.phone}
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-emerald-700 truncate mt-0.5">
+                              归属名称：{getStaffBoundWhatsAppInfo(newAssignedStaff)?.waName} · 专线已就绪
+                            </div>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">
+                          可直接建联
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* 企微专属：紧凑对话选择器 */}
@@ -2361,8 +2513,8 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                 </div>
               )}
 
-              {/* WhatsApp 专属：紧凑对话选择器 */}
-              {newChannel === 'WhatsApp' && (
+              {/* WordPress 专属：紧凑对话选择器 */}
+              {newChannel === 'WordPress' && (
                 <div ref={chatPickerRef} className="bg-emerald-50/40 rounded-2xl p-3.5 border border-emerald-100 space-y-2.5">
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between">
@@ -2377,7 +2529,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
 
                     {/* 如果已选中对话：展示紧凑优雅的单行已关联卡片 */}
                       {selectedExternalChatId && (() => {
-                        const selectedChat = mockWhatsAppChats.find(c => c.id === selectedExternalChatId);
+                        const selectedChat = mockWordPressChats.find(c => c.id === selectedExternalChatId);
                         if (!selectedChat) return null;
                         return (
                           <div className="bg-white rounded-xl p-2.5 border border-emerald-200 shadow-2xs flex items-center justify-between gap-3">
@@ -2407,7 +2559,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                         : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
                                     }`}
                                   >
-                                    {selectedChat.type === 'group' ? `${selectedChat.memberCount}人海外群` : 'WhatsApp 私聊'}
+                                    {selectedChat.type === 'group' ? `${selectedChat.memberCount}人海外群` : 'WordPress 私聊'}
                                   </span>
                                   {selectedChat.defaultCompany && (
                                     <span className="text-[10px] text-slate-400 truncate max-w-[160px]">
@@ -2461,12 +2613,12 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                               <div className="flex items-center gap-2 text-slate-600 min-w-0">
                                 <Search className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                                 <span className="text-[11px] text-slate-600 truncate">
-                                  搜索或选择 WhatsApp 对话...
+                                  搜索或选择 WordPress 对话...
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
                                 <span className="text-[10px] bg-emerald-50 text-emerald-700 font-medium px-1.5 py-0.5 rounded">
-                                  共 {mockWhatsAppChats.length} 个对话
+                                  共 {mockWordPressChats.length} 个对话
                                 </span>
                                 <ChevronsUpDown className="w-3.5 h-3.5 text-slate-400" />
                               </div>
@@ -2477,7 +2629,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                               <span className="text-[10px] text-slate-400 shrink-0 flex items-center gap-0.5">
                                 <Clock className="w-2.5 h-2.5" /> 最近活跃:
                               </span>
-                              {mockWhatsAppChats.slice(0, 4).map((c) => (
+                              {mockWordPressChats.slice(0, 4).map((c) => (
                                 <button
                                   key={c.id}
                                   type="button"
@@ -2533,7 +2685,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                         : 'text-slate-600 hover:bg-slate-200/60'
                                     }`}
                                   >
-                                    全部 ({mockWhatsAppChats.length})
+                                    全部 ({mockWordPressChats.length})
                                   </button>
                                   <button
                                     type="button"
@@ -2545,7 +2697,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                     }`}
                                   >
                                     <User className="w-2.5 h-2.5" />
-                                    海外私聊 ({mockWhatsAppChats.filter(c => c.type === 'personal').length})
+                                    海外私聊 ({mockWordPressChats.filter(c => c.type === 'personal').length})
                                   </button>
                                   <button
                                     type="button"
@@ -2557,7 +2709,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                     }`}
                                   >
                                     <Users className="w-2.5 h-2.5" />
-                                    项目群聊 ({mockWhatsAppChats.filter(c => c.type === 'group').length})
+                                    项目群聊 ({mockWordPressChats.filter(c => c.type === 'group').length})
                                   </button>
                                 </div>
 
@@ -2569,7 +2721,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
 
                             {/* 高密度会话列表 */}
                             <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
-                              {mockWhatsAppChats
+                              {mockWordPressChats
                                 .filter((c) => {
                                   if (externalChatFilter === 'personal' && c.type !== 'personal') return false;
                                   if (externalChatFilter === 'group' && c.type !== 'group') return false;
@@ -2650,7 +2802,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                 })}
 
                               {/* 搜索无结果 */}
-                              {mockWhatsAppChats.filter((c) => {
+                              {mockWordPressChats.filter((c) => {
                                 if (externalChatFilter === 'personal' && c.type !== 'personal') return false;
                                 if (externalChatFilter === 'group' && c.type !== 'group') return false;
                                 if (externalChatSearch.trim()) {
@@ -2664,7 +2816,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                 return true;
                               }).length === 0 && (
                                 <div className="p-6 text-center text-slate-400 text-xs">
-                                  未找到匹配「{externalChatSearch}」的 WhatsApp 对话，可尝试更换关键词或清除筛选
+                                  未找到匹配「{externalChatSearch}」的 WordPress 对话，可尝试更换关键词或清除筛选
                                 </div>
                               )}
                             </div>
@@ -2709,10 +2861,30 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     onChange={(e) => setNewAssignedStaff(e.target.value)}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20] font-medium"
                   >
-                    <option value="Franklin Jr">Franklin Jr (当前账号)</option>
-                    <option value="Sophia">Sophia (外贸主管)</option>
-                    <option value="Alex">Alex (销售业务员)</option>
+                    <option value="Franklin Jr">Franklin Jr (当前账号 - 未绑定 WA)</option>
+                    <option value="Sophia">Sophia / 王淑华 (外贸主管 - 已绑定 WA)</option>
+                    <option value="Alex">Alex / 施密特 (销售业务员 - 已绑定 WA)</option>
+                    <option value="陈逸">陈逸 (产品中心总监 - 已绑定 WA)</option>
+                    <option value="卢卡斯">卢卡斯 (UI/UX - 已绑定 WA)</option>
+                    <option value="叶莲娜">叶莲娜 (智能温控 - 已绑定 WA)</option>
+                    <option value="张晓雅">张晓雅 (工业设计 - 未绑定 WA)</option>
+                    <option value="万斯">万斯 (商用厨电 - 未绑定 WA)</option>
                   </select>
+                  {newChannel === 'WhatsApp' && (
+                    <div className="mt-1 flex items-center justify-between text-[11px]">
+                      {isStaffBoundToWhatsApp(newAssignedStaff) ? (
+                        <span className="text-emerald-700 font-bold flex items-center gap-1">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                          已关联 WhatsApp: {getStaffBoundWhatsAppInfo(newAssignedStaff)?.phone}
+                        </span>
+                      ) : (
+                        <span className="text-amber-700 font-bold flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          未绑定，请联系管理员关联
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -2724,7 +2896,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     客户需求备忘
                   </label>
 
-                  {/* 录入模式切换 Tab（企微和 WhatsApp 仅保留手动输入，线下对接才显示另外两项） */}
+                  {/* 录入模式切换 Tab（企微和 WordPress 仅保留手动输入，线下对接才显示另外两项） */}
                   {newChannel === '线下对接' ? (
                     <div className="bg-slate-100 p-0.5 rounded-xl flex items-center gap-1 text-[11px] font-bold">
                       <button
@@ -3064,6 +3236,82 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
 
             </form>
 
+          </div>
+        </div>
+      )}
+
+      {/* 提示员工联系管理员关联 WhatsApp 账号弹窗 */}
+      {showWaNotBoundModal && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-100 p-6 space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">无法发起 WhatsApp 会话</h4>
+                  <p className="text-xs text-slate-500">员工账号未绑定 WhatsApp 账号</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowWaNotBoundModal(false)}
+                className="w-7 h-7 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 bg-amber-50/90 rounded-2xl border border-amber-200 text-xs text-amber-950 leading-relaxed space-y-2.5">
+              <p>
+                负责销售人员「<strong className="text-slate-900 font-bold">{newAssignedStaff}</strong>」尚未绑定系统分配的 WhatsApp 账号。
+              </p>
+              <div className="p-2.5 bg-white/80 rounded-xl border border-amber-200/60 text-amber-900 text-[11px] space-y-1">
+                <div className="font-bold text-amber-950 flex items-center gap-1.5">
+                  <span>💡 业务规范提示：</span>
+                </div>
+                <p>
+                  通过 WhatsApp 发起海外客户对话需分配专属商业号码专线。请联系管理员在「员工列表」中为您关联授权专属 WhatsApp 账号后再发起会话。
+                </p>
+              </div>
+              <p className="font-bold text-amber-900">
+                👉 请联系系统管理员关联 WhatsApp 账号。
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setWaBindingRequestSent(true);
+                  setShowWaNotBoundModal(false);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>联系管理员关联 WhatsApp 账号</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setNewAssignedStaff('Sophia');
+                  setShowWaNotBoundModal(false);
+                }}
+                className="w-full py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+              >
+                切换为已绑定 WhatsApp 的销售 (Sophia)
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowWaNotBoundModal(false)}
+                className="w-full py-1 text-center text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+              >
+                我知道了，稍后处理
+              </button>
+            </div>
           </div>
         </div>
       )}

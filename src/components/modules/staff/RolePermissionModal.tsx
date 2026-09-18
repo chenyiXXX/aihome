@@ -199,7 +199,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
             <div>
               <div className="flex items-center gap-2.5">
                 <h3 className="text-base font-bold text-slate-900">
-                  {isNewRole ? '新增系统角色' : '配置角色权限'}
+                  {isNewRole ? '新增角色' : '配置角色权限'}
                 </h3>
                 {!isNewRole && (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
@@ -207,14 +207,9 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                   </span>
                 )}
                 {!isNewRole && (
-                  <span className="text-xs text-slate-400 font-mono">({role.userCount} 人使用中)</span>
+                  <span className="text-xs text-slate-400 font-mono">({role.userCount} 人)</span>
                 )}
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {isNewRole
-                  ? '设置角色基本信息，并配置该角色的系统菜单访问权限'
-                  : '管理角色的系统访问与配置权限'}
-              </p>
             </div>
           </div>
           <button
@@ -242,7 +237,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                     setRoleName(e.target.value);
                     if (nameError) setNameError('');
                   }}
-                  placeholder="如：外贸销售助理 / 运营助理"
+                  placeholder="输入角色名称"
                   className={`w-full px-3.5 py-2 rounded-xl border bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none transition-colors ${
                     nameError
                       ? 'border-red-500 focus:border-red-500'
@@ -260,13 +255,13 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                角色职责描述
+                职责描述
               </label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="简要说明该角色的业务范围与职责定位..."
+                placeholder="输入角色职责说明"
                 className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#0F4A47]"
               />
             </div>
@@ -276,9 +271,9 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-bold text-slate-800 text-sm">菜单权限配置</span>
-                <span className="text-slate-400 text-xs ml-2">
-                  (已授权 {permissions.filter((p) => p.view).length} / {permissions.length} 个功能模块)
+                <span className="font-bold text-slate-800 text-sm">功能菜单权限</span>
+                <span className="text-slate-400 text-xs ml-2 font-mono">
+                  ({permissions.filter((p) => p.view).length} / {permissions.length})
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -286,14 +281,14 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                   onClick={() => toggleAllModules(true)}
                   className="px-3 py-1 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 cursor-pointer transition-colors"
                 >
-                  全部开启
+                  全选
                 </button>
                 <span className="text-slate-300">|</span>
                 <button
                   onClick={() => toggleAllModules(false)}
                   className="px-3 py-1 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 cursor-pointer transition-colors"
                 >
-                  清空所有
+                  取消全选
                 </button>
               </div>
             </div>
@@ -302,7 +297,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
               <table className="w-full text-left border-collapse bg-white">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100 text-slate-700 font-bold text-[11px]">
-                    <th className="py-3.5 px-6">系统功能模块</th>
+                    <th className="py-3.5 px-6">功能模块</th>
                     <th className="py-3.5 px-6 text-right w-36">
                       <span className="flex items-center justify-end gap-1.5">
                         <Eye className="w-3.5 h-3.5 text-slate-400" />

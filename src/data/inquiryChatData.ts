@@ -1,7 +1,7 @@
 import { InquiryChatMessage, InquiryItem } from '../types';
 
 /**
- * 售前机器人与海外买家在 WhatsApp 上的真实多轮双语交互聊天记录
+ * 售前机器人与海外买家在 WordPress 上的真实多轮双语交互聊天记录
  */
 export const mockInquiryChatHistories: Record<string, InquiryChatMessage[]> = {
   'INQ-2026-001': [
@@ -170,15 +170,15 @@ export const mockInquiryChatHistories: Record<string, InquiryChatMessage[]> = {
       senderName: 'HomeCraft 售前AI机器人 (Foshan Millwork Bot)',
       time: '2026-08-16 14:13:00',
       content:
-        'Cher M. Dubois, merci pour votre message WhatsApp! 👋\nOur atelier excels in book-matched Canaletto walnut veneering with Italian Sayerlack PU coating, and hand-stitched saddle leather jewelry dividers.\n\nEstimated project cost for the 2 penthouse suites: €95,000 CIF Le Havre port. 3D renderings and finish sample boards ready for dispatch.',
+        'Cher M. Dubois, merci pour votre message WordPress! 👋\nOur atelier excels in book-matched Canaletto walnut veneering with Italian Sayerlack PU coating, and hand-stitched saddle leather jewelry dividers.\n\nEstimated project cost for the 2 penthouse suites: €95,000 CIF Le Havre port. 3D renderings and finish sample boards ready for dispatch.',
       translatedContent:
-        'Dubois先生您好，感谢您通过WhatsApp联系我们！👋 我厂精通北美黑胡桃自然对拼纹饰面与意大利式真皮缝线首饰抽屉工艺。预估两套顶层套房整体预算为 €95,000 CIF勒阿弗尔港。3D深化效果图及材质实样板已准备就绪。'
+        'Dubois先生您好，感谢您通过WordPress联系我们！👋 我厂精通北美黑胡桃自然对拼纹饰面与意大利式真皮缝线首饰抽屉工艺。预估两套顶层套房整体预算为 €95,000 CIF勒阿弗尔港。3D深化效果图及材质实样板已准备就绪。'
     }
   ]
 };
 
 /**
- * 获取或自动生成询盘的聊天记录内容（若没有预置，根据询盘信息动态生成逼真的 WhatsApp 机器人接待对话）
+ * 获取或自动生成询盘的聊天记录内容（若没有预置，根据询盘信息动态生成逼真的 WordPress 机器人接待对话）
  */
 export const getInquiryChatHistory = (inquiry: InquiryItem): InquiryChatMessage[] => {
   if (mockInquiryChatHistories[inquiry.id]) {
@@ -202,8 +202,8 @@ export const getInquiryChatHistory = (inquiry: InquiryItem): InquiryChatMessage[
       sender: 'bot',
       senderName: 'HomeCraft 售前AI机器人 (Foshan Millwork Bot)',
       time: `${time}:35`,
-      content: `Hello ${inquiry.buyerName}! Thank you for reaching out to HomeCraft Custom Furniture via WhatsApp. 👋\n\nI am your 24/7 AI Pre-sales Assistant. I have received your request regarding "${inquiry.furnitureCategory}". We specialize in bespoke solid wood and contract joinery exports.`,
-      translatedContent: `${inquiry.buyerName} 您好！感谢您通过 WhatsApp 联系佛山美居家具。👋 我是您的 7×24 小时售前 AI 接待机器人，已收到您关于“${inquiry.furnitureCategory}”的定制咨询。`
+      content: `Hello ${inquiry.buyerName}! Thank you for reaching out to HomeCraft Custom Furniture via WordPress. 👋\n\nI am your 24/7 AI Pre-sales Assistant. I have received your request regarding "${inquiry.furnitureCategory}". We specialize in bespoke solid wood and contract joinery exports.`,
+      translatedContent: `${inquiry.buyerName} 您好！感谢您通过 WordPress 联系佛山美居家具。👋 我是您的 7×24 小时售前 AI 接待机器人，已收到您关于“${inquiry.furnitureCategory}”的定制咨询。`
     },
     {
       id: `dyn-msg-${inquiry.id}-3`,

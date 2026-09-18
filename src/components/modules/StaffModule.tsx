@@ -27,13 +27,12 @@ import {
   Info,
   Crown,
   Trash2,
-  X
+  X,
+  MessageSquare
 } from 'lucide-react';
-import { EmployeeItem, RoleConfig, WeComDept, OrgDeptNode } from '../../types';
-import { initialWeComDepts, initialOrgTree } from '../../data/mockData';
-import { WeComSyncModal } from './staff/WeComSyncModal';
+import { EmployeeItem, RoleConfig, WeComDept, OrgDeptNode, WhatsAppAccount } from '../../types';
+import { initialWeComDepts, initialOrgTree, initialWhatsAppAccounts } from '../../data/mockData';
 import { RolePermissionModal } from './staff/RolePermissionModal';
-import { EmployeeDetailModal } from './staff/EmployeeDetailModal';
 
 interface StaffModuleProps {
   employees: EmployeeItem[];
@@ -66,7 +65,33 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('全部角色');
   const [selectedLeaderFilter, setSelectedLeaderFilter] = useState<string>('全部');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('全部状态');
-  const [employeeModalTab, setEmployeeModalTab] = useState<'auth' | 'quota'>('auth');
+  const [selectedWhatsAppFilter, setSelectedWhatsAppFilter] = useState<string>('全部');
+
+  // WhatsApp Accounts State (1对1 绑定)
+  const [whatsAppAccounts, setWhatsAppAccounts] = useState<WhatsAppAccount[]>(initialWhatsAppAccounts);
+  const [activeWaDropdownEmpId, setActiveWaDropdownEmpId] = useState<string | null>(null);
+  const [activeRoleDropdownEmpId, setActiveRoleDropdownEmpId] = useState<string | null>(null);
+  const [waSearchQuery, setWaSearchQuery] = useState('');
+  const [isAddingNewWa, setIsAddingNewWa] = useState(false);
+  const [newWaName, setNewWaName] = useState('');
+  const [newWaPhone, setNewWaPhone] = useState('');
+  const [newWaRegion, setNewWaRegion] = useState('欧美综合');
+
+  // Close WhatsApp & Role Dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.wa-dropdown-container')) {
+        setActiveWaDropdownEmpId(null);
+        setIsAddingNewWa(false);
+      }
+      if (!target.closest('.role-dropdown-container')) {
+        setActiveRoleDropdownEmpId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // WeCom Sync state
   const [isSyncing, setIsSyncing] = useState(false);
@@ -74,12 +99,9 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
   const [syncToast, setSyncToast] = useState<string | null>(null);
 
   // Modals
-  const [isWeComModalOpen, setIsWeComModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<RoleConfig | null>(null);
   const [isCreatingNewRole, setIsCreatingNewRole] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState<EmployeeItem | null>(null);
-  const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
 
   // Sync WeCom action
   const handleTriggerWeComSync = () => {
@@ -92,7 +114,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       ).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
       setLastSyncTime(timeStr);
       setSyncToast(
-        `✅ 企业微信通讯录同步成功！已自动拉取全公司 ${wecomDepts.length} 个部门组织架构及 ${employees.length} 名在职员工，系统权限与 AI 算力自动绑定。`
+        `✅ 企业微信通讯录同步成功！`
       );
       setTimeout(() => setSyncToast(null), 5000);
     }, 1200);
@@ -164,6 +186,11 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
 
   // Edit existing role
   const handleEditRole = (role: RoleConfig) => {
+    if (role.id === 'ROLE-ADMIN' || role.roleName === '超级管理员') {
+      setSyncToast('⚠️ 超级管理员为系统核心内置角色，不可修改！');
+      setTimeout(() => setSyncToast(null), 3000);
+      return;
+    }
     setIsCreatingNewRole(false);
     setEditingRole(role);
     setIsRoleModalOpen(true);
@@ -171,7 +198,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
 
   // Delete role
   const handleDeleteRole = (roleId: string, roleName: string) => {
-    if (roleId === 'ROLE-ADMIN') {
+    if (roleId === 'ROLE-ADMIN' || roleName === '超级管理员') {
       setSyncToast('⚠️ 超级管理员为系统核心内置角色，不可删除！');
       setTimeout(() => setSyncToast(null), 3000);
       return;
@@ -187,10 +214,178 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
     setTimeout(() => setSyncToast(null), 3000);
   };
 
-  // Employee Save
-  const handleSaveEmployee = (updatedEmp: EmployeeItem) => {
-    setEmployees((prev) => prev.map((e) => (e.id === updatedEmp.id ? updatedEmp : e)));
-    setSyncToast(`✅ 员工「${updatedEmp.name}」的系统角色与 AI 算力限额已更新！`);
+  // 员工角色徽章样式（统一黑色文本，去除五颜六色）
+  const getRoleBadgeStyle = (_role?: string) => {
+    return 'bg-slate-100 text-black border-slate-200/90 hover:bg-slate-200/80';
+  };
+
+  // 获取员工所有授权角色（支持多个角色）
+  const getEmployeeRoles = (emp: EmployeeItem): string[] => {
+    if (emp.roles && emp.roles.length > 0) return emp.roles;
+    if (emp.role) {
+      return emp.role.split(/[,，、/]+/).map((s) => s.trim()).filter(Boolean);
+    }
+    return [];
+  };
+
+  // 员工列表直接多选切换角色
+  const handleToggleEmployeeRole = (employeeId: string, roleName: string) => {
+    const target = employees.find((e) => e.id === employeeId);
+    if (!target) return;
+
+    const currentRoles = getEmployeeRoles(target);
+    let updatedRoles: string[];
+
+    if (currentRoles.includes(roleName)) {
+      if (currentRoles.length === 1) {
+        setSyncToast(`⚠️ 员工「${target.name}」至少需要保留一个授权角色`);
+        setTimeout(() => setSyncToast(null), 2500);
+        return;
+      }
+      updatedRoles = currentRoles.filter((r) => r !== roleName);
+    } else {
+      updatedRoles = [...currentRoles, roleName];
+    }
+
+    setEmployees((prev) =>
+      prev.map((e) =>
+        e.id === employeeId
+          ? {
+              ...e,
+              role: updatedRoles.join(', '),
+              roles: updatedRoles
+            }
+          : e
+      )
+    );
+
+    setSyncToast(`✅ 已更新员工「${target.name}」授权角色：${updatedRoles.join('、')}`);
+    setTimeout(() => setSyncToast(null), 3000);
+  };
+
+  // 单选覆盖（备用兼容）
+  const handleUpdateEmployeeRole = (employeeId: string, newRole: string) => {
+    const target = employees.find((e) => e.id === employeeId);
+    if (!target || target.role === newRole) return;
+
+    setEmployees((prev) =>
+      prev.map((e) => (e.id === employeeId ? { ...e, role: newRole, roles: [newRole] } : e))
+    );
+    setSyncToast(`✅ 已将员工「${target.name}」的授权角色修改为「${newRole}」`);
+    setTimeout(() => setSyncToast(null), 3000);
+  };
+
+  // 1对1 绑定/解绑 WhatsApp 账号逻辑
+  const handleBindWhatsApp = (employeeId: string, waAccountId: string | null) => {
+    const targetEmp = employees.find((e) => e.id === employeeId);
+    const empName = targetEmp ? targetEmp.name : '员工';
+
+    // 1. 解除绑定操作 (Unbind)
+    if (!waAccountId) {
+      const oldWaId = targetEmp?.whatsappAccountId;
+      const oldWa = whatsAppAccounts.find((w) => w.id === oldWaId);
+
+      setEmployees((prev) =>
+        prev.map((e) => {
+          if (e.id === employeeId) {
+            return {
+              ...e,
+              whatsappAccountId: undefined,
+              whatsappPhone: undefined,
+              whatsappAccountName: undefined
+            };
+          }
+          return e;
+        })
+      );
+
+      setWhatsAppAccounts((prev) =>
+        prev.map((w) => {
+          if (w.boundEmployeeId === employeeId || w.id === oldWaId) {
+            return {
+              ...w,
+              boundEmployeeId: undefined,
+              boundEmployeeName: undefined
+            };
+          }
+          return w;
+        })
+      );
+
+      setSyncToast(`已解除员工「${empName}」绑定的 WhatsApp 账号「${oldWa?.name || ''}」`);
+      setTimeout(() => setSyncToast(null), 3500);
+      return;
+    }
+
+    // 2. 绑定或转移操作 (Bind / Transfer - 严格 1对1)
+    const targetWa = whatsAppAccounts.find((w) => w.id === waAccountId);
+    if (!targetWa) return;
+
+    const previousOwnerId = targetWa.boundEmployeeId;
+    const previousOwnerName = targetWa.boundEmployeeName;
+    const oldWaIdOfTargetEmp = targetEmp?.whatsappAccountId;
+
+    setEmployees((prev) =>
+      prev.map((e) => {
+        // 当前员工绑定新账号
+        if (e.id === employeeId) {
+          return {
+            ...e,
+            whatsappAccountId: targetWa.id,
+            whatsappPhone: targetWa.phone,
+            whatsappAccountName: targetWa.name
+          };
+        }
+        // 若该 WhatsApp 原本绑在其他员工身上，将其解绑以维护 1对1 独占原则
+        if (previousOwnerId && e.id === previousOwnerId) {
+          return {
+            ...e,
+            whatsappAccountId: undefined,
+            whatsappPhone: undefined,
+            whatsappAccountName: undefined
+          };
+        }
+        return e;
+      })
+    );
+
+    setWhatsAppAccounts((prev) =>
+      prev.map((w) => {
+        // 目标账号归属当前员工
+        if (w.id === targetWa.id) {
+          return {
+            ...w,
+            boundEmployeeId: employeeId,
+            boundEmployeeName: empName
+          };
+        }
+        // 当前员工原来绑定的旧账号恢复空闲
+        if (oldWaIdOfTargetEmp && w.id === oldWaIdOfTargetEmp) {
+          return {
+            ...w,
+            boundEmployeeId: undefined,
+            boundEmployeeName: undefined
+          };
+        }
+        // 安全兜底：如果其他记录还记录着 employeeId，清除掉
+        if (w.boundEmployeeId === employeeId) {
+          return {
+            ...w,
+            boundEmployeeId: undefined,
+            boundEmployeeName: undefined
+          };
+        }
+        return w;
+      })
+    );
+
+    if (previousOwnerId && previousOwnerId !== employeeId) {
+      setSyncToast(
+        `已将 WhatsApp 账号「${targetWa.name}」转移绑定至「${empName}」（已解除原「${previousOwnerName}」的绑定）`
+      );
+    } else {
+      setSyncToast(`✅ 已成功为「${empName}」绑定 WhatsApp 账号「${targetWa.name}」`);
+    }
     setTimeout(() => setSyncToast(null), 4000);
   };
 
@@ -402,8 +597,11 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
     }
 
     // Role filter
-    if (selectedRoleFilter !== '全部角色' && emp.role !== selectedRoleFilter) {
-      return false;
+    if (selectedRoleFilter !== '全部角色') {
+      const empRoles = getEmployeeRoles(emp);
+      if (!empRoles.includes(selectedRoleFilter) && emp.role !== selectedRoleFilter) {
+        return false;
+      }
     }
 
     // Leader filter (部门负责人：是或否)
@@ -421,6 +619,13 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       if (selectedStatusFilter === '已禁用' && isEnabled) return false;
     }
 
+    // WhatsApp binding filter (全部 / 已绑定 / 未绑定)
+    if (selectedWhatsAppFilter !== '全部') {
+      const isBound = Boolean(emp.whatsappAccountId);
+      if (selectedWhatsAppFilter === '已绑定' && !isBound) return false;
+      if (selectedWhatsAppFilter === '未绑定' && isBound) return false;
+    }
+
     // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -429,6 +634,8 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
         emp.email.toLowerCase().includes(q) ||
         (emp.wecomUserId && emp.wecomUserId.toLowerCase().includes(q)) ||
         (emp.wecomMobile && emp.wecomMobile.includes(q)) ||
+        (emp.whatsappPhone && emp.whatsappPhone.includes(q)) ||
+        (emp.whatsappAccountName && emp.whatsappAccountName.toLowerCase().includes(q)) ||
         emp.department.toLowerCase().includes(q);
       if (!match) return false;
     }
@@ -472,10 +679,10 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       <div className="flex items-center justify-between py-3 mb-2 shrink-0">
         <div className="flex items-center gap-3">
           <h2 className="text-base font-bold text-slate-900">
-            {isRoleView ? '角色列表' : '员工列表'}
+            {isRoleView ? '角色配置' : '员工列表'}
           </h2>
           <span className="text-xs text-slate-500 font-medium">
-            {isRoleView ? `共 ${roles.length} 个系统角色` : `共 ${employees.length} 名在职员工`}
+            {isRoleView ? `共 ${roles.length} 个角色` : `共 ${employees.length} 名在职员工`}
           </span>
         </div>
 
@@ -552,6 +759,22 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
 
               {/* Tree List (参照截图设计) */}
               <div className="flex-1 overflow-y-auto overflow-x-auto py-1 custom-scrollbar">
+                <div
+                  onClick={() => setSelectedDeptId('all')}
+                  className={`flex items-center gap-2 px-3 py-2 mx-2 rounded-xl text-xs font-semibold cursor-pointer transition-colors ${
+                    selectedDeptId === 'all'
+                      ? 'bg-[#EA3A20]/10 text-[#EA3A20] font-bold border border-[#EA3A20]/20'
+                      : 'text-slate-700 hover:bg-slate-100/80 border border-transparent'
+                  }`}
+                >
+                  <Building2 className="w-4 h-4 text-[#EA3A20]" />
+                  <span>全部</span>
+                  <span className="ml-auto text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-500">
+                    {employees.length}
+                  </span>
+                </div>
+                <div className="my-1 border-t border-slate-100 mx-2" />
+
                 {initialOrgTree.map((node) => renderTreeNode(node, 0))}
               </div>
 
@@ -584,21 +807,16 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                     />
                   </div>
 
-                  {selectedDeptId && (
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-100 text-xs">
-                      <span>{selectedDeptName}</span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 font-mono">
-                        {filteredEmployees.length}人
-                      </span>
-                      {selectedDeptId !== 'group' && (
-                        <button
-                          onClick={() => setSelectedDeptId('group')}
-                          title="查看全部部门员工"
-                          className="text-blue-500 hover:text-blue-800 font-bold ml-1 cursor-pointer"
-                        >
-                          ×
-                        </button>
-                      )}
+                  {selectedDeptId && selectedDeptId !== 'all' && (
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">
+                      <span>部门：{selectedDeptName}</span>
+                      <button
+                        onClick={() => setSelectedDeptId('all')}
+                        title="清除部门筛选"
+                        className="text-slate-400 hover:text-slate-700 font-bold ml-0.5 cursor-pointer"
+                      >
+                        ×
+                      </button>
                     </div>
                   )}
                 </div>
@@ -610,12 +828,12 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                     onChange={(e) => setSelectedRoleFilter(e.target.value)}
                     className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 cursor-pointer focus:outline-none focus:border-[#EA3A20]"
                   >
-                    <option value="全部角色">全部系统角色</option>
-                    <option value="超级管理员">超级管理员</option>
-                    <option value="外贸主管">外贸主管</option>
-                    <option value="销售业务员">销售业务员</option>
-                    <option value="推广运营官">推广运营官</option>
-                    <option value="内容审稿员">内容审稿员</option>
+                    <option value="全部角色">全部角色</option>
+                    {roles.map((r) => (
+                      <option key={r.id} value={r.roleName}>
+                        {r.roleName}
+                      </option>
+                    ))}
                   </select>
 
                   <select
@@ -623,9 +841,9 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                     onChange={(e) => setSelectedLeaderFilter(e.target.value)}
                     className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 cursor-pointer focus:outline-none focus:border-[#EA3A20]"
                   >
-                    <option value="全部">部门负责人：全部</option>
-                    <option value="是">部门负责人：是</option>
-                    <option value="否">部门负责人：否</option>
+                    <option value="全部">负责人：全部</option>
+                    <option value="是">负责人：是</option>
+                    <option value="否">负责人：否</option>
                   </select>
 
                   <select
@@ -633,31 +851,39 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                     onChange={(e) => setSelectedStatusFilter(e.target.value)}
                     className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 cursor-pointer focus:outline-none focus:border-[#EA3A20]"
                   >
-                    <option value="全部状态">全部账号状态</option>
+                    <option value="全部状态">状态：全部</option>
                     <option value="启用">状态：启用</option>
                     <option value="禁用">状态：禁用</option>
+                  </select>
+
+                  <select
+                    value={selectedWhatsAppFilter}
+                    onChange={(e) => setSelectedWhatsAppFilter(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 cursor-pointer focus:outline-none focus:border-[#EA3A20]"
+                  >
+                    <option value="全部">WhatsApp：全部</option>
+                    <option value="已绑定">WhatsApp：已绑定</option>
+                    <option value="未绑定">WhatsApp：未绑定</option>
                   </select>
                 </div>
 
               </div>
 
-              {/* Table Body - 8 Columns exactly as requested */}
+              {/* Table Body - Columns */}
               <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse">
                   <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-xs z-10">
                     <tr className="border-b border-slate-100 text-slate-700 text-xs font-bold">
                       <th className="py-3.5 pl-6 pr-3 font-bold text-slate-900">员工姓名</th>
-                      <th className="py-3.5 px-3 font-bold text-slate-900">企微ID</th>
                       <th className="py-3.5 px-3 font-bold text-slate-900">所属部门</th>
                       <th className="py-3.5 px-3 font-bold text-slate-900 text-center">部门负责人</th>
-                      <th className="py-3.5 px-3 font-bold text-slate-900">角色</th>
-                      <th className="py-3.5 px-3 font-bold text-slate-900">每日AI算力限额</th>
-                      <th className="py-3.5 px-3 font-bold text-slate-900 text-center">状态</th>
-                      <th className="py-3.5 pr-6 pl-2 font-bold text-slate-900 text-right">操作</th>
+                      <th className="py-3.5 px-3 font-bold text-slate-900 min-w-[200px]">系统角色</th>
+                      <th className="py-3.5 px-3 font-bold text-slate-900 min-w-[240px]">WhatsApp 账号</th>
+                      <th className="py-3.5 pr-6 pl-3 font-bold text-slate-900 text-center">状态</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100/80 text-xs">
-                    {filteredEmployees.map((emp) => {
+                    {filteredEmployees.map((emp, empIdx) => {
                       const isEnabled = emp.status === '启用' || emp.status === '在职 (正常)';
 
                       return (
@@ -675,85 +901,496 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                             </div>
                           </td>
 
-                          {/* 企微ID */}
-                          <td className="py-3.5 px-3">
-                            <span className="font-mono text-xs font-semibold text-slate-700 bg-slate-100/90 px-2 py-1 rounded-md border border-slate-200/60 inline-flex items-center">
-                              {emp.wecomUserId || emp.id}
-                            </span>
-                          </td>
-
                           {/* 3. 所属部门 */}
                           <td className="py-3.5 px-3">
                             <div className="font-semibold text-slate-800 truncate max-w-[160px]">
                               {emp.department}
                             </div>
-                            <div className="text-[10px] text-slate-400 truncate max-w-[160px]" title={emp.deptPath}>
-                              {emp.deptPath || `优特智厨 / ${emp.department}`}
-                            </div>
                           </td>
 
-                          {/* 4. 部门负责人：是或否 */}
+                          {/* 4. 部门负责人：是或否 (Read-only) */}
                           <td className="py-3.5 px-3 text-center">
                             <div className="flex justify-center">
                               {emp.isDeptLeader ? (
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleDeptLeader(emp.id)}
-                                  title="点击切换部门负责人状态"
-                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs hover:bg-emerald-100 cursor-pointer transition-colors"
-                                >
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                   <span>是</span>
-                                </button>
+                                </span>
                               ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleDeptLeader(emp.id)}
-                                  title="点击设为部门负责人"
-                                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors"
-                                >
-                                  <span>否</span>
-                                </button>
+                                <span className="text-slate-400 font-medium">
+                                  否
+                                </span>
                               )}
                             </div>
                           </td>
 
-                          {/* 5. 角色 */}
-                          <td className="py-3.5 px-3">
-                            <span className="px-2.5 py-1 text-xs bg-slate-100 text-slate-700 font-medium rounded-full border border-slate-200/60 inline-flex items-center">
-                              {emp.role}
-                            </span>
+                          {/* 5. 角色 (直接在列表修改授权角色，支持多选与角色名查询) */}
+                          <td className="py-3.5 px-3 relative">
+                            {(() => {
+                              const empRoles = getEmployeeRoles(emp);
+                              return (
+                                <div className="role-dropdown-container relative inline-block">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveRoleDropdownEmpId(
+                                        activeRoleDropdownEmpId === emp.id ? null : emp.id
+                                      );
+                                      setActiveWaDropdownEmpId(null);
+                                      setRoleSearchQuery('');
+                                    }}
+                                    className="group px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-xs font-bold flex items-center justify-between gap-1.5 cursor-pointer shadow-2xs transition-all max-w-[240px]"
+                                    title="点击直接勾选或修改授权角色（支持多选）"
+                                  >
+                                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                                      <Shield className="w-3.5 h-3.5 text-slate-700 shrink-0" />
+                                      {empRoles.length === 0 ? (
+                                        <span className="text-slate-400 font-normal">暂无角色</span>
+                                      ) : empRoles.length <= 2 ? (
+                                        empRoles.map((role) => (
+                                          <span
+                                            key={role}
+                                            className={`px-2 py-0.5 rounded-lg border text-[11px] font-bold inline-flex items-center gap-1 ${getRoleBadgeStyle(
+                                              role
+                                            )}`}
+                                          >
+                                            {role}
+                                          </span>
+                                        ))
+                                      ) : (
+                                        <>
+                                          <span
+                                            className={`px-2 py-0.5 rounded-lg border text-[11px] font-bold inline-flex items-center gap-1 ${getRoleBadgeStyle(
+                                              empRoles[0]
+                                            )}`}
+                                          >
+                                            {empRoles[0]}
+                                          </span>
+                                          <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-black border border-slate-200">
+                                            +{empRoles.length - 1}
+                                          </span>
+                                        </>
+                                      )}
+                                    </div>
+                                    <ChevronDown
+                                      className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform ${
+                                        activeRoleDropdownEmpId === emp.id ? 'rotate-180 text-slate-700' : ''
+                                      }`}
+                                    />
+                                  </button>
+
+                                  {/* 角色快捷多选授权下拉菜单 */}
+                                  {activeRoleDropdownEmpId === emp.id && (
+                                    <div
+                                      className={`absolute left-0 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 ${
+                                        empIdx > filteredEmployees.length - 3 && filteredEmployees.length > 3
+                                          ? 'bottom-full mb-1.5'
+                                          : 'top-full mt-1.5'
+                                      }`}
+                                    >
+                                      <div className="px-3 py-2 border-b border-slate-100 bg-slate-50/90 flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5">
+                                          <Shield className="w-3.5 h-3.5 text-[#EA3A20]" />
+                                          <span className="font-bold text-xs text-slate-800">配置角色</span>
+                                        </div>
+                                        <span className="text-[11px] text-[#EA3A20] font-bold bg-red-50 border border-red-200/80 px-2 py-0.5 rounded-full">
+                                          已选 {empRoles.length} 项
+                                        </span>
+                                      </div>
+
+                                      {/* 角色名查询搜索框 */}
+                                      <div className="p-2 border-b border-slate-100 bg-white">
+                                        <div className="relative">
+                                          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                                          <input
+                                            type="text"
+                                            value={roleSearchQuery}
+                                            onChange={(e) => setRoleSearchQuery(e.target.value)}
+                                            placeholder="搜索角色..."
+                                            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#EA3A20] focus:bg-white"
+                                            autoFocus
+                                            onClick={(e) => e.stopPropagation()}
+                                          />
+                                        </div>
+                                      </div>
+
+                                      <div className="p-1.5 max-h-56 overflow-y-auto custom-scrollbar space-y-0.5">
+                                        {roles
+                                          .filter((r) => {
+                                            if (!roleSearchQuery.trim()) return true;
+                                            const q = roleSearchQuery.toLowerCase();
+                                            return (
+                                              r.roleName.toLowerCase().includes(q) ||
+                                              (r.description && r.description.toLowerCase().includes(q))
+                                            );
+                                          })
+                                          .map((r) => {
+                                            const isSelected = empRoles.includes(r.roleName);
+                                            return (
+                                              <div
+                                                key={r.id}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleToggleEmployeeRole(emp.id, r.roleName);
+                                                }}
+                                                className={`p-2 rounded-xl text-xs flex items-center justify-between gap-2.5 cursor-pointer transition-all border ${
+                                                  isSelected
+                                                    ? 'bg-red-50/70 border-red-200/80 text-slate-900 font-bold'
+                                                    : 'bg-white border-transparent hover:bg-slate-50 text-slate-700 hover:border-slate-100'
+                                                }`}
+                                              >
+                                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                                  <div
+                                                    className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
+                                                      isSelected
+                                                        ? 'border-[#EA3A20] bg-[#EA3A20] text-white'
+                                                        : 'border-slate-300 bg-white'
+                                                    }`}
+                                                  >
+                                                    {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                                  </div>
+                                                  <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-1.5">
+                                                      <span className="font-bold truncate text-xs">{r.roleName}</span>
+                                                      {r.roleName.includes('管理员') && (
+                                                        <Crown className="w-3 h-3 text-amber-500 shrink-0" />
+                                                      )}
+                                                    </div>
+                                                    {r.description && (
+                                                      <div className="text-[10px] text-slate-400 truncate mt-0.5 font-normal">
+                                                        {r.description}
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        {roles.filter((r) => {
+                                          if (!roleSearchQuery.trim()) return true;
+                                          const q = roleSearchQuery.toLowerCase();
+                                          return (
+                                            r.roleName.toLowerCase().includes(q) ||
+                                            (r.description && r.description.toLowerCase().includes(q))
+                                          );
+                                        }).length === 0 && (
+                                          <div className="py-6 text-center text-slate-400 text-xs">
+                                            未找到包含「{roleSearchQuery}」的角色
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      <div className="p-2 border-t border-slate-100 bg-slate-50/80 flex items-center justify-end">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveRoleDropdownEmpId(null);
+                                          }}
+                                          className="px-3 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold cursor-pointer transition-colors text-xs"
+                                        >
+                                          完成
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </td>
 
-                          {/* 6. 每日AI算力限额 */}
-                          <td className="py-3.5 px-3">
-                            <div className="space-y-1 min-w-[130px] max-w-[155px]">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="font-mono font-bold text-slate-800">
-                                  {emp.aiQuotaLimit.toLocaleString()} <span className="text-[10px] text-slate-400 font-normal">次/天</span>
-                                </span>
-                                <span className="text-[10px] text-slate-400 font-mono">
-                                  已用 {emp.aiQuotaUsed}
-                                </span>
-                              </div>
-                              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-purple-600 rounded-full transition-all"
-                                  style={{
-                                    width: `${Math.min(100, Math.round((emp.aiQuotaUsed / Math.max(1, emp.aiQuotaLimit)) * 100))}%`
+                          {/* 6. 绑定WhatsApp账号 (1对1 下拉菜单选择) */}
+                          <td className="py-3.5 px-3 relative">
+                            <div className="wa-dropdown-container relative inline-block w-full max-w-[240px]">
+                              {emp.whatsappAccountId ? (
+                                <div className="flex items-center gap-1.5 w-full">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveWaDropdownEmpId(activeWaDropdownEmpId === emp.id ? null : emp.id);
+                                      setWaSearchQuery('');
+                                      setIsAddingNewWa(false);
+                                    }}
+                                    className="group px-2.5 py-1.5 rounded-xl border border-emerald-200/90 bg-emerald-50/70 hover:bg-emerald-100/90 hover:border-emerald-300 transition-all flex items-center justify-between gap-1.5 cursor-pointer flex-1 min-w-0 text-left shadow-2xs"
+                                    title="更换账号"
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                      <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                                        <MessageSquare className="w-2.5 h-2.5" />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <div className="font-bold text-emerald-950 text-[11px] truncate leading-tight">
+                                          {emp.whatsappAccountName || '已绑定专线'}
+                                        </div>
+                                        <div className="text-[10px] text-emerald-700 font-mono truncate">
+                                          {emp.whatsappPhone}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <ChevronDown
+                                      className={`w-3.5 h-3.5 text-emerald-700 shrink-0 transition-transform ${
+                                        activeWaDropdownEmpId === emp.id ? 'rotate-180' : ''
+                                      }`}
+                                    />
+                                  </button>
+
+                                  {/* 取消绑定按钮（叉叉） */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleBindWhatsApp(emp.id, null);
+                                      if (activeWaDropdownEmpId === emp.id) {
+                                        setActiveWaDropdownEmpId(null);
+                                      }
+                                    }}
+                                    className="w-7 h-7 rounded-xl border border-rose-200 bg-rose-50/80 hover:bg-rose-100 hover:border-rose-300 text-rose-500 hover:text-rose-700 flex items-center justify-center shrink-0 transition-all shadow-2xs cursor-pointer group/cancel"
+                                    title="解除绑定"
+                                  >
+                                    <X className="w-3.5 h-3.5 stroke-[2.5] group-hover/cancel:scale-110 transition-transform" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveWaDropdownEmpId(activeWaDropdownEmpId === emp.id ? null : emp.id);
+                                    setWaSearchQuery('');
+                                    setIsAddingNewWa(false);
                                   }}
-                                />
-                              </div>
+                                  className="px-2.5 py-1.5 rounded-xl border border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50/70 hover:bg-emerald-50/50 transition-all flex items-center justify-between gap-1.5 text-slate-500 hover:text-emerald-700 cursor-pointer text-xs font-medium w-full"
+                                  title="绑定账号"
+                                >
+                                  <div className="flex items-center gap-1.5">
+                                    <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600" />
+                                    <span>绑定账号</span>
+                                  </div>
+                                  <ChevronDown
+                                    className={`w-3 h-3 text-slate-400 transition-transform ${
+                                      activeWaDropdownEmpId === emp.id ? 'rotate-180' : ''
+                                    }`}
+                                  />
+                                </button>
+                              )}
+
+                              {/* Dropdown Menu */}
+                              {activeWaDropdownEmpId === emp.id && (
+                                <div
+                                  className={`absolute left-0 w-84 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 ${
+                                    empIdx > filteredEmployees.length - 3 && filteredEmployees.length > 3
+                                      ? 'bottom-full mb-1.5'
+                                      : 'top-full mt-1.5'
+                                  }`}
+                                >
+                                  {/* Dropdown Header */}
+                                  <div className="p-3 border-b border-slate-100 bg-gradient-to-r from-emerald-50/80 via-white to-slate-50 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-2xs">
+                                        <MessageSquare className="w-3.5 h-3.5" />
+                                      </div>
+                                      <div>
+                                        <div className="font-bold text-slate-900 text-xs">选择 WhatsApp 账号</div>
+                                        <div className="text-[10px] text-slate-500">
+                                          当前员工：<span className="font-bold text-slate-700">{emp.name}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => setActiveWaDropdownEmpId(null)}
+                                      className="text-slate-400 hover:text-slate-700 p-1 rounded-md hover:bg-slate-100 cursor-pointer transition-colors"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+
+                                  {/* Search Bar */}
+                                  <div className="p-2 border-b border-slate-100 bg-slate-50/50">
+                                    <div className="relative">
+                                      <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                      <input
+                                        type="text"
+                                        value={waSearchQuery}
+                                        onChange={(e) => setWaSearchQuery(e.target.value)}
+                                        placeholder="搜索姓名或手机号..."
+                                        className="w-full pl-7 pr-3 py-1 bg-white rounded-lg border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+                                        autoFocus
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Account List */}
+                                  <div className="max-h-56 overflow-y-auto custom-scrollbar p-1.5 space-y-1">
+                                    {whatsAppAccounts
+                                      .filter((acc) => {
+                                        if (!waSearchQuery.trim()) return true;
+                                        const q = waSearchQuery.toLowerCase();
+                                        return (
+                                          acc.name.toLowerCase().includes(q) ||
+                                          acc.phone.includes(q) ||
+                                          (acc.boundEmployeeName && acc.boundEmployeeName.toLowerCase().includes(q))
+                                        );
+                                      })
+                                      .sort((a, b) => {
+                                        // 1、没有被绑过的放在前面
+                                        const aBound = Boolean(a.boundEmployeeId);
+                                        const bBound = Boolean(b.boundEmployeeId);
+                                        if (!aBound && bBound) return -1;
+                                        if (aBound && !bBound) return 1;
+                                        return 0;
+                                      })
+                                      .map((acc) => {
+                                        const isCurrentlyBoundToThisEmp = acc.id === emp.whatsappAccountId;
+                                        const isBoundToOtherEmp = Boolean(
+                                          acc.boundEmployeeId && acc.boundEmployeeId !== emp.id
+                                        );
+
+                                        return (
+                                          <div
+                                            key={acc.id}
+                                            onClick={() => {
+                                              handleBindWhatsApp(emp.id, acc.id);
+                                              setActiveWaDropdownEmpId(null);
+                                            }}
+                                            className={`p-2 rounded-xl transition-all cursor-pointer flex items-center justify-between gap-2 border ${
+                                              isCurrentlyBoundToThisEmp
+                                                ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950 font-bold'
+                                                : isBoundToOtherEmp
+                                                ? 'bg-slate-50/70 border-slate-200/80 hover:bg-amber-50/60 hover:border-amber-300 text-slate-700'
+                                                : 'bg-white border-slate-100 hover:bg-emerald-50/50 hover:border-emerald-200 text-slate-800'
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                              <div
+                                                className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                                                  isCurrentlyBoundToThisEmp
+                                                    ? 'bg-emerald-600 text-white shadow-2xs'
+                                                    : isBoundToOtherEmp
+                                                    ? 'bg-slate-200 text-slate-600'
+                                                    : 'bg-emerald-100 text-emerald-700'
+                                                }`}
+                                              >
+                                                <MessageSquare className="w-3.5 h-3.5" />
+                                              </div>
+                                              <div className="min-w-0">
+                                                <div className="flex items-center gap-1.5">
+                                                  <span className="font-bold text-xs text-slate-900 truncate">{acc.name}</span>
+                                                  <span
+                                                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                                      acc.status === 'online' ? 'bg-emerald-500' : 'bg-slate-300'
+                                                    }`}
+                                                    title={acc.status === 'online' ? '在线' : '离线'}
+                                                  />
+                                                </div>
+                                                <div className="text-[11px] font-mono text-slate-500 truncate mt-0.5">
+                                                  {acc.phone}
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            {/* Status Indicator / Tag */}
+                                            <div className="shrink-0 text-right">
+                                              {isCurrentlyBoundToThisEmp ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 text-white">
+                                                  <Check className="w-3 h-3" />
+                                                  当前绑定
+                                                </span>
+                                              ) : isBoundToOtherEmp ? (
+                                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-200/90 text-slate-700 font-medium">
+                                                  已绑：{acc.boundEmployeeName}
+                                                </span>
+                                              ) : (
+                                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                                  空闲可用
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                  </div>
+
+                                  {/* Add New WhatsApp Quick Form */}
+                                  {isAddingNewWa ? (
+                                    <div className="p-2.5 border-t border-slate-100 bg-slate-50/90 space-y-2">
+                                      <div className="text-[11px] font-bold text-slate-700">添加 WhatsApp 账号并绑定</div>
+                                      <input
+                                        type="text"
+                                        placeholder="姓名 (如：张三)"
+                                        value={newWaName}
+                                        onChange={(e) => setNewWaName(e.target.value)}
+                                        className="w-full px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs"
+                                      />
+                                      <input
+                                        type="text"
+                                        placeholder="手机号 (如：+86 138 0000 0000)"
+                                        value={newWaPhone}
+                                        onChange={(e) => setNewWaPhone(e.target.value)}
+                                        className="w-full px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-mono"
+                                      />
+                                      <div className="flex items-center justify-end gap-1.5 pt-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => setIsAddingNewWa(false)}
+                                          className="px-2.5 py-1 text-xs text-slate-500 hover:bg-slate-200 rounded-md cursor-pointer"
+                                        >
+                                          取消
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            if (!newWaName.trim() || !newWaPhone.trim()) return;
+                                            const newId = `WA-${String(whatsAppAccounts.length + 1).padStart(3, '0')}`;
+                                            const newAcc: WhatsAppAccount = {
+                                              id: newId,
+                                              name: newWaName.trim(),
+                                              phone: newWaPhone.trim(),
+                                              region: newWaRegion,
+                                              status: 'online',
+                                              boundEmployeeId: emp.id,
+                                              boundEmployeeName: emp.name
+                                            };
+                                            setWhatsAppAccounts((prev) => [...prev, newAcc]);
+                                            handleBindWhatsApp(emp.id, newId);
+                                            setNewWaName('');
+                                            setNewWaPhone('');
+                                            setIsAddingNewWa(false);
+                                            setActiveWaDropdownEmpId(null);
+                                          }}
+                                          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-md cursor-pointer shadow-xs"
+                                        >
+                                          创建并绑定
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="p-2 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between text-[10px] text-slate-400">
+                                      <span>共 {whatsAppAccounts.length} 个账号</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setIsAddingNewWa(true)}
+                                        className="text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-0.5 cursor-pointer"
+                                      >
+                                        <Plus className="w-3 h-3" />
+                                        <span>添加新账号</span>
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </td>
 
-                          {/* 7. 状态：可以操作启用或禁用 */}
-                          <td className="py-3.5 px-3 text-center">
+                          {/* 7. 状态：操作启用或禁用 */}
+                          <td className="py-3.5 pr-6 pl-3 text-center">
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 type="button"
                                 onClick={() => handleToggleEmployeeStatus(emp.id)}
-                                title={isEnabled ? "点击操作：禁用该账号" : "点击操作：启用该账号"}
+                                title={isEnabled ? "点击禁用" : "点击启用"}
                                 className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                                   isEnabled ? 'bg-[#EA3A20]' : 'bg-slate-300'
                                 }`}
@@ -768,22 +1405,6 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                                 {isEnabled ? '启用' : '禁用'}
                               </span>
                             </div>
-                          </td>
-
-                          {/* 8. 操作 */}
-                          <td className="py-3.5 pr-6 pl-2 text-right">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingEmployee(emp);
-                                setIsEmployeeModalOpen(true);
-                              }}
-                              className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-[#EA3A20] hover:bg-red-50 rounded-xl border border-slate-200 hover:border-red-200 transition-colors inline-flex items-center gap-1 cursor-pointer"
-                              title="配置角色与每日算力限额"
-                            >
-                              <Sliders className="w-3.5 h-3.5" />
-                              <span>设置</span>
-                            </button>
                           </td>
 
                         </tr>
@@ -815,7 +1436,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                     type="text"
                     value={roleSearchQuery}
                     onChange={(e) => setRoleSearchQuery(e.target.value)}
-                    placeholder="搜索角色名称、编码或说明..."
+                    placeholder="搜索角色..."
                     className="w-full pl-8.5 pr-8 py-2 rounded-full border border-slate-200 bg-white text-xs placeholder:text-slate-400 focus:outline-none focus:border-[#0F4A47] transition-all"
                   />
                   {roleSearchQuery && (
@@ -830,7 +1451,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
 
                 <div className="text-xs text-slate-500 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span>共 <strong className="text-slate-800 font-mono">{roles.length}</strong> 个系统角色</span>
+                  <span>共 <strong className="text-slate-800 font-mono">{roles.length}</strong> 个角色</span>
                   {roleSearchQuery && (
                     <span className="text-slate-400">(匹配筛选到 {filteredRoles.length} 个)</span>
                   )}
@@ -854,8 +1475,8 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                 <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs border-b border-slate-100 text-slate-600 text-[11px] font-bold">
                   <tr>
                     <th className="py-3.5 px-6 w-56">角色名称</th>
-                    <th className="py-3.5 px-4 min-w-[200px]">角色职责说明</th>
-                    <th className="py-3.5 px-4 min-w-[300px]">菜单功能权限</th>
+                    <th className="py-3.5 px-4 min-w-[200px]">职责描述</th>
+                    <th className="py-3.5 px-4 min-w-[300px]">功能菜单权限</th>
                     <th className="py-3.5 px-4 text-center w-28">关联员工</th>
                     <th className="py-3.5 px-6 text-right w-32">操作</th>
                   </tr>
@@ -864,7 +1485,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                   {filteredRoles.map((role) => {
                     const menuCount = role.permissions.filter((p) => p.view).length;
                     const totalMenu = role.permissions.length;
-                    const isSuperAdmin = role.id === 'ROLE-ADMIN';
+                    const isSuperAdmin = role.id === 'ROLE-ADMIN' || role.roleName === '超级管理员';
 
                     return (
                       <tr
@@ -873,7 +1494,15 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                       >
                         {/* 角色名称 */}
                         <td className="py-4 px-6">
-                          <span className="font-bold text-slate-900 text-sm">{role.roleName}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-sm">{role.roleName}</span>
+                            {isSuperAdmin && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                <Lock className="w-2.5 h-2.5 text-slate-500" />
+                                <span>系统内置</span>
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* 角色职责说明 */}
@@ -932,20 +1561,30 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                         {/* 操作 */}
                         <td className="py-4 px-6 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleEditRole(role)}
-                              className="px-2.5 py-1 text-xs font-bold text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50 rounded-lg cursor-pointer transition-colors"
-                            >
-                              配置权限
-                            </button>
-                            {!isSuperAdmin && (
-                              <button
-                                onClick={() => handleDeleteRole(role.id, role.roleName)}
-                                className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
-                                title="删除角色"
+                            {isSuperAdmin ? (
+                              <span
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-400 bg-slate-100/90 border border-slate-200/80 rounded-lg select-none cursor-not-allowed"
+                                title="内置超级管理员拥有全局最高权限，不支持修改与删除"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                                <Lock className="w-3 h-3 text-slate-400" />
+                                <span>内置最高权限</span>
+                              </span>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => handleEditRole(role)}
+                                  className="px-2.5 py-1 text-xs font-bold text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50 rounded-lg cursor-pointer transition-colors"
+                                >
+                                  配置权限
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteRole(role.id, role.roleName)}
+                                  className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                                  title="删除角色"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>
@@ -965,32 +1604,12 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
               </table>
             </div>
 
-            {/* Table Footer */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
-              <div>
-                提示：新增角色时仅配置<strong>菜单权限</strong>；已有角色可自由调整菜单权限、数据范围与业务操作权限。
-              </div>
-              <div className="font-mono text-[11px] text-slate-400">
-                当前共 {roles.length} 个系统角色
-              </div>
-            </div>
-
           </div>
         )}
 
       </div>
 
-      {/* Modals */}
-      <WeComSyncModal
-        isOpen={isWeComModalOpen}
-        onClose={() => setIsWeComModalOpen(false)}
-        lastSyncTime={lastSyncTime}
-        deptCount={wecomDepts.length}
-        employeeCount={employees.length}
-        onTriggerSync={handleTriggerWeComSync}
-        isSyncing={isSyncing}
-      />
-
+      {/* Role Permission Modal */}
       <RolePermissionModal
         isOpen={isRoleModalOpen}
         onClose={() => {
@@ -1001,15 +1620,6 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
         isNewRole={isCreatingNewRole}
         onSaveRole={handleSaveRole}
         allDepts={wecomDepts.map((d) => d.name)}
-      />
-
-      <EmployeeDetailModal
-        isOpen={isEmployeeModalOpen}
-        onClose={() => setIsEmployeeModalOpen(false)}
-        employee={editingEmployee}
-        roles={roles}
-        initialTab={employeeModalTab}
-        onSaveEmployee={handleSaveEmployee}
       />
 
     </div>

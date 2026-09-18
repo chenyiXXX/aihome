@@ -321,43 +321,29 @@ export function App() {
             />
 
             {/* 7. 数据统计 */}
-            <Route path="/analytics" element={<Navigate to="/analytics/sales" replace />} />
+            <Route path="/analytics" element={<Navigate to="/analytics/agent" replace />} />
             <Route
-              path="/analytics/sales"
+              path="/analytics/agent"
               element={
                 <AnalyticsModule
                   statsData={initialAgentStats}
-                  subView="销售智能体统计"
+                  subView="智能体统计"
                 />
               }
             />
             <Route
-              path="/analytics/marketing"
+              path="/analytics/user"
               element={
                 <AnalyticsModule
                   statsData={initialAgentStats}
-                  subView="推广智能体统计"
+                  subView="用户使用系统统计"
                 />
               }
             />
-            <Route
-              path="/analytics/training"
-              element={
-                <AnalyticsModule
-                  statsData={initialAgentStats}
-                  subView="员工培训统计"
-                />
-              }
-            />
-            <Route
-              path="/analytics/qa"
-              element={
-                <AnalyticsModule
-                  statsData={initialAgentStats}
-                  subView="通用知识库问答统计"
-                />
-              }
-            />
+            <Route path="/analytics/sales" element={<Navigate to="/analytics/agent" replace />} />
+            <Route path="/analytics/marketing" element={<Navigate to="/analytics/agent" replace />} />
+            <Route path="/analytics/training" element={<Navigate to="/analytics/user" replace />} />
+            <Route path="/analytics/qa" element={<Navigate to="/analytics/user" replace />} />
 
             {/* 8. 员工权限 */}
             <Route path="/employee" element={<Navigate to="/employee/list" replace />} />
@@ -408,34 +394,8 @@ export function App() {
             />
 
             {/* 10. 日志与审计 */}
-            <Route path="/audit" element={<Navigate to="/audit/operations" replace />} />
-            <Route
-              path="/audit/operations"
-              element={
-                <AuditLogsModule
-                  logs={initialOperationLogs as any}
-                  subView="操作日志"
-                />
-              }
-            />
-            <Route
-              path="/audit/qa"
-              element={
-                <AuditLogsModule
-                  logs={initialOperationLogs as any}
-                  subView="问答记录"
-                />
-              }
-            />
-            <Route
-              path="/audit/generation"
-              element={
-                <AuditLogsModule
-                  logs={initialOperationLogs as any}
-                  subView="内容生成记录"
-                />
-              }
-            />
+            <Route path="/audit" element={<AuditLogsModule />} />
+            <Route path="/audit/*" element={<AuditLogsModule />} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/pre-sales" replace />} />

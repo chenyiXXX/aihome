@@ -32,11 +32,15 @@ import {
   Search,
   Plus,
   Trash2,
-  X
+  X,
+  History,
+  Download
 } from 'lucide-react';
-import { SystemAgentConfig, SalesAgentItem, AgentSkillParameter, AgentSkill } from '../../../types';
+import { SystemAgentConfig, SalesAgentItem, AgentSkillParameter, AgentSkill, ConfigChangeRecord } from '../../../types';
 import { initialSalesAgents, initialSalesSkills } from '../../../data/salesAgentData';
 import { initialAgentSkills } from '../../../data/mockData';
+import { getAgentChangeHistory, formatNow } from '../../../data/configHistoryData';
+import { ConfigHistoryModal } from './ConfigHistoryModal';
 import { SkillMountModal } from './SkillMountModal';
 
 interface AgentConfigViewProps {
@@ -66,6 +70,9 @@ export const AgentConfigView: React.FC<AgentConfigViewProps> = ({ config, allSki
   // Skill Mount Modal state
   const [isSkillMountModalOpen, setIsSkillMountModalOpen] = useState(false);
   const [mountNotification, setMountNotification] = useState<string | null>(null);
+  const [activeDetailTab, setActiveDetailTab] = useState<'prompt' | 'skills' | 'test' | 'history'>('prompt');
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [historyTargetAgent, setHistoryTargetAgent] = useState<SalesAgentItem | null>(null);
 
   // Top view mode: 'matrix' (7大销售智能体协同矩阵) vs 'global' (全局默认底座参数)
   const [viewMode, setViewMode] = useState<'matrix' | 'global'>('matrix');
@@ -114,13 +121,63 @@ export const AgentConfigView: React.FC<AgentConfigViewProps> = ({ config, allSki
 
   const [savedTip, setSavedTip] = useState(false);
 
+  // 导出当前 Agent 配置包
+  const handleExportAgentConfig = () => {
+    const attachedSkills = allAvailableSkills.filter((s) =>
+      editingAgent.attachedSkillCodes.includes(s.code)
+    );
+    const fullPayload = {
+      exportTime: new Date().toISOString(),
+      agent: editingAgent,
+      attachedSkills,
+      globalFallbackConfig: {
+        geminiModel,
+        temperature,
+        topP,
+        maxOutputTokens,
+        contextRounds,
+        languageMode
+      }
+    };
+    const blob = new Blob([JSON.stringify(fullPayload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${editingAgent.code || 'agent'}_config_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Update selected agent status
   const handleToggleAgentStatus = (agentId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const updated = agentsList.map((ag) => {
       if (ag.id === agentId) {
         const nextStatus: SalesAgentItem['status'] = ag.status === 'active' ? 'inactive' : 'active';
-        return { ...ag, status: nextStatus };
+        const currentHist = getAgentChangeHistory(ag);
+        const newRecord: ConfigChangeRecord = {
+          id: `HIST-AG-${Date.now()}`,
+          targetId: ag.id,
+          targetType: 'agent',
+          targetName: ag.name,
+          operatorName: 'Chen Yi (陈总)',
+          operatorRole: '超级管理员',
+          timestamp: formatNow(),
+          changeType: 'status',
+          changeSummary: nextStatus === 'active' ? '启用智能体接入运行' : '停用智能体接入运行',
+          diffDetails: [
+            {
+              field: '运行状态',
+              before: ag.status === 'active' ? '● 运行中 (active)' : '○ 已停用 (inactive)',
+              after: nextStatus === 'active' ? '● 运行中 (active)' : '○ 已停用 (inactive)'
+            }
+          ]
+        };
+        return {
+          ...ag,
+          status: nextStatus,
+          changeHistory: [newRecord, ...currentHist]
+        };
       }
       return ag;
     });
@@ -138,7 +195,97 @@ export const AgentConfigView: React.FC<AgentConfigViewProps> = ({ config, allSki
 
   // Save changes to current agent
   const handleSaveCurrentAgent = () => {
-    const updated = agentsList.map((ag) => (ag.id === editingAgent.id ? editingAgent : ag));
+    const original = agentsList.find((a) => a.id === editingAgent.id) || selectedAgent;
+    const diffs: Array<{ field: string; before: string; after: string }> = [];
+
+    if (original.systemPrompt !== editingAgent.systemPrompt) {
+      const beforeSample = original.systemPrompt.trim().slice(0, 40) + '...';
+      const afterSample = editingAgent.systemPrompt.trim().slice(0, 40) + '...';
+      diffs.push({
+        field: '系统提示词 (System Prompt)',
+        before: beforeSample,
+        after: afterSample
+      });
+    }
+
+    if (original.geminiModel !== editingAgent.geminiModel) {
+      diffs.push({
+        field: '底座调度模型',
+        before: original.geminiModel,
+        after: editingAgent.geminiModel
+      });
+    }
+
+    if (original.temperature !== editingAgent.temperature) {
+      diffs.push({
+        field: '推理温度 (Temperature)',
+        before: String(original.temperature),
+        after: String(editingAgent.temperature)
+      });
+    }
+
+    if (original.topP !== editingAgent.topP) {
+      diffs.push({
+        field: 'Top-P 采样阈值',
+        before: String(original.topP),
+        after: String(editingAgent.topP)
+      });
+    }
+
+    if (original.maxOutputTokens !== editingAgent.maxOutputTokens) {
+      diffs.push({
+        field: '最大输出 Tokens',
+        before: String(original.maxOutputTokens),
+        after: String(editingAgent.maxOutputTokens)
+      });
+    }
+
+    if (original.contextRounds !== editingAgent.contextRounds) {
+      diffs.push({
+        field: '上下文记忆轮数',
+        before: `${original.contextRounds} 轮`,
+        after: `${editingAgent.contextRounds} 轮`
+      });
+    }
+
+    // Check parameters diff
+    editingAgent.parameters.forEach((param) => {
+      const origParam = original.parameters.find((p) => p.key === param.key);
+      if (origParam && JSON.stringify(origParam.value) !== JSON.stringify(param.value)) {
+        diffs.push({
+          field: `参数: ${param.name}`,
+          before: String(origParam.value),
+          after: String(param.value)
+        });
+      }
+    });
+
+    let currentHistory = getAgentChangeHistory(editingAgent);
+    if (diffs.length > 0) {
+      const isPrompt = diffs.some((d) => d.field.includes('Prompt'));
+      const isModel = diffs.some((d) => d.field.includes('模型'));
+      const newRecord: ConfigChangeRecord = {
+        id: `HIST-AG-${Date.now()}`,
+        targetId: editingAgent.id,
+        targetType: 'agent',
+        targetName: editingAgent.name,
+        operatorName: 'Chen Yi (陈总)',
+        operatorRole: '超级管理员',
+        timestamp: formatNow(),
+        changeType: isPrompt ? 'prompt' : isModel ? 'model' : 'parameter',
+        changeSummary: `修改智能体配置 (${diffs.map((d) => d.field).join('、')})`,
+        diffDetails: diffs
+      };
+      currentHistory = [newRecord, ...currentHistory];
+    }
+
+    const updatedAgent: SalesAgentItem = {
+      ...editingAgent,
+      changeHistory: currentHistory
+    };
+
+    setEditingAgent(updatedAgent);
+    const updated = agentsList.map((ag) => (ag.id === updatedAgent.id ? updatedAgent : ag));
     setAgentsList(updated);
     if (onSave) {
       onSave({ salesAgents: updated });
@@ -149,9 +296,33 @@ export const AgentConfigView: React.FC<AgentConfigViewProps> = ({ config, allSki
 
   // Save mounted skills for editing agent
   const handleSaveMountSkills = (newCodes: string[]) => {
+    const origCodes = editingAgent.attachedSkillCodes;
+    const diffs: Array<{ field: string; before: string; after: string }> = [
+      {
+        field: '挂载技能清单 (attachedSkills)',
+        before: origCodes.length > 0 ? origCodes.join(', ') : '无挂载技能',
+        after: newCodes.length > 0 ? newCodes.join(', ') : '无挂载技能'
+      }
+    ];
+
+    const currentHistory = getAgentChangeHistory(editingAgent);
+    const newRecord: ConfigChangeRecord = {
+      id: `HIST-AG-${Date.now()}`,
+      targetId: editingAgent.id,
+      targetType: 'agent',
+      targetName: editingAgent.name,
+      operatorName: 'Chen Yi (陈总)',
+      operatorRole: '超级管理员',
+      timestamp: formatNow(),
+      changeType: 'skills',
+      changeSummary: `调整挂载技能 (当前挂载 ${newCodes.length} 项 Skill)`,
+      diffDetails: diffs
+    };
+
     const updatedAgent: SalesAgentItem = {
       ...editingAgent,
-      attachedSkillCodes: newCodes
+      attachedSkillCodes: newCodes,
+      changeHistory: [newRecord, ...currentHistory]
     };
     setEditingAgent(updatedAgent);
     const updatedList = agentsList.map((a) => (a.id === updatedAgent.id ? updatedAgent : a));
@@ -347,7 +518,6 @@ Regarding your inquiry on environmental compliance:
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bot className="w-4 h-4 text-[#EA3A20]" />
-                <span className="text-xs font-bold text-slate-900">智能体 2 级分类矩阵</span>
               </div>
               <span className="text-[11px] font-mono text-slate-400">
                 共 {filteredAgents.length} 个智能体
@@ -420,12 +590,21 @@ Regarding your inquiry on environmental compliance:
                             </div>
                             <div className="min-w-0">
                               <div className="font-bold truncate">{agent.name}</div>
-                              <div className="text-[10px] text-slate-400 font-mono truncate">
-                                {agent.category} · {agent.geminiModel.replace('gemini-2.5-', '')}
-                              </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setHistoryTargetAgent(agent);
+                                setIsHistoryModalOpen(true);
+                              }}
+                              title={`查看【${agent.name}】修改记录`}
+                              className="w-5 h-5 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                            >
+                              <History className="w-3 h-3" />
+                            </button>
                             <span
                               className={`w-2 h-2 rounded-full ${
                                 isActive ? 'bg-emerald-500' : 'bg-slate-300'
@@ -443,9 +622,9 @@ Regarding your inquiry on environmental compliance:
         </div>
 
         {/* Right: Detailed Configuration Panel */}
-        <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-6 overflow-y-auto custom-scrollbar shadow-[0_2px_12px_rgba(0,0,0,0.02)] space-y-6">
+        <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-6 overflow-y-auto custom-scrollbar shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col space-y-6">
             {/* Header of Selected Agent */}
-            <div className="flex items-start justify-between gap-4 flex-wrap pb-5 border-b border-slate-100">
+            <div className="flex items-start justify-between gap-4 flex-wrap pb-4 border-b border-slate-100">
               <div className="flex items-start gap-3.5">
                 <div className="w-12 h-12 rounded-2xl bg-[#EA3A20]/10 text-[#EA3A20] flex items-center justify-center shrink-0 shadow-xs">
                   {React.createElement(getAgentIcon(editingAgent.code), { className: 'w-6 h-6' })}
@@ -456,9 +635,6 @@ Regarding your inquiry on environmental compliance:
                     <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-bold">
                       {editingAgent.code}
                     </span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                      {editingAgent.category}
-                    </span>
                     <span
                       className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
                         editingAgent.status === 'active'
@@ -466,406 +642,418 @@ Regarding your inquiry on environmental compliance:
                           : 'bg-slate-100 text-slate-500 border border-slate-200'
                       }`}
                     >
-                      {editingAgent.status === 'active' ? '● 运行中' : '○ 停用状态'}
+                      {editingAgent.status === 'active' ? '● 运行中' : '○ 停用'}
+                    </span>
+                    <span className="text-xs font-medium text-slate-700 bg-slate-100/80 border border-slate-200 px-2.5 py-0.5 rounded-md flex items-center gap-1.5 font-mono">
+                      <Cpu className="w-3 h-3 text-[#EA3A20]" />
+                      <span>
+                        {editingAgent.geminiModel === 'gemini-2.5-flash' && 'Gemini 2.5 Flash'}
+                        {editingAgent.geminiModel === 'gemini-2.5-pro' && 'Gemini 2.5 Pro'}
+                        {editingAgent.geminiModel === 'gemini-2.5-flash-thinking' && 'Gemini 2.5 Flash Thinking'}
+                        {!['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-thinking'].includes(editingAgent.geminiModel) && editingAgent.geminiModel}
+                      </span>
                     </span>
                   </div>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed max-w-3xl">
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed max-w-2xl">
                     {editingAgent.description}
                   </p>
                 </div>
               </div>
 
-              {/* Metrics pill */}
-              <div className="flex items-center gap-4 bg-slate-50 border border-slate-200/80 rounded-2xl p-3 text-xs font-mono">
-                <div>
-                  <span className="text-slate-400 block text-[10px]">24小时吞吐</span>
-                  <span className="font-bold text-slate-800">{editingAgent.throughput24h.toLocaleString()} 询盘</span>
-                </div>
-                <div className="h-6 w-px bg-slate-200" />
-                <div>
-                  <span className="text-slate-400 block text-[10px]">平均延迟</span>
-                  <span className="font-bold text-slate-800">{editingAgent.avgLatencyMs} ms</span>
-                </div>
-                <div className="h-6 w-px bg-slate-200" />
-                <div>
-                  <span className="text-slate-400 block text-[10px]">精准度</span>
-                  <span className="font-bold text-emerald-600">{editingAgent.accuracyRate}</span>
-                </div>
+              {/* Header Actions */}
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleExportAgentConfig}
+                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
+                  title="导出当前 Agent 配置包 (JSON)"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>导出配置包</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSaveCurrentAgent}
+                  className="px-4 py-2.5 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-all active:scale-95"
+                >
+                  <Check className={`w-3.5 h-3.5 ${savedTip ? 'animate-bounce' : ''}`} />
+                  <span>{savedTip ? '保存成功' : '保存修改'}</span>
+                </button>
               </div>
             </div>
 
-            {/* Grid 2 Columns: Model & Hyperparameters + Attached Skills */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Col: Gemini Model & Hyperparameters */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <Cpu className="w-4 h-4 text-[#EA3A20]" />
-                  <span>Gemini 大模型选型与推理超参数</span>
-                </h4>
+            {/* Clean Segmented Tab Navigation for Re-layout */}
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab('prompt')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeDetailTab === 'prompt'
+                    ? 'bg-[#EA3A20] text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200/70 text-slate-600'
+                }`}
+              >
+                <FileCode className="w-3.5 h-3.5" />
+                <span>Prompt</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab('skills')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeDetailTab === 'skills'
+                    ? 'bg-[#EA3A20] text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200/70 text-slate-600'
+                }`}
+              >
+                <Wrench className="w-3.5 h-3.5" />
+                <span>挂载skill ({editingAgent.attachedSkillCodes.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab('test')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeDetailTab === 'test'
+                    ? 'bg-[#EA3A20] text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200/70 text-slate-600'
+                }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>测试</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab('history')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeDetailTab === 'history'
+                    ? 'bg-[#EA3A20] text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200/70 text-slate-600'
+                }`}
+              >
+                <History className="w-3.5 h-3.5" />
+                <span>修改记录 ({getAgentChangeHistory(editingAgent).length})</span>
+              </button>
+            </div>
 
-                {/* Model Selector */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-700">推荐推理模型 (Google GenAI)</label>
-                  <select
-                    value={editingAgent.geminiModel}
-                    onChange={(e) => setEditingAgent({ ...editingAgent, geminiModel: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                  >
-                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (极速毫秒级响应，低功耗高并发)</option>
-                    <option value="gemini-2.5-pro">Gemini 2.5 Pro (深度复杂多模态推理，高精度工艺知识解析)</option>
-                    <option value="gemini-2.5-flash-thinking">
-                      Gemini 2.5 Flash Thinking (思维链深度算价，BOQ与外贸复杂数学推演)
-                    </option>
-                  </select>
-                </div>
+            {/* Tab 1 Content: Prompt (System Prompt Editor + Token / Params) */}
+            {activeDetailTab === 'prompt' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                {/* System Prompt Editor */}
+                <div className="p-5 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <FileCode className="w-4 h-4 text-[#EA3A20]" />
+                      <span>系统核心指令 (System Prompt)</span>
+                    </label>
 
-                {/* Temperature & Top-P */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-600 font-medium">采样温度 (Temperature)</span>
-                      <span className="font-mono font-bold text-[#EA3A20]">{editingAgent.temperature}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.0"
-                      max="1.0"
-                      step="0.05"
-                      value={editingAgent.temperature}
-                      onChange={(e) =>
-                        setEditingAgent({ ...editingAgent, temperature: parseFloat(e.target.value) })
-                      }
-                      className="w-full accent-[#EA3A20]"
-                    />
-                    <span className="text-[10px] text-slate-400 block">
-                      {editingAgent.temperature < 0.2 ? '极低发散，高度确切严谨' : '平衡逻辑与适度语言润色'}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={handleResetAgentPrompt}
+                      className="text-xs text-slate-500 hover:text-[#EA3A20] flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>恢复默认人设</span>
+                    </button>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-600 font-medium">核采样 (Top-P)</span>
-                      <span className="font-mono font-bold text-blue-600">{editingAgent.topP}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="1.0"
-                      step="0.05"
-                      value={editingAgent.topP}
-                      onChange={(e) => setEditingAgent({ ...editingAgent, topP: parseFloat(e.target.value) })}
-                      className="w-full accent-blue-600"
-                    />
-                    <span className="text-[10px] text-slate-400 block">候选词累积概率截断阈值</span>
-                  </div>
+                  <textarea
+                    rows={10}
+                    value={editingAgent.systemPrompt}
+                    onChange={(e) => setEditingAgent({ ...editingAgent, systemPrompt: e.target.value })}
+                    className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-xs font-mono leading-relaxed text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
+                    placeholder="请输入详细的 System Prompt 指令..."
+                  />
                 </div>
 
-                {/* Max Tokens & Context Rounds */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-700">最大单次输出 Token</label>
+                {/* Max Tokens */}
+                <div className="p-5 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-xs font-bold text-slate-900">推理输出参数</h3>
+                  </div>
+                  <div className="space-y-1.5 bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs max-w-md">
+                    <label className="text-xs font-bold text-slate-700">最大单次 Token</label>
                     <input
                       type="number"
                       value={editingAgent.maxOutputTokens}
                       onChange={(e) =>
                         setEditingAgent({ ...editingAgent, maxOutputTokens: parseInt(e.target.value) || 2048 })
                       }
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-700">长会话记忆回溯轮次</label>
-                    <input
-                      type="number"
-                      value={editingAgent.contextRounds}
-                      onChange={(e) =>
-                        setEditingAgent({ ...editingAgent, contextRounds: parseInt(e.target.value) || 15 })
-                      }
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-800"
                     />
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* Right Col: Attached Sales Skills */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5">
-                    <Wrench className="w-4 h-4 text-amber-600" />
-                    <h4 className="text-xs font-bold text-slate-900">
-                      挂载的销售类核心 Skill 库 (已绑定 {editingAgent.attachedSkillCodes.length} 项)
-                    </h4>
-                  </div>
-
-                  {/* Prominent Mount / Manage Button */}
-                  <button
-                    type="button"
-                    onClick={() => setIsSkillMountModalOpen(true)}
-                    className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer hover:scale-[1.02] active:scale-95"
-                    title="点击打开技能挂载弹窗，勾选或解除当前智能体挂载的算法技能"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-amber-700" />
-                    <span>+ 挂载 / 管理技能</span>
-                  </button>
-                </div>
-
-                {mountNotification && (
-                  <div className="px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between animate-in fade-in">
-                    <div className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>{mountNotification}</span>
+            {/* Tab 2 Content: Skills Mounting */}
+            {activeDetailTab === 'skills' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="p-5 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <Wrench className="w-4 h-4 text-amber-600" />
+                      <h3 className="text-xs font-bold text-slate-900">
+                        已挂载 Skill 组件 ({editingAgent.attachedSkillCodes.length})
+                      </h3>
                     </div>
+
                     <button
                       type="button"
-                      onClick={() => setMountNotification(null)}
-                      className="text-emerald-600 hover:text-emerald-800 cursor-pointer"
+                      onClick={() => setIsSkillMountModalOpen(true)}
+                      className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <Plus className="w-3.5 h-3.5 text-amber-700" />
+                      <span>+ 挂载 / 管理技能</span>
                     </button>
                   </div>
-                )}
 
-                <div className="space-y-2.5">
-                  {editingAgent.attachedSkillCodes.length === 0 ? (
-                    <div className="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-6 text-center space-y-2">
-                      <p className="text-xs text-slate-500">当前智能体尚未挂载任何 Skill 工具</p>
+                  {mountNotification && (
+                    <div className="px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>{mountNotification}</span>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setIsSkillMountModalOpen(true)}
-                        className="px-3 py-1.5 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
+                        onClick={() => setMountNotification(null)}
+                        className="text-emerald-600 hover:text-emerald-800 cursor-pointer"
                       >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>立即从算法库挂载 Skill</span>
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                  ) : (
-                    editingAgent.attachedSkillCodes.map((skillCode) => {
-                      const skill = allAvailableSkills.find((s) => s.code === skillCode);
-                      return (
-                        <div
-                          key={skillCode}
-                          className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between gap-3 hover:bg-slate-100/60 transition-colors group"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0 font-bold text-xs">
-                              <Zap className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h5 className="text-xs font-bold text-slate-900 truncate">
-                                  {skill ? skill.name : skillCode}
-                                </h5>
-                                <span className="text-[10px] font-mono text-slate-500 bg-white px-1.5 py-0.2 rounded border border-slate-200">
-                                  {skillCode}
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                                {skill ? skill.description : '专业外贸销售算法组件'}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              已挂载
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleUnmountSkill(skillCode)}
-                              className="text-[11px] px-2 py-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors flex items-center gap-1 cursor-pointer"
-                              title="解除此技能挂载"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span className="hidden sm:inline">解除挂载</span>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })
                   )}
-                </div>
 
-                {/* Custom Agent Specific Parameters */}
-                {editingAgent.parameters && editingAgent.parameters.length > 0 && (
-                  <div className="pt-2 space-y-3">
-                    <h5 className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                      <Sliders className="w-3.5 h-3.5 text-blue-600" />
-                      <span>{editingAgent.name} 专属业务策略参数</span>
-                    </h5>
-                    <div className="space-y-2 bg-slate-50/70 border border-slate-200/80 rounded-2xl p-3">
-                      {editingAgent.parameters.map((param) => (
-                        <div key={param.key} className="flex items-center justify-between gap-4 text-xs py-1">
-                          <div>
-                            <span className="font-medium text-slate-800">{param.name}</span>
-                            <span className="text-[10px] text-slate-400 block">{param.description}</span>
-                          </div>
+                  <div className="space-y-2.5">
+                    {editingAgent.attachedSkillCodes.length === 0 ? (
+                      <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-6 text-center space-y-2">
+                        <p className="text-xs text-slate-500">当前智能体尚未挂载任何 Skill 工具</p>
+                        <button
+                          type="button"
+                          onClick={() => setIsSkillMountModalOpen(true)}
+                          className="px-3 py-1.5 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>立即从算法库挂载 Skill</span>
+                        </button>
+                      </div>
+                    ) : (
+                      editingAgent.attachedSkillCodes.map((skillCode) => {
+                        const skill = allAvailableSkills.find((s) => s.code === skillCode);
+                        return (
+                          <div
+                            key={skillCode}
+                            className="bg-white border border-slate-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0 font-bold">
+                                <Zap className="w-4 h-4" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h5 className="text-xs font-bold text-slate-900 truncate">
+                                    {skill ? skill.name : skillCode}
+                                  </h5>
+                                  <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
+                                    {skillCode}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                                  {skill ? skill.description : '专业外贸销售算法组件'}
+                                </p>
+                              </div>
+                            </div>
 
-                          <div className="shrink-0">
-                            {param.type === 'boolean' && (
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                已挂载
+                              </span>
                               <button
                                 type="button"
-                                onClick={() => handleUpdateAgentParam(param.key, !param.value)}
-                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
-                                  param.value ? 'bg-[#EA3A20]' : 'bg-slate-300'
-                                }`}
+                                onClick={() => handleUnmountSkill(skillCode)}
+                                className="text-[11px] px-2.5 py-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors flex items-center gap-1 cursor-pointer"
+                                title="解除此技能挂载"
                               >
-                                <span
-                                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                                    param.value ? 'translate-x-4.5' : 'translate-x-1'
-                                  }`}
-                                />
+                                <Trash2 className="w-3 h-3" />
+                                <span>解除</span>
                               </button>
-                            )}
-
-                            {param.type === 'number' && (
-                              <div className="flex items-center gap-1">
-                                <input
-                                  type="number"
-                                  value={param.value}
-                                  onChange={(e) =>
-                                    handleUpdateAgentParam(param.key, parseFloat(e.target.value) || 0)
-                                  }
-                                  className="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-mono text-right"
-                                />
-                                {param.unit && <span className="text-[10px] text-slate-500">{param.unit}</span>}
-                              </div>
-                            )}
-
-                            {param.type === 'select' && param.options && (
-                              <select
-                                value={param.value}
-                                onChange={(e) => handleUpdateAgentParam(param.key, e.target.value)}
-                                className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 max-w-[180px]"
-                              >
-                                {param.options.map((opt) => (
-                                  <option key={opt} value={opt}>
-                                    {opt}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        );
+                      })
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* System Prompt Editor */}
-            <div className="space-y-2 pt-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <FileCode className="w-4 h-4 text-[#EA3A20]" />
-                  <span>【{editingAgent.name}】人设与系统核心指令 (System Prompt)</span>
-                </label>
-
-                <button
-                  type="button"
-                  onClick={handleResetAgentPrompt}
-                  className="text-xs text-slate-500 hover:text-[#EA3A20] flex items-center gap-1 cursor-pointer transition-colors"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>恢复出厂预设人设</span>
-                </button>
-              </div>
-
-              <textarea
-                rows={7}
-                value={editingAgent.systemPrompt}
-                onChange={(e) => setEditingAgent({ ...editingAgent, systemPrompt: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-mono leading-relaxed text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                placeholder="请输入详细的 System Prompt 指令..."
-              />
-            </div>
-
-            {/* Interactive Live Sandbox Debugger */}
-            <div className="pt-2 border-t border-slate-100 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-[#EA3A20]" />
-                  <h4 className="text-xs font-bold text-slate-900">
-                    智能体实时交互沙箱调试 (Live Sandbox Tester)
-                  </h4>
                 </div>
-                <span className="text-[11px] text-slate-400">
-                  模拟海外买家发送询盘，即时检验此智能体的推理结论与风控过滤
-                </span>
               </div>
+            )}
 
-              {/* Chat Log Window */}
-              <div className="bg-slate-900 text-slate-100 rounded-2xl p-4 max-h-60 overflow-y-auto custom-scrollbar space-y-3 font-mono text-xs border border-slate-800 shadow-inner">
-                {debugMessages.map((msg, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                      <span
-                        className={`font-bold px-1.5 py-0.2 rounded ${
-                          msg.role === 'user'
-                            ? 'bg-blue-900 text-blue-200'
-                            : msg.role === 'agent'
-                            ? 'bg-[#EA3A20]/30 text-[#EA3A20]'
-                            : 'bg-slate-800 text-slate-400'
-                        }`}
-                      >
-                        {msg.role === 'user' ? 'BUYER' : msg.role === 'agent' ? editingAgent.name : 'SYSTEM'}
-                      </span>
-                      {msg.latencyMs && <span>耗时: {msg.latencyMs}ms</span>}
-                      {msg.tokens && <span>Tokens: {msg.tokens}</span>}
+            {/* Tab 2 Content: Test Sandbox */}
+            {activeDetailTab === 'test' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                {/* Interactive Live Sandbox Debugger */}
+                <div className="p-5 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="w-4 h-4 text-[#EA3A20]" />
+                      <h3 className="text-xs font-bold text-slate-900">
+                        实时沙箱调试
+                      </h3>
                     </div>
-                    <pre className="whitespace-pre-wrap font-sans text-xs text-slate-200 pl-1 leading-relaxed">
-                      {msg.text}
-                    </pre>
+                    <span className="text-[11px] text-slate-400">
+                      模拟询盘输入，实时检验推理与风控结论
+                    </span>
                   </div>
-                ))}
-                {isDebugging && (
-                  <div className="flex items-center gap-2 text-slate-400 text-xs animate-pulse">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#EA3A20]" />
-                    <span>智能体推理思考中...</span>
+
+                  {/* Chat Log Window */}
+                  <div className="bg-slate-900 text-slate-100 rounded-2xl p-4 max-h-60 overflow-y-auto custom-scrollbar space-y-3 font-mono text-xs border border-slate-800 shadow-inner">
+                    {debugMessages.map((msg, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                          <span
+                            className={`font-bold px-1.5 py-0.2 rounded ${
+                              msg.role === 'user'
+                                ? 'bg-blue-900 text-blue-200'
+                                : msg.role === 'agent'
+                                ? 'bg-[#EA3A20]/30 text-[#EA3A20]'
+                                : 'bg-slate-800 text-slate-400'
+                            }`}
+                          >
+                            {msg.role === 'user' ? 'BUYER' : msg.role === 'agent' ? editingAgent.name : 'SYSTEM'}
+                          </span>
+                          {msg.latencyMs && <span>耗时: {msg.latencyMs}ms</span>}
+                          {msg.tokens && <span>Tokens: {msg.tokens}</span>}
+                        </div>
+                        <pre className="whitespace-pre-wrap font-sans text-xs text-slate-200 pl-1 leading-relaxed">
+                          {msg.text}
+                        </pre>
+                      </div>
+                    ))}
+                    {isDebugging && (
+                      <div className="flex items-center gap-2 text-slate-400 text-xs animate-pulse">
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#EA3A20]" />
+                        <span>智能体推理思考中...</span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Preset Test Prompts Chips */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] text-slate-400 font-medium">快速测试用例:</span>
-                {getPresetQueries(editingAgent.code).map((q, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => handleSendDebug(q)}
-                    className="text-[10px] bg-slate-100 hover:bg-[#FFF4F2] hover:text-[#EA3A20] text-slate-700 px-2.5 py-1 rounded-lg transition-colors border border-slate-200/60 cursor-pointer truncate max-w-xs"
-                    title={q}
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
+                  {/* Preset Test Prompts Chips */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] text-slate-400 font-medium">快速测试用例:</span>
+                    {getPresetQueries(editingAgent.code).map((q, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSendDebug(q)}
+                        className="text-[10px] bg-white hover:bg-[#FFF4F2] hover:text-[#EA3A20] text-slate-700 px-2.5 py-1 rounded-lg transition-colors border border-slate-200/60 cursor-pointer truncate max-w-xs"
+                        title={q}
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
 
-              {/* Input & Send Bar */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={debugInput}
-                  onChange={(e) => setDebugInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendDebug()}
-                  placeholder={`给【${editingAgent.name}】发送一条测试消息，按 Enter 发送...`}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleSendDebug()}
-                  disabled={isDebugging || !debugInput.trim()}
-                  className="px-4 py-2 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] disabled:bg-slate-300 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>测试运行</span>
-                </button>
+                  {/* Input & Send Bar */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={debugInput}
+                      onChange={(e) => setDebugInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSendDebug()}
+                      placeholder={`给【${editingAgent.name}】发送一条测试消息，按 Enter 发送...`}
+                      className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleSendDebug()}
+                      disabled={isDebugging || !debugInput.trim()}
+                      className="px-5 py-2.5 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] disabled:bg-slate-300 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>测试运行</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            )}
+
+            {/* Tab 4 Content: History (修改记录) */}
+            {activeDetailTab === 'history' && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                {/* Timeline in tab */}
+                <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                  {getAgentChangeHistory(editingAgent).map((rec, idx) => {
+                    const isLatest = idx === 0;
+                    return (
+                      <div key={rec.id || idx} className="relative group">
+                        {/* Timeline Node */}
+                        <div
+                          className={`absolute -left-6 top-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            isLatest
+                              ? 'bg-emerald-500 border-emerald-200 text-white shadow-xs'
+                              : 'bg-white border-slate-300'
+                          }`}
+                        >
+                          <div className={`w-1.5 h-1.5 rounded-full ${isLatest ? 'bg-white' : 'bg-slate-400'}`} />
+                        </div>
+
+                        {/* Record Box */}
+                        <div className="p-4 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs space-y-2.5 transition-all">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-slate-900 text-xs">{rec.operatorName}</span>
+                              {rec.operatorRole && (
+                                <span className="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 text-slate-600 border border-slate-200">
+                                  {rec.operatorRole}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 font-mono">
+                                <Clock className="w-3 h-3 text-slate-400" />
+                                {rec.timestamp}
+                              </span>
+                              {isLatest && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white shadow-2xs">
+                                  生效中
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="text-xs font-semibold text-slate-800">
+                            {rec.changeSummary}
+                          </div>
+
+                          {rec.diffDetails && rec.diffDetails.length > 0 && (
+                            <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-2.5 text-xs space-y-1.5">
+                              {rec.diffDetails.map((diff, dIdx) => (
+                                <div key={dIdx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
+                                  <span className="font-medium text-slate-600 sm:w-1/3 shrink-0 text-[11px]">
+                                    {diff.field}
+                                  </span>
+                                  <div className="flex-1 flex items-center gap-2">
+                                    <span className="px-1.5 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-800 font-mono text-[11px] truncate max-w-[200px]">
+                                      {diff.before || '空'}
+                                    </span>
+                                    <ArrowRight className="w-3 h-3 text-slate-400 shrink-0" />
+                                    <span className="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-900 font-mono text-[11px] font-bold truncate max-w-[200px]">
+                                      {diff.after || '空'}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
         </div>
+      </div>
 
       {/* Skill Mount Modal */}
       <SkillMountModal
@@ -874,6 +1062,19 @@ Regarding your inquiry on environmental compliance:
         allSkills={allAvailableSkills}
         onClose={() => setIsSkillMountModalOpen(false)}
         onSaveMount={handleSaveMountSkills}
+      />
+
+      {/* Config History Modal */}
+      <ConfigHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => {
+          setIsHistoryModalOpen(false);
+          setHistoryTargetAgent(null);
+        }}
+        targetTitle={historyTargetAgent?.name || editingAgent.name}
+        targetType="agent"
+        targetCode={historyTargetAgent?.code || editingAgent.code}
+        records={historyTargetAgent ? getAgentChangeHistory(historyTargetAgent) : getAgentChangeHistory(editingAgent)}
       />
     </div>
   );

@@ -11,6 +11,7 @@ import {
   KBVersion,
   AgentStatMetric,
   EmployeeItem,
+  WhatsAppAccount,
   WeComDept,
   OrgDeptNode,
   RoleConfig,
@@ -541,6 +542,20 @@ export const initialSessions: SessionItem[] = [
     lastTime: '昨天',
     tags: ['线下对接', '全案高定', '展厅上样', '意向客户'],
     assignedStaff: 'Alex',
+    status: '跟进中'
+  },
+  {
+    id: 'SESS-109',
+    customerName: 'Tariq Al-Mansoor',
+    avatar: 'TA',
+    channel: 'WhatsApp',
+    contactInfo: '+971 50 123 4567',
+    companyName: 'Royal Oasis Hospitality (Dubai)',
+    unreadCount: 1,
+    lastMessage: 'Good morning! Tariq: BS5852 fire rating certificates and container schedule confirmed via WhatsApp.',
+    lastTime: '15:10',
+    tags: ['中东工程', 'WhatsApp专线', '已关联WA账号', '预算充足'],
+    assignedStaff: 'Sophia',
     status: '跟进中'
   }
 ];
@@ -3368,6 +3383,100 @@ export const initialWeComDepts: WeComDept[] = [
   { id: 'fin_center', name: '财务', memberCount: 1, hasChildren: true }
 ];
 
+// Mock WhatsApp Accounts (WhatsApp 业务客服与销售账号池，1对1绑定员工)
+export const initialWhatsAppAccounts: WhatsAppAccount[] = [
+  {
+    id: 'WA-001',
+    name: '陈逸',
+    phone: '+86 138 0013 8001',
+    region: '亚太大客户专线',
+    status: 'online',
+    boundEmployeeId: 'EMP-001',
+    boundEmployeeName: '陈逸',
+    remark: '亚太区战略大客户及工程定制高优先级专线'
+  },
+  {
+    id: 'WA-002',
+    name: '王淑华',
+    phone: '+44 7700 900123',
+    region: '欧洲工程直采',
+    status: 'online',
+    boundEmployeeId: 'EMP-002',
+    boundEmployeeName: '王淑华',
+    remark: '英国及西欧建筑工程、商业项目直采接入'
+  },
+  {
+    id: 'WA-003',
+    name: '卢卡斯',
+    phone: '+1 (213) 555-0192',
+    region: '北美外贸专线',
+    status: 'online',
+    boundEmployeeId: 'EMP-004',
+    boundEmployeeName: '卢卡斯',
+    remark: '北美西海岸橱柜商用询盘主对接号'
+  },
+  {
+    id: 'WA-004',
+    name: '施密特',
+    phone: '+49 151 23456789',
+    region: '德语区商务专线',
+    status: 'online',
+    boundEmployeeId: 'EMP-005',
+    boundEmployeeName: '施密特',
+    remark: '德国、奥地利、瑞士德语客户专属沟通号'
+  },
+  {
+    id: 'WA-005',
+    name: '叶莲娜',
+    phone: '+7 916 123-45-67',
+    region: '东欧海外专线',
+    status: 'online',
+    boundEmployeeId: 'EMP-006',
+    boundEmployeeName: '叶莲娜',
+    remark: '东欧与中亚独联体区域产品及展会答疑'
+  },
+  {
+    id: 'WA-006',
+    name: '哈立德',
+    phone: '+971 50 123 4567',
+    region: '中东大客户专线',
+    status: 'online',
+    remark: '迪拜与沙特高净值别墅酒店工程专用'
+  },
+  {
+    id: 'WA-007',
+    name: '陈美玲',
+    phone: '+65 9123 4567',
+    region: '东南亚商用专线',
+    status: 'online',
+    remark: '新马泰印尼连锁餐饮厨房工程对接'
+  },
+  {
+    id: 'WA-008',
+    name: '杰克',
+    phone: '+61 412 345 678',
+    region: '大洋洲工程专线',
+    status: 'online',
+    remark: '悉尼与墨尔本开发商橱柜工程直供'
+  },
+  {
+    id: 'WA-009',
+    name: '卡洛斯',
+    phone: '+34 612 345 678',
+    region: '西语拉美专线',
+    status: 'offline',
+    remark: '拉美西语及南欧厨电渠道代理专线'
+  },
+  {
+    id: 'WA-010',
+    name: '大卫',
+    phone: '+1 (415) 890-2134',
+    region: '全球展会专线',
+    status: 'online',
+    remark: 'IBS建材展/KBIS厨卫展线索即时沉淀接入'
+  }
+];
+
 // Mock 7.1 & 7.2 Employees & Roles (员工权限 - 对接企业微信通讯录)
 export const initialEmployees: EmployeeItem[] = [
   {
@@ -3387,7 +3496,10 @@ export const initialEmployees: EmployeeItem[] = [
     status: '启用',
     lastActive: '2026-08-17 20:55',
     aiQuotaLimit: 10000,
-    aiQuotaUsed: 1420
+    aiQuotaUsed: 1420,
+    whatsappAccountId: 'WA-001',
+    whatsappPhone: '+86 138 0013 8001',
+    whatsappAccountName: '陈逸'
   },
   {
     id: 'EMP-002',
@@ -3406,7 +3518,10 @@ export const initialEmployees: EmployeeItem[] = [
     status: '启用',
     lastActive: '2026-08-17 20:42',
     aiQuotaLimit: 3000,
-    aiQuotaUsed: 890
+    aiQuotaUsed: 890,
+    whatsappAccountId: 'WA-002',
+    whatsappPhone: '+44 7700 900123',
+    whatsappAccountName: '王淑华'
   },
   {
     id: 'EMP-003',
@@ -3444,7 +3559,10 @@ export const initialEmployees: EmployeeItem[] = [
     status: '启用',
     lastActive: '2026-08-17 16:30',
     aiQuotaLimit: 1500,
-    aiQuotaUsed: 310
+    aiQuotaUsed: 310,
+    whatsappAccountId: 'WA-003',
+    whatsappPhone: '+1 (213) 555-0192',
+    whatsappAccountName: '卢卡斯'
   },
   {
     id: 'EMP-005',
@@ -3463,7 +3581,10 @@ export const initialEmployees: EmployeeItem[] = [
     status: '启用',
     lastActive: '2026-08-17 18:12',
     aiQuotaLimit: 1500,
-    aiQuotaUsed: 430
+    aiQuotaUsed: 430,
+    whatsappAccountId: 'WA-004',
+    whatsappPhone: '+49 151 23456789',
+    whatsappAccountName: '施密特'
   },
   {
     id: 'EMP-006',
@@ -3482,7 +3603,10 @@ export const initialEmployees: EmployeeItem[] = [
     status: '启用',
     lastActive: '2026-08-17 17:05',
     aiQuotaLimit: 2000,
-    aiQuotaUsed: 620
+    aiQuotaUsed: 620,
+    whatsappAccountId: 'WA-005',
+    whatsappPhone: '+7 916 123-45-67',
+    whatsappAccountName: '叶莲娜'
   },
   {
     id: 'EMP-007',

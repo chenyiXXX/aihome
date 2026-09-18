@@ -122,32 +122,18 @@ export const ROUTE_DEFINITIONS: RouteDefinition[] = [
   },
   // 7. 数据统计
   {
-    path: '/analytics/sales',
+    path: '/analytics/agent',
     moduleId: 'analytics',
-    subView: '销售智能体统计',
+    subView: '智能体统计',
     moduleTitle: '数据统计',
-    pageTitle: '销售智能体统计'
+    pageTitle: '智能体统计'
   },
   {
-    path: '/analytics/marketing',
+    path: '/analytics/user',
     moduleId: 'analytics',
-    subView: '推广智能体统计',
+    subView: '用户使用系统统计',
     moduleTitle: '数据统计',
-    pageTitle: '推广智能体统计'
-  },
-  {
-    path: '/analytics/training',
-    moduleId: 'analytics',
-    subView: '员工培训统计',
-    moduleTitle: '数据统计',
-    pageTitle: '员工培训统计'
-  },
-  {
-    path: '/analytics/qa',
-    moduleId: 'analytics',
-    subView: '通用知识库问答统计',
-    moduleTitle: '数据统计',
-    pageTitle: '通用知识库问答统计'
+    pageTitle: '用户使用系统统计'
   },
   // 8. 员工权限
   {
@@ -181,25 +167,11 @@ export const ROUTE_DEFINITIONS: RouteDefinition[] = [
   },
   // 10. 日志与审计
   {
-    path: '/audit/operations',
+    path: '/audit',
     moduleId: 'audit_logs',
-    subView: '操作日志',
+    subView: '日志与审计',
     moduleTitle: '日志与审计',
-    pageTitle: '操作日志'
-  },
-  {
-    path: '/audit/qa',
-    moduleId: 'audit_logs',
-    subView: '问答记录',
-    moduleTitle: '日志与审计',
-    pageTitle: '问答记录'
-  },
-  {
-    path: '/audit/generation',
-    moduleId: 'audit_logs',
-    subView: '内容生成记录',
-    moduleTitle: '日志与审计',
-    pageTitle: '内容生成记录'
+    pageTitle: '日志与审计'
   }
 ];
 

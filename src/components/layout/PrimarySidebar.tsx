@@ -164,8 +164,8 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       id: 'analytics' as ModuleType,
       label: '数据统计',
       icon: PieChart,
-      defaultSubView: '销售智能体统计',
-      subViews: ['销售智能体统计', '推广智能体统计', '员工培训统计', '通用知识库问答统计']
+      defaultSubView: '智能体统计',
+      subViews: ['智能体统计', '用户使用系统统计']
     },
     {
       id: 'employee' as ModuleType,
@@ -185,8 +185,8 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
       id: 'audit_logs' as ModuleType,
       label: '日志与审计',
       icon: FileText,
-      defaultSubView: '操作日志',
-      subViews: ['操作日志', '问答记录', '内容生成记录']
+      defaultSubView: '日志与审计',
+      subViews: []
     }
   ];
 

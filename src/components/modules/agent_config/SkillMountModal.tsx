@@ -26,21 +26,6 @@ interface SkillMountModalProps {
   onSaveMount: (newAttachedSkillCodes: string[]) => void;
 }
 
-const CATEGORY_TABS = [
-  '全部技能',
-  '销售核心技能',
-  '解析与数据',
-  '通信与同步',
-  '画像与枚举',
-  '检索与RAG',
-  '报价与计价',
-  '文档与商业',
-  '风控与合规',
-  '计算与配载',
-  '工程与图纸',
-  '合规与质检'
-] as const;
-
 export const SkillMountModal: React.FC<SkillMountModalProps> = ({
   isOpen,
   agent,
@@ -50,14 +35,12 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
 }) => {
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('全部技能');
 
   // Initialize selected skills when modal opens or agent changes
   useEffect(() => {
     if (isOpen) {
       setSelectedCodes(agent.attachedSkillCodes || []);
       setSearchQuery('');
-      setSelectedCategory('全部技能');
     }
   }, [isOpen, agent]);
 
@@ -71,28 +54,7 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
   };
 
   // Filter skills
-  const SALES_CORE_CODES = [
-    'drawing_boq_parser',
-    'chat_stream_sync',
-    'customer_tagging_enum',
-    'hybrid_rag_search',
-    'quotation_calculation',
-    'commercial_document_gen',
-    'compliance_regex_guardrail',
-    'quote_lifecycle_tracker',
-    'knowledge_review_publish'
-  ];
-
   const filteredSkills = allSkills.filter((s) => {
-    let matchCat = true;
-    if (selectedCategory === '全部技能') {
-      matchCat = true;
-    } else if (selectedCategory === '销售核心技能') {
-      matchCat = SALES_CORE_CODES.includes(s.code);
-    } else {
-      matchCat = s.category === selectedCategory;
-    }
-
     const matchSearch =
       !searchQuery.trim() ||
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -100,7 +62,7 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
       s.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (s.triggerKeywords && s.triggerKeywords.some((kw) => kw.toLowerCase().includes(searchQuery.toLowerCase())));
 
-    return matchCat && matchSearch;
+    return matchSearch;
   });
 
   // Select all currently filtered skills
@@ -144,9 +106,6 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
                   {agent.category}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                勾选或取消勾选要挂载给该智能体的工具库。挂载后智能体可在会话中依据 Prompt 和语义自动触发调用。
-              </p>
             </div>
           </div>
 
@@ -195,23 +154,7 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
             </div>
           </div>
 
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-            {CATEGORY_TABS.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-[#EA3A20] text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+
         </div>
 
         {/* Skills Selection Grid */}
@@ -251,37 +194,17 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                        {skill.category}
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">
-                        {skill.triggerType}
-                      </span>
-                      {isSelected && (
+                    {isSelected && (
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-900">
                           ● 已挂载到该Agent
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
                       {skill.description}
                     </p>
-
-                    {skill.triggerKeywords && skill.triggerKeywords.length > 0 && (
-                      <div className="flex items-center gap-1 flex-wrap pt-0.5">
-                        <span className="text-[10px] text-slate-400">唤起词:</span>
-                        {skill.triggerKeywords.slice(0, 3).map((kw, idx) => (
-                          <span
-                            key={idx}
-                            className="text-[9px] px-1 py-0.2 rounded bg-slate-100 text-slate-500"
-                          >
-                            {kw}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               );

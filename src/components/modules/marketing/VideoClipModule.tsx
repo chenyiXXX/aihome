@@ -1258,11 +1258,11 @@ export const VideoClipModule: React.FC<VideoClipModuleProps> = ({ onNavigateToPl
           {!isRightCollapsed && (
             <div className="w-[440px] xl:w-[480px] bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 overflow-hidden">
               {/* Top Action Bar */}
-              <div className="px-4 py-3 bg-slate-950/90 border-b border-white/10 flex items-center justify-between text-xs shrink-0">
+              <div className="px-4 py-2.5 bg-slate-950 border-b border-white/10 flex items-center justify-between text-xs shrink-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-200">实时渲染预览</span>
-                  <span className="px-2 py-0.5 rounded-full bg-white/10 text-slate-300 text-[10px] font-mono">
-                    {currentVideo.aspectRatio}
+                  <span className="font-bold text-slate-200">视频预览</span>
+                  <span className="px-1.5 py-0.2 rounded bg-white/10 text-slate-400 text-[10px] font-mono">
+                    {currentVideo.aspectRatio} · {currentVideo.durationSeconds}s
                   </span>
                 </div>
 
@@ -1270,63 +1270,41 @@ export const VideoClipModule: React.FC<VideoClipModuleProps> = ({ onNavigateToPl
                   <button
                     type="button"
                     onClick={handleCopyScript}
-                    className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                    title="复制完整分镜口播与运镜脚本"
+                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                    title="复制脚本"
                   >
-                    <Copy className="w-3 h-3" />
-                    <span>{copySuccessToast ? '已复制' : '复制脚本'}</span>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span className="text-[11px]">{copySuccessToast ? '已复制' : '复制脚本'}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={handleSyncToJianying}
                     disabled={isSyncingJianying}
-                    className="px-2.5 py-1 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-[11px] font-bold flex items-center gap-1 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
-                    title="生成剪映草稿工程 (JianYing Draft) 并同步"
+                    className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer"
+                    title="生成剪映草稿并同步"
                   >
                     {isSyncingJianying ? (
-                      <>
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>同步中...</span>
-                      </>
+                      <Loader2 className="w-3 h-3 animate-spin" />
                     ) : (
-                      <>
-                        <Scissors className="w-3 h-3" />
-                        <span>同步到剪映</span>
-                      </>
+                      <Scissors className="w-3 h-3" />
                     )}
+                    <span>同步剪映</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={handleExportVideo}
                     disabled={isExportingVideo}
-                    className="px-3 py-1 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-[11px] font-bold flex items-center gap-1 transition-all shadow-xs cursor-pointer active:scale-95"
+                    className="px-3 py-1.5 rounded-lg bg-[#EA3A20] hover:bg-[#c42810] text-white text-[11px] font-bold flex items-center gap-1 shadow-xs cursor-pointer transition-all active:scale-95"
                   >
                     {isExportingVideo ? (
-                      <>
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>渲染导出中...</span>
-                      </>
+                      <Loader2 className="w-3 h-3 animate-spin" />
                     ) : (
-                      <>
-                        <Download className="w-3 h-3" />
-                        <span>导出 4K MP4</span>
-                      </>
+                      <Download className="w-3 h-3" />
                     )}
+                    <span>导出视频</span>
                   </button>
-
-                  {onNavigateToPlan && (
-                    <button
-                      type="button"
-                      onClick={onNavigateToPlan}
-                      className="px-2.5 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                      title="同步至发布计划排期"
-                    >
-                      <Calendar className="w-3 h-3" />
-                      <span>发布排期</span>
-                    </button>
-                  )}
                 </div>
               </div>
 

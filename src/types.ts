@@ -98,7 +98,7 @@ export interface SessionItem {
   id: string;
   customerName: string;
   avatar: string;
-  channel: '企微' | 'WordPress' | '线下对接' | '企业微信' | string;
+  channel: '企微' | 'WhatsApp' | 'WordPress' | '线下对接' | '企业微信' | string;
   contactInfo?: string; // 手机号/企微ID/WordPress号码
   companyName?: string; // 企业或项目名称
   unreadCount: number;
@@ -383,6 +383,18 @@ export interface WeComDept {
   hasChildren?: boolean;
 }
 
+export interface WhatsAppAccount {
+  id: string;
+  name: string; // 账号名称 / 业务别名
+  phone: string; // 国际区号及电话号码
+  region: string; // 业务归属区域
+  status: 'online' | 'offline'; // 账号连接状态
+  avatar?: string;
+  boundEmployeeId?: string; // 1对1 绑定的员工 ID
+  boundEmployeeName?: string; // 1对1 绑定的员工姓名
+  remark?: string;
+}
+
 export interface EmployeeItem {
   id: string;
   name: string;
@@ -398,10 +410,14 @@ export interface EmployeeItem {
   wecomStatus: '已激活' | '未激活' | '已离职';
   wecomSyncTime?: string;
   role: '超级管理员' | '外贸主管' | '销售业务员' | '推广运营官' | '内容审稿员' | string;
+  roles?: string[]; // 支持绑定多个授权角色
   status: '启用' | '禁用' | '在职 (正常)' | '已禁用';
   lastActive: string;
   aiQuotaLimit: number; // 每日 AI 算力限额
   aiQuotaUsed: number;
+  whatsappAccountId?: string; // 绑定的 WhatsApp 账号 ID (1对1)
+  whatsappPhone?: string; // 绑定的 WhatsApp 电话号码
+  whatsappAccountName?: string; // 绑定的 WhatsApp 账号名称
 }
 
 export type DataScopeType = 'all' | 'dept_and_sub' | 'dept_only' | 'self_only' | 'custom';
@@ -411,7 +427,7 @@ export interface DataPermissionConfig {
   scopeLabel: string;
   customDepts?: string[];
   customRegions?: string[]; // e.g. ['北美市场', '欧洲市场', '中东与海湾', '澳洲与大洋洲']
-  maskCustomerContact: boolean; // 客户电话/邮箱/WhatsApp脱敏保护
+  maskCustomerContact: boolean; // 客户电话/邮箱/WordPress脱敏保护
   maskCostPrice: boolean; // 出厂成本与底价毛利脱敏
 }
 
@@ -465,6 +481,32 @@ export type SalesAgentCode =
   | 'qc_compliance_agent'
   | 'aftersales_troubleshooting_agent';
 
+export interface ConfigChangeRecord {
+  id: string;
+  targetId: string;
+  targetType: 'agent' | 'skill';
+  targetName: string;
+  operatorName: string;
+  operatorRole?: string;
+  timestamp: string;
+  changeType: 'prompt' | 'model' | 'parameter' | 'status' | 'skills' | 'files' | 'trigger' | 'general';
+  changeSummary: string;
+  diffDetails?: Array<{
+    field: string;
+    before: string;
+    after: string;
+  }>;
+  ipAddress?: string;
+  fileDiffs?: Array<{
+    fileName: string;
+    oldContent?: string;
+    newContent?: string;
+    changeType?: 'modified' | 'added' | 'deleted';
+  }>;
+  oldFilesSnapshot?: Array<{ name: string; content: string; isMain?: boolean }>;
+  newFilesSnapshot?: Array<{ name: string; content: string; isMain?: boolean }>;
+}
+
 export interface SalesAgentItem {
   id: string;
   name: string;
@@ -486,6 +528,7 @@ export interface SalesAgentItem {
   pipelineOrder: number;
   parameters: AgentSkillParameter[];
   iconName: string;
+  changeHistory?: ConfigChangeRecord[];
 }
 
 export interface AgentSkillParameter {
@@ -533,6 +576,8 @@ export interface AgentSkill {
   successRate: string;
   avgLatencyMs: number;
   isCustom?: boolean;
+  files?: Array<{ name: string; content: string; isMain?: boolean }>;
+  changeHistory?: ConfigChangeRecord[];
 }
 
 export interface SystemAgentConfig {

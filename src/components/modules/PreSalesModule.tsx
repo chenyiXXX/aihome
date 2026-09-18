@@ -83,7 +83,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
     navigator.clipboard.writeText(phone);
     setCopiedPhoneId(id || phone);
     setTimeout(() => setCopiedPhoneId(null), 2000);
-    showToast(`WhatsApp 号码 ${phone} 已复制`);
+    showToast(`WordPress 号码 ${phone} 已复制`);
   };
 
   // Helper to parse inquiry date
@@ -211,10 +211,10 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
   const handleBatchExport = () => {
     if (selectedRows.length > 0) {
       const itemsToExport = inquiriesList.filter((item) => selectedRows.includes(item.id));
-      exportInquiriesToExcel(itemsToExport, `HomeCraft_WhatsApp已勾选询盘_${itemsToExport.length}条`);
+      exportInquiriesToExcel(itemsToExport, `HomeCraft_WordPress已勾选询盘_${itemsToExport.length}条`);
       showToast(`已成功导出勾选的 ${itemsToExport.length} 位客户询盘到 Excel！`);
     } else {
-      exportInquiriesToExcel(filteredInquiries, `HomeCraft_WhatsApp询盘表_共${filteredInquiries.length}条`);
+      exportInquiriesToExcel(filteredInquiries, `HomeCraft_WordPress询盘表_共${filteredInquiries.length}条`);
       showToast(`已成功导出当前筛选的全部 ${filteredInquiries.length} 条询盘数据到 Excel！`);
     }
   };
@@ -505,7 +505,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                             {item.inquiryNo || item.id}
                           </td>
 
-                          {/* Buyer & WhatsApp Phone */}
+                          {/* Buyer & WordPress Phone */}
                           <td className="py-3.5 px-3">
                             <div className="min-w-[140px]">
                               <div className="font-bold text-slate-900 truncate">
@@ -514,7 +514,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                               <div
                                 onClick={(e) => handleCopyPhone(e, item.contactNumber, item.id)}
                                 className="text-[11px] text-emerald-700 font-mono font-semibold flex items-center gap-1 mt-0.5 hover:text-emerald-800"
-                                title="点击复制 WhatsApp 号码"
+                                title="点击复制 WordPress 号码"
                               >
                                 <MessageCircle className="w-3 h-3 text-emerald-600 shrink-0" />
                                 <span>{item.contactNumber}</span>
@@ -537,9 +537,6 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
                             <div className="text-slate-800 font-mono text-[11px] font-semibold">
                               {item.createdAt || item.receivedAt}
                             </div>
-                            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-medium">
-                              WhatsApp进线
-                            </span>
                           </td>
 
                           {/* Category & Requirements */}

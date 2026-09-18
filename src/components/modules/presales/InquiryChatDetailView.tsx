@@ -122,9 +122,9 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
               <h2 className="text-sm font-bold text-slate-900">
                 {inquiry.buyerName}
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                WhatsApp 专线
+                独立站官方通道
               </span>
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5">
@@ -148,7 +148,7 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
       {/* 2. Main Two-Column View: Left Chat Stream, Right Customer & AI Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         
-        {/* Left: WhatsApp Chat Transcript Container (7 cols) */}
+        {/* Left: WordPress Chat Transcript Container (7 cols) */}
         <div className="lg:col-span-7 bg-white border border-slate-100 rounded-2xl p-4.5 shadow-xs flex flex-col h-[740px]">
           
           {/* Chat Stream Header */}
@@ -167,7 +167,7 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-400">
-                  WhatsApp 在线接待记录
+                  独立站在线接待记录
                 </span>
               </div>
             </div>
@@ -179,10 +179,10 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
 
           {/* Chat Messages List */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-4 bg-[#F8F9FA] rounded-2xl my-3 border border-slate-100">
-            {/* WhatsApp Date Divider */}
+            {/* Date Divider */}
             <div className="flex justify-center">
               <span className="text-[10px] bg-white border border-slate-200 text-slate-500 px-3 py-0.5 rounded-full shadow-2xs font-mono">
-                {inquiry.createdAt ? inquiry.createdAt.split(' ')[0] : '2026-08-17'} · WhatsApp Business 接入记录
+                {inquiry.createdAt ? inquiry.createdAt.split(' ')[0] : '2026-08-17'} · 官方网站接入记录
               </span>
             </div>
 
@@ -318,7 +318,7 @@ export const InquiryChatDetailView: React.FC<InquiryChatDetailViewProps> = ({
                 <span className="font-mono text-slate-700">{inquiry.email || '未填'}</span>
               </div>
 
-              {/* WhatsApp Contact with Copy */}
+              {/* WordPress Contact with Copy */}
               <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 flex items-center justify-between mt-1">
                 <div className="flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-emerald-600" />

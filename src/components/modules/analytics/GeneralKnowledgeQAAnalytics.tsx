@@ -310,7 +310,7 @@ export const GeneralKnowledgeQAAnalytics: React.FC = () => {
             </span>
           </div>
           <p className="text-[11px] text-slate-400">
-            涵盖售前官网/WhatsApp机器人、销售业务工作台及内部自查
+            涵盖售前官网/WordPress机器人、销售业务工作台及内部自查
           </p>
 
           <div className="space-y-3 pt-2">

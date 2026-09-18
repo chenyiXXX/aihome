@@ -48,7 +48,7 @@ export const SkillSandboxModal: React.FC<SkillSandboxModalProps> = ({ skill, isO
       case 'chat_stream_sync':
         return JSON.stringify(
           {
-            channel: 'whatsapp',
+            channel: 'wordpress',
             senderId: '+1 (415) 890-2194',
             recipientSession: 'SESSION-WHATSAPP-NA-8092',
             streamChunk: 'We can definitely provide CARB P2 certified plywood with PUR laser edge banding for your project.',
@@ -209,7 +209,7 @@ export const SkillSandboxModal: React.FC<SkillSandboxModalProps> = ({ skill, isO
         case 'chat_stream_sync':
           resultData = {
             status: 'STREAM_CONNECTED',
-            channel: 'WhatsApp Business API Gateway',
+            channel: 'WordPress Business API Gateway',
             sessionLatencyMs: 38,
             framesTransferred: 6,
             typingStatus: 'TYPING_SIMULATED',

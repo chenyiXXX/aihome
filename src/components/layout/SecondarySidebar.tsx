@@ -374,36 +374,20 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
         return (
           <div className="space-y-1">
             <button
-              onClick={() => onSelectSubView('销售智能体统计')}
+              onClick={() => onSelectSubView('智能体统计')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '销售智能体统计' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+                subView === '智能体统计' ? 'bg-[#FFF4F2] text-[#EA3A20] font-bold' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              销售智能体统计
+              智能体统计
             </button>
             <button
-              onClick={() => onSelectSubView('推广智能体统计')}
+              onClick={() => onSelectSubView('用户使用系统统计')}
               className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '推广智能体统计' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
+                subView === '用户使用系统统计' ? 'bg-[#FFF4F2] text-[#EA3A20] font-bold' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              推广智能体统计
-            </button>
-            <button
-              onClick={() => onSelectSubView('员工培训统计')}
-              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '员工培训统计' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              员工培训统计
-            </button>
-            <button
-              onClick={() => onSelectSubView('通用知识库问答统计')}
-              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '通用知识库问答统计' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              通用知识库问答统计
+              用户使用系统统计
             </button>
           </div>
         );
