@@ -62,7 +62,8 @@ import {
   Download,
   Package
 } from 'lucide-react';
-import { SessionItem, ChatMessage, ScriptItem } from '../../types';
+import { SessionItem, ChatMessage, ScriptItem, QuotationRequirementConfirmData, GeneratedQuotationCardData } from '../../types';
+import { QuotationConfirmCard, GeneratedQuotationCard } from './sales/QuotationChatCards';
 import { initialEmployees, initialWhatsAppAccounts } from '../../data/mockData';
 import { useVoiceToText } from '../../hooks/useVoiceToText';
 import { VoiceInputBanner } from '../common/VoiceInputBanner';
@@ -70,11 +71,11 @@ import { useChatAttachment } from '../../hooks/useChatAttachment';
 import { ChatAttachmentDropZone } from '../common/ChatAttachmentDropZone';
 import { ImagePreviewModal } from '../common/ImagePreviewModal';
 
-// External WeCom / WordPress Chat Model
+// External WeCom Chat Model
 export interface ExternalSocialChat {
   id: string;
   name: string;
-  channel: '企微' | 'WordPress';
+  channel: '企微';
   type: 'personal' | 'group';
   memberCount?: number;
   participantsDesc?: string;
@@ -232,94 +233,6 @@ export const mockWeComChats: ExternalSocialChat[] = [
   }
 ];
 
-export const mockWordPressChats: ExternalSocialChat[] = [
-  {
-    id: 'wa-1',
-    name: 'David Miller',
-    channel: 'WordPress',
-    type: 'personal',
-    subtitle: 'Apex Architecture (Miami, US) · +1 (305) 982-3401',
-    lastMessage: 'David: Can you supply customized oak veneer fluted panels? Budget $80k.',
-    lastTime: '11:42',
-    unread: 1,
-    defaultCompany: 'Apex Architecture (Miami Penthouse)',
-    defaultPhone: '+1 (305) 982-3401',
-    recommendedTags: ['外贸大单', 'WordPress', '私宅别墅', '待打样', '预算充足'],
-    chatHistorySnippet: `[WordPress Direct Chat with David Miller]\nDavid: Hello Franklin, saw your booth at KBIS. Can you supply customized oak veneer fluted panels for our Miami penthouse project? Total ceiling height 3.2m, need seamless joint detailing. Budget is around $80,000 USD for the wood package.\nFranklin Jr: Hi David! Absolutely. We produce 3.2m continuous fluted panels with tongue-and-groove joint profile. We can express ship a master sample box to Florida tomorrow.`
-  },
-  {
-    id: 'wa-2',
-    name: 'Dubai Villa 45 Joinery Project Group',
-    channel: 'WordPress',
-    type: 'group',
-    memberCount: 8,
-    participantsDesc: 'Tariq Al-Mansoor, Project Director, Sophia, QA Engineer',
-    subtitle: '8 participants · Royal Oasis Hospitality & Pinai Joinery',
-    lastMessage: 'Tariq: BS5852 fire rating certificates and 12x40HQ schedule confirmed.',
-    lastTime: '08:30',
-    defaultCompany: 'Royal Oasis Hospitality (Dubai)',
-    defaultPhone: '+971 50 123 4567',
-    recommendedTags: ['外贸大单', '客户群聊', '酒店工程', '待打样', '工期紧急'],
-    chatHistorySnippet: `[WordPress Group: Dubai Villa 45 Joinery Project]\nTariq Al-Mansoor: Good morning team. We are sourcing customized joinery and fire-rated wall panels for a 45-villa resort in Palm Jumeirah. All woodwork must meet BS5852 standard with PVD titanium brass trims. Total volume around 12x 40HQ containers.\nFranklin Jr: Good morning Tariq. Master samples and test certifications are dispatched today via DHL express.`
-  },
-  {
-    id: 'wa-3',
-    name: 'Marcus Sterling',
-    channel: 'WordPress',
-    type: 'personal',
-    subtitle: 'Mayfair Luxury Estates (London, UK) · +44 20 7946 0912',
-    lastMessage: 'Marcus: Quotation approved for Kensington townhouses, sending deposit.',
-    lastTime: '昨天',
-    defaultCompany: 'Mayfair Luxury Estates',
-    defaultPhone: '+44 20 7946 0912',
-    recommendedTags: ['外贸大单', 'WordPress', '全案高定', '预算充足'],
-    chatHistorySnippet: `[WordPress Direct Chat with Marcus Sterling]\nMarcus: Hi Franklin, we reviewed your $120,000 proposal for the 6 townhouses in Kensington. Board approved the PET super-matte finish.\nFranklin Jr: Wonderful news Marcus. We will prepare the formal proforma invoice and shop drawings immediately.`
-  },
-  {
-    id: 'wa-4',
-    name: 'Sydney Coastal Residence Fitout',
-    channel: 'WordPress',
-    type: 'group',
-    memberCount: 4,
-    participantsDesc: 'Oliver Chen (Developer), BuildCo Australia, Sales Team',
-    subtitle: '4 participants · Oliver Chen, Interior Contractor, Pinai Sales',
-    lastMessage: 'Oliver: Please share the aluminum frame invisible door catalog and pricing.',
-    lastTime: '周二',
-    defaultCompany: 'Sydney Coastal Villa Project',
-    defaultPhone: '+61 2 9876 5432',
-    recommendedTags: ['外贸大单', '客户群聊', '隐形门系统', '待打样'],
-    chatHistorySnippet: `[WordPress Group: Sydney Coastal Residence Fitout]\nOliver Chen: Hey guys, we need 18 sets of floor-to-ceiling invisible doors with concealed hinges for the Vaucluse villa.\nFranklin Jr: Hi Oliver, catalog and CAD drawings sent to your email. Aluminum core structure guarantees no warping up to 3.0 meters.`
-  },
-  {
-    id: 'wa-5',
-    name: 'Elena Rostova',
-    channel: 'WordPress',
-    type: 'personal',
-    subtitle: 'Alpine Chalet Interiors (Zurich, CH) · +41 44 234 5678',
-    lastMessage: 'Elena: We require natural smoked larix panels for ski resort chalets.',
-    lastTime: '昨天',
-    defaultCompany: 'Alpine Luxury Chalet Project',
-    defaultPhone: '+41 44 234 5678',
-    recommendedTags: ['外贸大单', 'WordPress', '酒店工程', '待打样'],
-    chatHistorySnippet: `[WordPress Direct Chat with Elena Rostova]\nElena: Franklin, our Swiss ski resort requires alpine rustic smoked wood panels with Class B-s1 fire certification.\nFranklin Jr: Hi Elena, we have tested smoked larix veneers ready in warehouse, express shipping samples to Zurich.`
-  },
-  {
-    id: 'wa-6',
-    name: 'Singapore Sentosa Cove Penthouse Coordination',
-    channel: 'WordPress',
-    type: 'group',
-    memberCount: 6,
-    participantsDesc: 'Kelvin Tan, Lead Architect, Pinai Project Lead',
-    subtitle: '6 participants · Kelvin Tan, Lead Architect, Pinai Engineering',
-    lastMessage: 'Kelvin: Humidity resistance test approved, ready for bulk container shipment.',
-    lastTime: '3天前',
-    defaultCompany: 'Sentosa Cove Waterfront Villa',
-    defaultPhone: '+65 6789 0123',
-    recommendedTags: ['外贸大单', '客户群聊', '全案高定', '预算充足'],
-    chatHistorySnippet: `[WordPress Group: Sentosa Cove Penthouse Coordination]\nKelvin Tan: Tropical climate durability is critical for Sentosa waterfront. The PUR edge-banded PET panels showed zero peeling after 72h steam test.\nFranklin Jr: Thank you Kelvin! All cabinets will use zero-formaldehyde PUR adhesive and marine-grade plywood substrates.`
-  }
-];
-
 interface InSalesModuleProps {
   sessions: SessionItem[];
   chatMessages: ChatMessage[];
@@ -335,9 +248,16 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   onOpenAddScriptDrawer
 }) => {
   const [sessionList, setSessionList] = useState<SessionItem[]>(initialSessionsList);
-  // Default to the first session so list and detail are immediately visible together
+  // Default to the first session of the default active tab (企微) so list and detail are immediately visible and selected
   const [activeSession, setActiveSession] = useState<SessionItem | null>(() => {
-    return initialSessionsList && initialSessionsList.length > 0 ? initialSessionsList[0] : null;
+    if (!initialSessionsList || initialSessionsList.length === 0) return null;
+    const firstMatched =
+      initialSessionsList.find(
+        (s) => (s.channel === '企微' || s.channel === '企业微信') && s.status === '跟进中'
+      ) ||
+      initialSessionsList.find((s) => s.channel === '企微' || s.channel === '企业微信') ||
+      initialSessionsList[0];
+    return firstMatched || null;
   });
   const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(false);
   const [isRightProfileCollapsed, setIsRightProfileCollapsed] = useState<boolean>(false);
@@ -497,7 +417,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   };
 
   const [profileTab, setProfileTab] = useState<'history' | 'tags' | 'assets' | 'knowledge'>('history');
-  const [activeTab, setActiveTab] = useState<'企微' | 'WhatsApp' | 'WordPress' | '线下对接'>('企微');
+  const [activeTab, setActiveTab] = useState<'企微' | 'WhatsApp' | '线下对接'>('企微');
   const [statusFilter, setStatusFilter] = useState<string>('跟进中');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -511,7 +431,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
 
   // Create Session Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newChannel, setNewChannel] = useState<'企微' | 'WhatsApp' | 'WordPress' | '线下对接'>('企微');
+  const [newChannel, setNewChannel] = useState<'企微' | 'WhatsApp' | '线下对接'>('企微');
   const [newCustomerName, setNewCustomerName] = useState('');
   const [newCompanyName, setNewCompanyName] = useState('');
   const [newContactInfo, setNewContactInfo] = useState('');
@@ -699,6 +619,138 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   const [quoteLeadTime, setQuoteLeadTime] = useState<string>('25~30 工作日 (确认图纸与色板后)');
   const [quoteExportSuccess, setQuoteExportSuccess] = useState<string | null>(null);
 
+  // 销售确认卡片后，AI 立即生成正式报价单 (Proforma Invoice / PI)
+  const handleConfirmQuotationDemand = (cardId: string, updatedData?: QuotationRequirementConfirmData) => {
+    // 1. 将原卡片状态置为已核准确认
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.quoteConfirmData && m.quoteConfirmData.id === cardId) {
+          return {
+            ...m,
+            quoteConfirmData: {
+              ...(updatedData || m.quoteConfirmData),
+              status: 'confirmed',
+              confirmedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+          };
+        }
+        return m;
+      })
+    );
+
+    // 2. 插入 AI 正在核算与拆单中的状态
+    const aiQuoteGenId = `msg-ai-quote-gen-${Date.now()}`;
+    const generatingMsg: ChatMessage = {
+      id: aiQuoteGenId,
+      sessionId: activeSession ? activeSession.id : 'all',
+      sender: 'ai_copilot',
+      content: '已收到您的需求确认指令，正在调取 BOM 拆单清单、计算装柜体积 (CBM) 并生成正式 Proforma Invoice (PI)...',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isGenerating: true,
+      generationTimeMs: 0
+    };
+    setMessages((prev) => [...prev, generatingMsg]);
+
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === aiQuoteGenId ? { ...m, generationTimeMs: Date.now() - startTime } : m))
+      );
+    }, 100);
+
+    // 3. 1.2秒后生成正式报价单卡片
+    setTimeout(() => {
+      clearInterval(timer);
+      const targetData = updatedData;
+      const quoteNo = `PI-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(10 + Math.random() * 90)}`;
+      const totalAmount = targetData?.totalEstimatedAmount || 78500;
+      const depositAmount = Math.round(totalAmount * 0.3);
+      const balanceAmount = totalAmount - depositAmount;
+
+      const items = targetData?.productItems?.map((p) => ({
+        id: p.id,
+        name: p.name,
+        spec: p.spec,
+        qty: p.qty,
+        unit: p.unit,
+        price: p.estimatedPrice,
+        subtotal: Math.round(p.qty * p.estimatedPrice)
+      })) || [
+        {
+          id: 'qi-1',
+          name: '主厨现代极简橱柜定制 (含中岛台)',
+          spec: '进口爱格板W1000 + 45°斜切无拉手 + 纯白岩板台面 + RAL 5004 海军蓝哑光烤漆',
+          qty: 12.5,
+          unit: '延米',
+          price: 680,
+          subtotal: 8500
+        },
+        {
+          id: 'qi-2',
+          name: '主卧实木步入式衣帽间系统',
+          spec: '多层实木高定柜体 + 铝框茶玻门 + 嵌入式暖光感应灯带',
+          qty: 24,
+          unit: '㎡',
+          price: 450,
+          subtotal: 10800
+        },
+        {
+          id: 'qi-3',
+          name: '奥地利百隆 (Blum) 原装阻尼五金系统',
+          spec: '集成顶配阻尼缓冲铰链 48只 + 豪华骑马抽屉 12套',
+          qty: 1,
+          unit: '套',
+          price: 1850,
+          subtotal: 1850
+        }
+      ];
+
+      const genData: GeneratedQuotationCardData = {
+        quoteNo,
+        customerName: targetData?.customerName || (activeSession?.customerName || 'David Miller'),
+        companyName: targetData?.companyName || (activeSession?.companyName || 'Apex Architecture & Interiors LLC'),
+        projectName: targetData?.projectName || '3 套加州独立别墅高定全屋工程',
+        tradeTerm: targetData?.tradeTerm || 'CIF Los Angeles Port',
+        currency: targetData?.currency || 'USD',
+        items,
+        totalAmount,
+        depositPercent: 30,
+        depositAmount,
+        balanceAmount,
+        leadTime: targetData?.leadTime || '25~30 工作日 (确认图纸与色板后)',
+        validDays: 30,
+        cbmEstimate: 42.5,
+        containerLoading: '1 × 40HQ 高柜 (装柜利用率 62.5%)',
+        createdAt: new Date().toLocaleDateString('zh-CN'),
+        salesPitchEn: `Dear David,\n\nFollowing your confirmation of the project specifications (including the RAL 5004 Navy Blue island, walnut walk-in wardrobe, and Blum hardware setup), please find our formal Proforma Invoice (${quoteNo}) attached for your review.\n\nKey Highlights:\n1. Total Contract Amount (CIF Los Angeles Port): $${totalAmount.toLocaleString()} USD\n2. 30% Deposit: $${depositAmount.toLocaleString()} USD (secures factory production slot and locks raw material batch pricing)\n3. 70% Balance: $${balanceAmount.toLocaleString()} USD payable against B/L copy\n4. Guaranteed Production Lead Time: 25-30 working days with ISTA 3A export crating.\n\nPlease let us know if you would like us to reserve the dedicated production line for this order today.\n\nBest regards,\nPA Kitchen Export Team`,
+        salesPitchZh: `已为您自动排单并生成正式形式发票 (${quoteNo})：\n• 报价总额: $${totalAmount.toLocaleString()} USD (CIF 洛杉矶港)\n• 30% 首期定金: $${depositAmount.toLocaleString()} USD，用于锁定板材排产与色板实物打样\n• 尾款: $${balanceAmount.toLocaleString()} USD，出厂前提供 1:1 预组装视频验收\n• 附带中英文对客报价邮件话术，支持一键复制直接发送给客户。`
+      };
+
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id === aiQuoteGenId) {
+            return {
+              ...m,
+              isGenerating: false,
+              content: `### 📄 正式外贸报价单 (Proforma Invoice) 已生成完毕\n\n已根据您刚刚核准的客户定制需求清单与设计图纸，生成正式单据 **${quoteNo}**。报价总额 **$${totalAmount.toLocaleString()} USD**，预估海运体积 **42.5 CBM**。详情请查阅下方卡片：`,
+              generatedQuoteData: genData,
+              citations: [
+                {
+                  id: 'kb-pi-01',
+                  title: '《外贸工程高定报价与 PI 签发审核规范》',
+                  version: 'v2.2',
+                  category: '商务合规指南',
+                  excerpt: '财务条款：外贸大单统一执行 30% T/T 定金锁定汇率与原材料 BOM 成本，出厂前提供 1:1 试装视频质检。'
+                }
+              ]
+            };
+          }
+          return m;
+        })
+      );
+    }, 1200);
+  };
+
   const handleSendMessage = (textToSend?: string) => {
     const text = textToSend || inputMessage;
     const hasAttachments = pendingAttachments.length > 0;
@@ -734,6 +786,20 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     setSelectedQuoteIds([]);
     setPendingQuotedMessages([]);
 
+    // Check if sales user is asking for a quotation / PI
+    const normalizedText = text.toLowerCase();
+    const isQuoteDemand = (
+      text.includes('报价') ||
+      normalizedText.includes('pi') ||
+      text.includes('形式发票') ||
+      normalizedText.includes('quote') ||
+      normalizedText.includes('quotation') ||
+      text.includes('出单') ||
+      text.includes('核价') ||
+      text.includes('算价') ||
+      text.includes('估价')
+    );
+
     // Mock AI Generating State
     const aiMsgId = `msg-ai-${Date.now()}`;
     const aiGeneratingMsg: ChatMessage = {
@@ -760,6 +826,93 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
       setMessages((prev) => 
         prev.map(m => {
           if (m.id === aiMsgId) {
+            // If sales requested a quotation, generate the interactive confirmation card!
+            if (isQuoteDemand) {
+              const confirmCardData: QuotationRequirementConfirmData = {
+                id: `qc-${Date.now()}`,
+                status: 'pending_confirm',
+                customerName: activeSession.customerName || 'David Miller',
+                companyName: activeSession.companyName || 'Apex Architecture & Interiors LLC',
+                projectName: '加州现代奢华独栋别墅全屋定制工程 (California Villa High-End Project)',
+                tradeTerm: 'CIF Los Angeles Port',
+                currency: 'USD',
+                designDrawings: [
+                  {
+                    name: 'Miami_Villa_Kitchen_Cabinet_v2.dwg',
+                    size: '4.8 MB',
+                    type: 'dwg',
+                    tag: 'CAD 拆单深化图'
+                  },
+                  {
+                    name: 'Island_NavyBlue_RAL5004_Render.jpg',
+                    size: '3.2 MB',
+                    type: 'image',
+                    tag: '3D 效果图'
+                  },
+                  {
+                    name: 'Master_WalkIn_Wardrobe_Renderings.pdf',
+                    size: '12.4 MB',
+                    type: 'pdf',
+                    tag: '施工节点大样'
+                  }
+                ],
+                productItems: [
+                  {
+                    id: 'item-1',
+                    category: '橱柜工程',
+                    name: '现代意式极简全屋定制橱柜 (含中岛台)',
+                    spec: '进口爱格板 W1000 + 45°斜切无拉手 + 纯白岩板台面 + 岛台指定 RAL 5004 海军蓝哑光烤漆',
+                    qty: 12.5,
+                    unit: '延米',
+                    estimatedPrice: 680,
+                    color: 'RAL 5004 海军蓝 (中岛) + 暖白肤感 (主柜)',
+                    hardware: 'Blum 阻尼铰链 + 隐形触碰反弹器'
+                  },
+                  {
+                    id: 'item-2',
+                    category: '衣帽间工程',
+                    name: '主卧实木高定步入式衣帽间系统',
+                    spec: '多层实木高定柜体 + 铝合金窄边框茶色玻璃门 + 嵌入式 3000K 暖光感应灯带',
+                    qty: 24,
+                    unit: '㎡',
+                    estimatedPrice: 450,
+                    color: '胡桃木纹多层实木 + 茶色透明钢化玻璃',
+                    hardware: '重型静音阻尼滑轨'
+                  },
+                  {
+                    id: 'item-3',
+                    category: '五金与配件',
+                    name: '奥地利百隆 (Blum) 原装顶配阻尼五金系统',
+                    spec: '集成顶配快装阻尼缓冲铰链 48 只 + 豪华金属骑马抽屉 12 套 + 调味拉篮',
+                    qty: 1,
+                    unit: '套',
+                    estimatedPrice: 1850,
+                    hardware: '原装进口 Blum 终身质保'
+                  }
+                ],
+                leadTime: '25~30 工作日 (确认深化图纸与色板后)',
+                depositTerm: '30% T/T 订金锁定排产 + 70% 见提单副本或装柜前电放',
+                specialNotes: '已包含海运 ISTA 3A 蜂窝板木架防损包装，免费提供 1:1 试装视频与英文安装说明书',
+                totalEstimatedAmount: 78500
+              };
+
+              return {
+                ...m,
+                isGenerating: false,
+                content: `### 📋 客户定制需求与图纸提取已就绪\n\nAI 已自动解析当前客户《${activeSession.customerName}》的历史沟通纪要、关联 CAD 图纸与材质规格。请在下方卡片中核对产品类型、尺寸数量与图纸信息，确认无误后点击**「确认无误，立即生成报价单」**，系统将为您生成标准外贸形式发票 (PI)：`,
+                quoteConfirmData: confirmCardData,
+                citations: [
+                  {
+                    id: 'kb-pi-req',
+                    title: '《外贸工程图纸拆单与报价核算标准》',
+                    version: 'v3.0',
+                    category: '报价核算',
+                    excerpt: '拆单规范：图纸需经过销售与技术二次核对确认后，方可出具正式 PI 形式发票锁定工期与定金条款。'
+                  }
+                ]
+              };
+            }
+
             let aiReplyContent = '已为您生成相关的话术与成单策略。建议向客户强调我们在工期和品质上的双重保障。';
             let attachments: ChatMessage['attachments'] = [
               {
@@ -895,7 +1048,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     // 创建AI会话时，先不填写客户标签
     setSelectedTags([]);
 
-    // 企微和 WordPress 仅保留手动输入
+    // 企微和 WhatsApp 仅保留手动输入
     setRecordInputMode('manual');
     setUploadedFileName(null);
     setUploadedFileSize(null);
@@ -1050,10 +1203,15 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     return true;
   });
 
-  // Automatically select the first available session if none is selected
+  // Automatically select the first available session in the active list
   useEffect(() => {
-    if (!activeSession && filteredSessions.length > 0) {
-      setActiveSession(filteredSessions[0]);
+    if (filteredSessions.length > 0) {
+      const isCurrentInList = activeSession && filteredSessions.some((s) => s.id === activeSession.id);
+      if (!isCurrentInList) {
+        setActiveSession(filteredSessions[0]);
+      }
+    } else {
+      setActiveSession(null);
     }
   }, [filteredSessions, activeSession]);
 
@@ -1096,10 +1254,10 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
             </button>
           </div>
 
-          {/* Channel Filter Tabs (企微, WhatsApp, WordPress, 线下对接) */}
+          {/* Channel Filter Tabs (企微, WhatsApp, 线下对接) */}
           <div className="p-3 pb-2 border-b border-slate-100 bg-white">
             <div className="bg-slate-100/90 rounded-full p-1 flex items-center gap-1">
-              {(['企微', 'WhatsApp', 'WordPress', '线下对接'] as const).map((tab) => {
+              {(['企微', 'WhatsApp', '线下对接'] as const).map((tab) => {
                 const count = sessionList.filter(
                   (s) => s.channel === tab || (tab === '企微' && s.channel === '企业微信')
                 ).length;
@@ -1212,8 +1370,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                               ? 'bg-blue-50 text-blue-600 border-blue-100'
                               : sess.channel === 'WhatsApp'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              : sess.channel === 'WordPress'
-                              ? 'bg-teal-50 text-teal-700 border-teal-100'
                               : 'bg-purple-50 text-purple-700 border-purple-100'
                           }`}
                         >
@@ -1444,6 +1600,54 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                     ))}
                                   </div>
                                 )}
+
+                                {/* Quotation Requirement Confirmation Card (报价需求确认卡片) */}
+                                {m.quoteConfirmData && (
+                                  <div className="mt-3">
+                                    <QuotationConfirmCard
+                                      data={m.quoteConfirmData}
+                                      onConfirm={handleConfirmQuotationDemand}
+                                      onViewDrawing={(dwg) => {
+                                        setQuoteExportSuccess(`已调取图纸: ${dwg}`);
+                                        setTimeout(() => setQuoteExportSuccess(null), 3000);
+                                      }}
+                                    />
+                                  </div>
+                                )}
+
+                                {/* AI Generated Formal Quotation / PI Card (正式报价单/形式发票卡片) */}
+                                {m.generatedQuoteData && (
+                                  <div className="mt-3">
+                                    <GeneratedQuotationCard
+                                      data={m.generatedQuoteData}
+                                      onOpenFullModal={() => {
+                                        setQuoteCustomerName(m.generatedQuoteData!.customerName);
+                                        setQuoteProjectName(m.generatedQuoteData!.projectName);
+                                        setQuoteCurrency(m.generatedQuoteData!.currency);
+                                        setQuoteTradeTerm(m.generatedQuoteData!.tradeTerm);
+                                        setQuoteItems(
+                                          m.generatedQuoteData!.items.map((it) => ({
+                                            id: it.id,
+                                            name: it.name,
+                                            spec: it.spec,
+                                            qty: it.qty,
+                                            unit: it.unit,
+                                            price: it.price
+                                          }))
+                                        );
+                                        setShowQuoteModal(true);
+                                      }}
+                                      onDownloadPdf={() => {
+                                        setQuoteExportSuccess(`形式发票 ${m.generatedQuoteData!.quoteNo} PDF 正在打包下载...`);
+                                        setTimeout(() => setQuoteExportSuccess(null), 3500);
+                                      }}
+                                      onExportExcel={() => {
+                                        setQuoteExportSuccess(`已成功导出 ${m.generatedQuoteData!.quoteNo} 报价物料清单 Excel (.xlsx)`);
+                                        setTimeout(() => setQuoteExportSuccess(null), 3500);
+                                      }}
+                                    />
+                                  </div>
+                                )}
                                 
                                 {m.citations && m.citations.length > 0 && (
                                   <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-1.5 flex-wrap">
@@ -1547,25 +1751,11 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                       errorMsg={errorMsg}
                     />
 
-                    <div className="flex items-center justify-between text-xs text-slate-500 pb-1">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => setShowQuoteModal(true)}
-                          className="flex items-center gap-1 hover:text-[#EA3A20] text-slate-700 cursor-pointer font-bold transition-colors"
-                        >
-                          <FileSpreadsheet className="w-3.5 h-3.5 text-[#EA3A20]" /> 生成报价单 (PI)
-                        </button>
-
-                        <button
-                          onClick={() => setShowCbmCalc(true)}
-                          className="flex items-center gap-1 hover:text-[#EA3A20] text-slate-700 cursor-pointer font-bold transition-colors"
-                        >
-                          <Calculator className="w-3.5 h-3.5 text-amber-500" /> CBM 材积测算
-                        </button>
-
-                        <label className="flex items-center gap-1 hover:text-[#EA3A20] text-slate-500 cursor-pointer font-bold transition-colors">
+                    <div className="flex items-center justify-between text-xs text-slate-500 pb-1 flex-wrap gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <label className="flex items-center gap-1 hover:text-[#EA3A20] text-slate-600 cursor-pointer font-bold transition-colors bg-slate-100/80 hover:bg-slate-200/80 px-2.5 py-1 rounded-lg">
                           <Paperclip className="w-3.5 h-3.5 text-indigo-500" />
-                          <span>上传图片/文件</span>
+                          <span>上传图纸/文件</span>
                           <input
                             type="file"
                             multiple
@@ -1576,6 +1766,23 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                             }}
                           />
                         </label>
+
+                        <button
+                          type="button"
+                          onClick={() => handleSendMessage('请根据当前客户沟通与设计图纸，做一份定制报价单 (PI)。')}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-[#EA3A20] border border-red-200 text-[11px] font-bold transition-colors cursor-pointer shadow-2xs"
+                        >
+                          <Sparkles className="w-3 h-3 text-[#EA3A20]" />
+                          <span>帮我做一份报价单 (PI)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleSendMessage('帮我分析当前客户的痛点与预算意向，并提供针对性的促单话术。')}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                        >
+                          <span>💬 促单话术</span>
+                        </button>
                       </div>
                     </div>
 
@@ -1922,9 +2129,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                               <div className="text-[10px] text-slate-400">周一 14:15 • 15.1 MB</div>
                             </div>
                           </div>
-                          <button className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
-                            <UploadCloud className="w-4 h-4" /> 上传新文件
-                          </button>
                         </div>
                       )}
 
@@ -2034,7 +2238,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     </span>
                   )}
                 </div>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -2071,24 +2275,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   >
                     <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
                     <span>WhatsApp</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewChannel('WordPress');
-                      setSelectedExternalChatId(null);
-                      setExternalChatFilter('all');
-                      setExternalChatSearch('');
-                      setIsChatPickerOpen(false);
-                      setRecordInputMode('manual');
-                    }}
-                    className={`py-2 px-2.5 rounded-2xl border flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-all ${
-                      newChannel === 'WordPress'
-                        ? 'border-emerald-500 bg-emerald-50/70 text-emerald-700 ring-2 ring-emerald-500/20 shadow-xs'
-                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                    }`}
-                  >
-                    <span>WordPress</span>
                   </button>
                   <button
                     type="button"
@@ -2513,332 +2699,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                 </div>
               )}
 
-              {/* WordPress 专属：紧凑对话选择器 */}
-              {newChannel === 'WordPress' && (
-                <div ref={chatPickerRef} className="bg-emerald-50/40 rounded-2xl p-3.5 border border-emerald-100 space-y-2.5">
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                          <Link2 className="w-3.5 h-3.5 text-emerald-600" />
-                          关联对话
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 如果已选中对话：展示紧凑优雅的单行已关联卡片 */}
-                      {selectedExternalChatId && (() => {
-                        const selectedChat = mockWordPressChats.find(c => c.id === selectedExternalChatId);
-                        if (!selectedChat) return null;
-                        return (
-                          <div className="bg-white rounded-xl p-2.5 border border-emerald-200 shadow-2xs flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                              <div
-                                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                                  selectedChat.type === 'group'
-                                    ? 'bg-teal-100 text-teal-700'
-                                    : 'bg-emerald-100 text-emerald-700'
-                                }`}
-                              >
-                                {selectedChat.type === 'group' ? (
-                                  <Users className="w-4 h-4" />
-                                ) : (
-                                  <User className="w-4 h-4" />
-                                )}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="font-bold text-slate-800 text-xs truncate">
-                                    {selectedChat.name}
-                                  </span>
-                                  <span
-                                    className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${
-                                      selectedChat.type === 'group'
-                                        ? 'bg-teal-50 text-teal-700 border border-teal-200/80'
-                                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
-                                    }`}
-                                  >
-                                    {selectedChat.type === 'group' ? `${selectedChat.memberCount}人海外群` : 'WordPress 私聊'}
-                                  </span>
-                                  {selectedChat.defaultCompany && (
-                                    <span className="text-[10px] text-slate-400 truncate max-w-[160px]">
-                                      · {selectedChat.defaultCompany}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="text-[10px] text-slate-500 truncate mt-0.5">
-                                  {selectedChat.lastMessage}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setIsChatPickerOpen(true);
-                                  setExternalChatSearch('');
-                                }}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-medium transition-colors cursor-pointer"
-                              >
-                                更换对话
-                              </button>
-                              <button
-                                type="button"
-                                onClick={handleClearExternalChatSelection}
-                                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                                title="清除已选"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })()}
-
-                      {/* 未选中或点击更换时：高阶搜索触发器与下拉检索 Popover */}
-                      <div className="relative">
-                        {!selectedExternalChatId && (
-                          <div className="space-y-1.5">
-                            {/* 搜索选择器触发栏 */}
-                            <div
-                              onClick={() => setIsChatPickerOpen(!isChatPickerOpen)}
-                              className={`w-full px-3 py-2 bg-white rounded-xl border text-left cursor-pointer transition-all flex items-center justify-between gap-2 ${
-                                isChatPickerOpen
-                                  ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs'
-                                  : 'border-emerald-200/80 hover:border-emerald-400 hover:bg-emerald-50/20 shadow-2xs'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 text-slate-600 min-w-0">
-                                <Search className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                <span className="text-[11px] text-slate-600 truncate">
-                                  搜索或选择 WordPress 对话...
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <span className="text-[10px] bg-emerald-50 text-emerald-700 font-medium px-1.5 py-0.5 rounded">
-                                  共 {mockWordPressChats.length} 个对话
-                                </span>
-                                <ChevronsUpDown className="w-3.5 h-3.5 text-slate-400" />
-                              </div>
-                            </div>
-
-                            {/* 常用/最近沟通快速选择胶囊 */}
-                            <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar text-[11px]">
-                              <span className="text-[10px] text-slate-400 shrink-0 flex items-center gap-0.5">
-                                <Clock className="w-2.5 h-2.5" /> 最近活跃:
-                              </span>
-                              {mockWordPressChats.slice(0, 4).map((c) => (
-                                <button
-                                  key={c.id}
-                                  type="button"
-                                  onClick={() => handleSelectExternalChat(c)}
-                                  className="px-2 py-0.5 rounded-full bg-white hover:bg-emerald-50 border border-emerald-200/70 hover:border-emerald-300 text-slate-700 hover:text-emerald-700 text-[10px] whitespace-nowrap transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
-                                >
-                                  {c.type === 'group' ? (
-                                    <Users className="w-2.5 h-2.5 text-teal-600" />
-                                  ) : (
-                                    <User className="w-2.5 h-2.5 text-emerald-600" />
-                                  )}
-                                  <span className="truncate max-w-[130px]">{c.name}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* 下拉高密度检索弹层 (Popover) */}
-                        {isChatPickerOpen && (
-                          <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-white rounded-2xl shadow-xl border border-emerald-200 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                            {/* 搜索栏与分类 */}
-                            <div className="p-2.5 bg-slate-50/80 border-b border-slate-100 space-y-2">
-                              <div className="relative">
-                                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                                <input
-                                  type="text"
-                                  autoFocus
-                                  value={externalChatSearch}
-                                  onChange={(e) => setExternalChatSearch(e.target.value)}
-                                  placeholder="输入海外客商、项目群名或聊天关键词搜索..."
-                                  className="w-full pl-8 pr-7 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                                />
-                                {externalChatSearch && (
-                                  <button
-                                    type="button"
-                                    onClick={() => setExternalChatSearch('')}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                )}
-                              </div>
-
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => setExternalChatFilter('all')}
-                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-medium transition-all ${
-                                      externalChatFilter === 'all'
-                                        ? 'bg-emerald-600 text-white font-bold'
-                                        : 'text-slate-600 hover:bg-slate-200/60'
-                                    }`}
-                                  >
-                                    全部 ({mockWordPressChats.length})
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setExternalChatFilter('personal')}
-                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-medium flex items-center gap-1 transition-all ${
-                                      externalChatFilter === 'personal'
-                                        ? 'bg-emerald-600 text-white font-bold'
-                                        : 'text-slate-600 hover:bg-slate-200/60'
-                                    }`}
-                                  >
-                                    <User className="w-2.5 h-2.5" />
-                                    海外私聊 ({mockWordPressChats.filter(c => c.type === 'personal').length})
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setExternalChatFilter('group')}
-                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-medium flex items-center gap-1 transition-all ${
-                                      externalChatFilter === 'group'
-                                        ? 'bg-emerald-600 text-white font-bold'
-                                        : 'text-slate-600 hover:bg-slate-200/60'
-                                    }`}
-                                  >
-                                    <Users className="w-2.5 h-2.5" />
-                                    项目群聊 ({mockWordPressChats.filter(c => c.type === 'group').length})
-                                  </button>
-                                </div>
-
-                                <span className="text-[10px] text-slate-400">
-                                  实时同步海外会话
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* 高密度会话列表 */}
-                            <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
-                              {mockWordPressChats
-                                .filter((c) => {
-                                  if (externalChatFilter === 'personal' && c.type !== 'personal') return false;
-                                  if (externalChatFilter === 'group' && c.type !== 'group') return false;
-                                  if (externalChatSearch.trim()) {
-                                    const q = externalChatSearch.toLowerCase();
-                                    return (
-                                      c.name.toLowerCase().includes(q) ||
-                                      c.subtitle.toLowerCase().includes(q) ||
-                                      c.lastMessage.toLowerCase().includes(q)
-                                    );
-                                  }
-                                  return true;
-                                })
-                                .map((chat) => {
-                                  const isSelected = selectedExternalChatId === chat.id;
-                                  return (
-                                    <div
-                                      key={chat.id}
-                                      onClick={() => handleSelectExternalChat(chat)}
-                                      className={`px-3 py-2 text-left cursor-pointer transition-colors flex items-center justify-between gap-3 group ${
-                                        isSelected
-                                          ? 'bg-emerald-50/80 text-emerald-900'
-                                          : 'hover:bg-emerald-50/40 text-slate-700'
-                                      }`}
-                                    >
-                                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                        <div
-                                          className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                                            chat.type === 'group'
-                                              ? 'bg-teal-100 text-teal-700'
-                                              : 'bg-emerald-100 text-emerald-700'
-                                          }`}
-                                        >
-                                          {chat.type === 'group' ? (
-                                            <Users className="w-3.5 h-3.5" />
-                                          ) : (
-                                            <User className="w-3.5 h-3.5" />
-                                          )}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                          <div className="flex items-center gap-1.5">
-                                            <span className="font-bold text-xs text-slate-900 truncate">
-                                              {chat.name}
-                                            </span>
-                                            <span
-                                              className={`text-[9px] px-1 py-0.2 rounded font-medium ${
-                                                chat.type === 'group'
-                                                  ? 'bg-teal-50 text-teal-600'
-                                                  : 'bg-slate-100 text-slate-500'
-                                              }`}
-                                            >
-                                              {chat.type === 'group' ? `${chat.memberCount}人` : '私聊'}
-                                            </span>
-                                            <span className="text-[10px] text-slate-400 truncate">
-                                              {chat.subtitle.split('·')[0]}
-                                            </span>
-                                          </div>
-                                          <div className="text-[10px] text-slate-500 truncate mt-0.5">
-                                            {chat.lastMessage}
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      <div className="flex items-center gap-2 shrink-0">
-                                        <span className="text-[10px] text-slate-400 group-hover:hidden">
-                                          {chat.lastTime}
-                                        </span>
-                                        <button
-                                          type="button"
-                                          className="hidden group-hover:flex px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold shadow-2xs items-center gap-0.5"
-                                        >
-                                          <span>选择关联</span>
-                                          <Check className="w-2.5 h-2.5" />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-
-                              {/* 搜索无结果 */}
-                              {mockWordPressChats.filter((c) => {
-                                if (externalChatFilter === 'personal' && c.type !== 'personal') return false;
-                                if (externalChatFilter === 'group' && c.type !== 'group') return false;
-                                if (externalChatSearch.trim()) {
-                                  const q = externalChatSearch.toLowerCase();
-                                  return (
-                                    c.name.toLowerCase().includes(q) ||
-                                    c.subtitle.toLowerCase().includes(q) ||
-                                    c.lastMessage.toLowerCase().includes(q)
-                                  );
-                                }
-                                return true;
-                              }).length === 0 && (
-                                <div className="p-6 text-center text-slate-400 text-xs">
-                                  未找到匹配「{externalChatSearch}」的 WordPress 对话，可尝试更换关键词或清除筛选
-                                </div>
-                              )}
-                            </div>
-
-                            {/* 底部收起按钮 */}
-                            <div className="p-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-                              <span>点击任意对话行即可快速导入上下文并关闭弹窗</span>
-                              <button
-                                type="button"
-                                onClick={() => setIsChatPickerOpen(false)}
-                                className="text-emerald-600 hover:text-emerald-800 font-medium cursor-pointer"
-                              >
-                                收起面板
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
               {/* 客户姓名 & 负责销售人员 */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -2896,7 +2756,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     客户需求备忘
                   </label>
 
-                  {/* 录入模式切换 Tab（企微和 WordPress 仅保留手动输入，线下对接才显示另外两项） */}
+                  {/* 录入模式切换 Tab（企微和 WhatsApp 仅保留手动输入，线下对接才显示另外两项） */}
                   {newChannel === '线下对接' ? (
                     <div className="bg-slate-100 p-0.5 rounded-xl flex items-center gap-1 text-[11px] font-bold">
                       <button

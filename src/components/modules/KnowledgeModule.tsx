@@ -3901,18 +3901,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 4: MOVE CATEGORY DRAWER (右侧抽屉式面板) */}
+      {/* MODAL 4: MOVE CATEGORY MODAL (居中弹出框) */}
       {/* ========================================================================= */}
       {moveTargetArticle && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6 my-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
             onClick={() => setMoveTargetArticle(null)}
           />
 
-          {/* Slide-over Drawer Panel */}
-          <div className="relative z-10 w-full max-w-lg bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out border-l border-slate-200 animate-in slide-in-from-right duration-200">
+          {/* Centered Modal Panel */}
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col border border-slate-200/90 overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -3925,7 +3925,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
               <button
                 onClick={() => setMoveTargetArticle(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -3978,18 +3978,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 5: ADD CATEGORY DRAWER (右侧抽屉式面板) */}
+      {/* MODAL 5: ADD CATEGORY MODAL (居中弹出框) */}
       {/* ========================================================================= */}
       {isAddCatModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6 my-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
             onClick={() => setIsAddCatModalOpen(false)}
           />
 
-          {/* Slide-over Drawer Panel */}
-          <div className="relative z-10 w-full max-w-lg bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out border-l border-slate-200 animate-in slide-in-from-right duration-200">
+          {/* Centered Modal Panel */}
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col border border-slate-200/90 overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center">
@@ -4004,7 +4004,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
               <button
                 onClick={() => setIsAddCatModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -4182,18 +4182,13 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 </div>
 
                 {/* 平台管理员复核策略配置 */}
-                <div className="pt-3 border-t border-slate-100 space-y-3">
-                  <div className="flex items-start justify-between gap-3 p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/70">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
-                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
-                        <span>开启平台管理员复核 (发布控制)</span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
-                        设置此分类下的知识上传、编辑或删除时是否需要平台管理员复核。开启后条目必须复核通过才能正式发布。
-                      </p>
+                <div className="pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between gap-3 p-3 bg-amber-50/60 rounded-xl border border-amber-200/70">
+                    <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                      <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>开启平台管理员复核</span>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-0.5">
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
                       <input
                         type="checkbox"
                         checked={newCatRequireReview}
@@ -4203,47 +4198,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                       <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
                     </label>
                   </div>
-
-                  {newCatRequireReview && (
-                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5 animate-in fade-in">
-                      <span className="text-[11px] font-bold text-slate-700 block">触发复核的具体操作场景</span>
-                      <div className="grid grid-cols-3 gap-2">
-                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={newCatReviewTriggers.onUpload}
-                            onChange={(e) =>
-                              setNewCatReviewTriggers((prev) => ({ ...prev, onUpload: e.target.checked }))
-                            }
-                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
-                          />
-                          <span className="text-xs text-slate-700 font-medium">上传新知识</span>
-                        </label>
-                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={newCatReviewTriggers.onEdit}
-                            onChange={(e) =>
-                              setNewCatReviewTriggers((prev) => ({ ...prev, onEdit: e.target.checked }))
-                            }
-                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
-                          />
-                          <span className="text-xs text-slate-700 font-medium">编辑修改</span>
-                        </label>
-                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={newCatReviewTriggers.onDelete}
-                            onChange={(e) =>
-                              setNewCatReviewTriggers((prev) => ({ ...prev, onDelete: e.target.checked }))
-                            }
-                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
-                          />
-                          <span className="text-xs text-slate-700 font-medium">删除知识</span>
-                        </label>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -4267,18 +4221,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 6: EDIT CATEGORY DRAWER (右侧抽屉式面板) */}
+      {/* MODAL 6: EDIT CATEGORY MODAL (居中弹出框) */}
       {/* ========================================================================= */}
       {isEditCatModalOpen && editingCatNode && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6 my-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
             onClick={() => setIsEditCatModalOpen(false)}
           />
 
-          {/* Slide-over Drawer Panel */}
-          <div className="relative z-10 w-full max-w-lg bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out border-l border-slate-200 animate-in slide-in-from-right duration-200">
+          {/* Centered Modal Panel */}
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col border border-slate-200/90 overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center">
@@ -4291,7 +4245,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
               <button
                 onClick={() => setIsEditCatModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -4456,18 +4410,13 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 </div>
 
                 {/* 平台管理员复核策略配置 */}
-                <div className="pt-3 border-t border-slate-100 space-y-3">
-                  <div className="flex items-start justify-between gap-3 p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/70">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
-                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
-                        <span>开启平台管理员复核 (发布控制)</span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
-                        设置此分类下的知识上传、编辑或删除时是否需要平台管理员复核。开启后条目必须复核通过才能正式发布。
-                      </p>
+                <div className="pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between gap-3 p-3 bg-amber-50/60 rounded-xl border border-amber-200/70">
+                    <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                      <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>开启平台管理员复核</span>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-0.5">
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
                       <input
                         type="checkbox"
                         checked={editCatRequireReview}
@@ -4477,47 +4426,6 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                       <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
                     </label>
                   </div>
-
-                  {editCatRequireReview && (
-                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5 animate-in fade-in">
-                      <span className="text-[11px] font-bold text-slate-700 block">触发复核的具体操作场景</span>
-                      <div className="grid grid-cols-3 gap-2">
-                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={editCatReviewTriggers.onUpload}
-                            onChange={(e) =>
-                              setEditCatReviewTriggers((prev) => ({ ...prev, onUpload: e.target.checked }))
-                            }
-                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
-                          />
-                          <span className="text-xs text-slate-700 font-medium">上传新知识</span>
-                        </label>
-                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={editCatReviewTriggers.onEdit}
-                            onChange={(e) =>
-                              setEditCatReviewTriggers((prev) => ({ ...prev, onEdit: e.target.checked }))
-                            }
-                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
-                          />
-                          <span className="text-xs text-slate-700 font-medium">编辑修改</span>
-                        </label>
-                        <label className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={editCatReviewTriggers.onDelete}
-                            onChange={(e) =>
-                              setEditCatReviewTriggers((prev) => ({ ...prev, onDelete: e.target.checked }))
-                            }
-                            className="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
-                          />
-                          <span className="text-xs text-slate-700 font-medium">删除知识</span>
-                        </label>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -4541,18 +4449,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 7: CREATE SINGLE TAG DRAWER (成对标签创建 - 右侧抽屉) */}
+      {/* MODAL 7: CREATE SINGLE TAG MODAL (成对标签创建 - 居中弹出框) */}
       {/* ========================================================================= */}
       {isAddTagModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6 my-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
             onClick={() => setIsAddTagModalOpen(false)}
           />
 
-          {/* Slide-over Drawer Panel */}
-          <div className="relative z-10 w-full max-w-lg bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out border-l border-slate-200 animate-in slide-in-from-right duration-200">
+          {/* Centered Modal Panel */}
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col border border-slate-200/90 overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center">
@@ -4565,7 +4473,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
               <button
                 onClick={() => setIsAddTagModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -4658,18 +4566,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 8: BATCH ADD TAGS DRAWER (批量成对标签导入 - 右侧抽屉) */}
+      {/* MODAL 8: BATCH ADD TAGS MODAL (批量成对标签导入 - 居中弹出框) */}
       {/* ========================================================================= */}
       {isBatchAddTagModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6 my-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
             onClick={() => setIsBatchAddTagModalOpen(false)}
           />
 
-          {/* Slide-over Drawer Panel */}
-          <div className="relative z-10 w-full max-w-lg bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out border-l border-slate-200 animate-in slide-in-from-right duration-200">
+          {/* Centered Modal Panel */}
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col border border-slate-200/90 overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center">
@@ -4682,7 +4590,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
               <button
                 onClick={() => setIsBatchAddTagModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -4727,18 +4635,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 9: EDIT TAG DRAWER (标签编辑 - 右侧抽屉) */}
+      {/* MODAL 9: EDIT TAG MODAL (标签编辑 - 居中弹出框) */}
       {/* ========================================================================= */}
       {isEditTagModalOpen && editingTag && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6 my-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
             onClick={() => setIsEditTagModalOpen(false)}
           />
 
-          {/* Slide-over Drawer Panel */}
-          <div className="relative z-10 w-full max-w-lg bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out border-l border-slate-200 animate-in slide-in-from-right duration-200">
+          {/* Centered Modal Panel */}
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col border border-slate-200/90 overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center">
@@ -4751,7 +4659,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
               <button
                 onClick={() => setIsEditTagModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -4891,18 +4799,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 10: DELETE TAG CONFIRMATION DRAWER (删除标签确认 - 右侧抽屉) */}
+      {/* MODAL 10: DELETE TAG CONFIRMATION MODAL (删除标签确认 - 居中弹出框) */}
       {/* ========================================================================= */}
       {isDeleteTagModalOpen && deletingTag && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6 my-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
             onClick={() => setIsDeleteTagModalOpen(false)}
           />
 
-          {/* Slide-over Drawer Panel */}
-          <div className="relative z-10 w-full max-w-md bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out border-l border-slate-200 animate-in slide-in-from-right duration-200">
+          {/* Centered Modal Panel */}
+          <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl flex flex-col border border-slate-200/90 overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
@@ -4915,7 +4823,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
               <button
                 onClick={() => setIsDeleteTagModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -4962,18 +4870,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 11: BATCH DELETE TAGS CONFIRMATION DRAWER (批量删除标签 - 右侧抽屉) */}
+      {/* MODAL 11: BATCH DELETE TAGS CONFIRMATION MODAL (批量删除标签 - 居中弹出框) */}
       {/* ========================================================================= */}
       {isBatchDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6 my-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
             onClick={() => setIsBatchDeleteModalOpen(false)}
           />
 
-          {/* Slide-over Drawer Panel */}
-          <div className="relative z-10 w-full max-w-md bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out border-l border-slate-200 animate-in slide-in-from-right duration-200">
+          {/* Centered Modal Panel */}
+          <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl flex flex-col border border-slate-200/90 overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
@@ -4986,7 +4894,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
               <button
                 onClick={() => setIsBatchDeleteModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -5022,18 +4930,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 12: ACTIVE TAG ARTICLES DRAWER (标签关联条目抽屉) */}
+      {/* MODAL 12: ACTIVE TAG ARTICLES MODAL (标签关联条目 - 居中弹出框) */}
       {/* ========================================================================= */}
       {activeTagForArticlesDrawer && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-6 my-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity animate-fade-in"
             onClick={() => setActiveTagForArticlesDrawer(null)}
           />
 
-          {/* Slide-over Drawer Panel */}
-          <div className="relative z-10 w-full max-w-md bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out border-l border-slate-200 animate-in slide-in-from-right duration-200">
+          {/* Centered Modal Panel */}
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col border border-slate-200/90 overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center">
@@ -5048,7 +4956,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               </div>
               <button
                 onClick={() => setActiveTagForArticlesDrawer(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>

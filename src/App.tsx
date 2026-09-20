@@ -15,6 +15,10 @@ import { StaffModule } from './components/modules/StaffModule';
 import { SystemConfigModule } from './components/modules/SystemConfigModule';
 import { AuditLogsModule } from './components/modules/AuditLogsModule';
 import { DrawerContainer } from './components/common/DrawerContainer';
+import { NotificationDrawer } from './components/layout/NotificationDrawer';
+import { LoginPage } from './components/auth/LoginPage';
+import { initialNotifications } from './data/mockNotifications';
+import { NotificationItem, NotificationCategory } from './types';
 import {
   getPathByModuleAndSubView,
   parseRoute
@@ -47,7 +51,45 @@ export function App() {
   const activeModule = currentRoute.moduleId;
   const subView = currentRoute.subView;
 
+  // Authentication State (Enterprise WeChat Scan Login)
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [currentUser, setCurrentUser] = useState({
+    name: 'Franklin Jr',
+    role: '超级管理员 (Superadmin)',
+    department: '智能数字化中心',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+  });
+
   const [isScriptDrawerOpen, setIsScriptDrawerOpen] = useState(false);
+  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
+
+  const unreadNotificationsCount = notifications.filter((n) => !n.isRead).length;
+
+  const handleMarkNotificationAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, isRead: true } : item))
+    );
+  };
+
+  const handleMarkAllNotificationsAsRead = (category?: NotificationCategory) => {
+    setNotifications((prev) =>
+      prev.map((item) =>
+        !category || category === 'all' || item.category === category
+          ? { ...item, isRead: true }
+          : item
+      )
+    );
+  };
+
+  const handleClearReadNotifications = () => {
+    setNotifications((prev) => prev.filter((item) => !item.isRead));
+  };
+
+  const handleNavigateFromNotification = (path: string, _item: NotificationItem) => {
+    setIsNotificationDrawerOpen(false);
+    navigate(path);
+  };
 
   // Active composite tab key
   const activeTabKey = `${activeModule}__${subView}`;
@@ -128,6 +170,26 @@ export function App() {
     }
   };
 
+  // If user is logged out, render Enterprise WeChat QR scan login page
+  if (!isAuthenticated) {
+    return (
+      <LoginPage
+        onLoginSuccess={(user) => {
+          if (user) {
+            setCurrentUser((prev) => ({
+              ...prev,
+              name: user.name,
+              role: user.role,
+              avatar: user.avatar,
+              department: user.department || prev.department
+            }));
+          }
+          setIsAuthenticated(true);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="flex h-screen w-screen bg-[#F8F9FA] text-slate-800 overflow-hidden font-sans antialiased select-none">
       
@@ -149,6 +211,10 @@ export function App() {
           activeTabKey={activeTabKey}
           onSelectTab={handleSelectTab}
           onCloseTab={handleCloseTab}
+          unreadCount={unreadNotificationsCount}
+          onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
+          currentUser={currentUser}
+          onLogout={() => setIsAuthenticated(false)}
           onNewAction={() => {
             if (activeModule === 'in_sales') {
               setIsScriptDrawerOpen(true);
@@ -299,13 +365,13 @@ export function App() {
               }
             />
 
-            {/* 6. 产品价格维护 */}
+            {/* 6. 面价汇率 */}
             <Route path="/pricing" element={<Navigate to="/pricing/list" replace />} />
             <Route
               path="/pricing/list"
               element={
                 <PricingMaintenanceModule
-                  subView="面价设置"
+                  subView="面价"
                   onSelectSubView={handleSelectSubView}
                 />
               }
@@ -314,7 +380,7 @@ export function App() {
               path="/pricing/exchange-rates"
               element={
                 <PricingMaintenanceModule
-                  subView="汇率管理"
+                  subView="汇率"
                   onSelectSubView={handleSelectSubView}
                 />
               }
@@ -409,6 +475,17 @@ export function App() {
         isOpen={isScriptDrawerOpen}
         onClose={() => setIsScriptDrawerOpen(false)}
         title="新增常用沟通话术"
+      />
+
+      {/* Global Slide-Over Notification Center Drawer */}
+      <NotificationDrawer
+        isOpen={isNotificationDrawerOpen}
+        onClose={() => setIsNotificationDrawerOpen(false)}
+        notifications={notifications}
+        onMarkAsRead={handleMarkNotificationAsRead}
+        onMarkAllAsRead={handleMarkAllNotificationsAsRead}
+        onClearRead={handleClearReadNotifications}
+        onNavigateToAction={handleNavigateFromNotification}
       />
 
     </div>

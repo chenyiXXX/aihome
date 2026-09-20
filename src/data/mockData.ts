@@ -436,7 +436,7 @@ export const initialSessions: SessionItem[] = [
     id: 'SESS-101',
     customerName: 'Apex Architecture & Interiors LLC',
     avatar: 'DM',
-    channel: 'WordPress',
+    channel: 'WhatsApp',
     contactInfo: '+1 (415) 890-2134',
     companyName: 'Apex Architecture & Interiors LLC',
     unreadCount: 2,
@@ -464,7 +464,7 @@ export const initialSessions: SessionItem[] = [
     id: 'SESS-103',
     customerName: 'Klaus Schmidt',
     avatar: 'KS',
-    channel: 'WordPress',
+    channel: 'WhatsApp',
     contactInfo: '+49 171 8921102',
     companyName: 'Wohnkultur Frankfurt GmbH',
     unreadCount: 0,
@@ -492,7 +492,7 @@ export const initialSessions: SessionItem[] = [
     id: 'SESS-105',
     customerName: 'Dubai Royal Oasis Hotel Project',
     avatar: 'TA',
-    channel: 'WordPress',
+    channel: 'WhatsApp',
     contactInfo: '+971 50 123 4567',
     companyName: 'Royal Oasis Hospitality Group',
     unreadCount: 1,
@@ -4143,7 +4143,39 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '展开面积(㎡) × 基准单价 × (1 + 损耗率 8%)',
     status: '已生效',
     updatedAt: '2026-08-28 14:30',
-    tags: ['爱格', 'E0', '激光封边', '常备库存']
+    tags: ['爱格', 'E0', '激光封边', '常备库存'],
+    variants: [
+      {
+        id: 'VAR-CAB-001-1',
+        specCode: 'CAB-EGGER-E0-18MM',
+        specName: '18mm 标准柜身主板 / 双饰面耐磨 / ABS激光封边',
+        unit: '展开㎡',
+        basePriceUSD: 36.5,
+        basePriceRMB: 260.0,
+        wasteRatePercent: 8,
+        formulaDesc: '展开面积(㎡) × $36.50 × (1 + 8%)'
+      },
+      {
+        id: 'VAR-CAB-001-2',
+        specCode: 'CAB-EGGER-E0-25MM',
+        specName: '25mm 加厚层板·顶底板 / 承重增强 / 激光封边',
+        unit: '展开㎡',
+        basePriceUSD: 46.0,
+        basePriceRMB: 328.0,
+        wasteRatePercent: 8,
+        formulaDesc: '展开面积(㎡) × $46.00 × (1 + 8%)'
+      },
+      {
+        id: 'VAR-CAB-001-3',
+        specCode: 'CAB-EGGER-E0-09MM',
+        specName: '9mm 嵌入式防潮背板 / 单饰面平衡层 / 插槽工艺',
+        unit: '展开㎡',
+        basePriceUSD: 22.8,
+        basePriceRMB: 162.0,
+        wasteRatePercent: 5,
+        formulaDesc: '展开面积(㎡) × $22.80 × (1 + 5%)'
+      }
+    ]
   },
   {
     id: 'BOQ-CAB-002',
@@ -4159,7 +4191,39 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '展开面积(㎡) × 基准单价 × (1 + 损耗率 8%)',
     status: '已生效',
     updatedAt: '2026-08-25 10:15',
-    tags: ['多层板', '防水防潮', 'CARB P2']
+    tags: ['多层板', '防水防潮', 'CARB P2'],
+    variants: [
+      {
+        id: 'VAR-CAB-002-1',
+        specCode: 'CAB-PLYWOOD-18MM',
+        specName: '18mm 柜体主结构板 / 桉木多层芯材 / CARB P2级',
+        unit: '展开㎡',
+        basePriceUSD: 42.0,
+        basePriceRMB: 302.0,
+        wasteRatePercent: 8,
+        formulaDesc: '展开面积(㎡) × $42.00 × (1 + 8%)'
+      },
+      {
+        id: 'VAR-CAB-002-2',
+        specCode: 'CAB-PLYWOOD-25MM',
+        specName: '25mm 加厚承重板·台面垫板 / 防潮耐水煮 / CARB P2',
+        unit: '展开㎡',
+        basePriceUSD: 52.5,
+        basePriceRMB: 375.0,
+        wasteRatePercent: 8,
+        formulaDesc: '展开面积(㎡) × $52.50 × (1 + 8%)'
+      },
+      {
+        id: 'VAR-CAB-002-3',
+        specCode: 'CAB-PLYWOOD-09MM',
+        specName: '9mm 桉木多层背板 / 封闭式防潮插槽',
+        unit: '展开㎡',
+        basePriceUSD: 26.0,
+        basePriceRMB: 186.0,
+        wasteRatePercent: 6,
+        formulaDesc: '展开面积(㎡) × $26.00 × (1 + 6%)'
+      }
+    ]
   },
   {
     id: 'BOQ-CAB-003',
@@ -4175,7 +4239,29 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '展开面积(㎡) × 基准单价 × (1 + 损耗率 7%)',
     status: '已生效',
     updatedAt: '2026-08-20 16:40',
-    tags: ['欧松板', '无醛级', '承重优选']
+    tags: ['欧松板', '无醛级', '承重优选'],
+    variants: [
+      {
+        id: 'VAR-CAB-003-1',
+        specCode: 'CAB-OSB-18MM',
+        specName: '18mm 无醛添加OSB柜体 / MDI生态胶 / 握钉力强',
+        unit: '展开㎡',
+        basePriceUSD: 39.8,
+        basePriceRMB: 286.0,
+        wasteRatePercent: 7,
+        formulaDesc: '展开面积(㎡) × $39.80 × (1 + 7%)'
+      },
+      {
+        id: 'VAR-CAB-003-2',
+        specCode: 'CAB-OSB-09MM',
+        specName: '9mm 无醛添加OSB背板 / 高强度抗下坠',
+        unit: '展开㎡',
+        basePriceUSD: 24.5,
+        basePriceRMB: 176.0,
+        wasteRatePercent: 5,
+        formulaDesc: '展开面积(㎡) × $24.50 × (1 + 5%)'
+      }
+    ]
   },
   {
     id: 'BOQ-DOOR-001',
@@ -4191,7 +4277,39 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '立面投影面积(㎡) × 门板基准单价 × (1 + 损耗 5%)',
     status: '已生效',
     updatedAt: '2026-08-30 09:12',
-    tags: ['PET肤感', '极简门板', '抗指纹']
+    tags: ['PET肤感', '极简门板', '抗指纹'],
+    variants: [
+      {
+        id: 'VAR-DOOR-001-1',
+        specCode: 'DOOR-PET-18MM',
+        specName: '18mm 标准门板 / 抗指纹PET耐划膜 / 铝合金拉直器',
+        unit: '投影㎡',
+        basePriceUSD: 76.0,
+        basePriceRMB: 543.0,
+        wasteRatePercent: 5,
+        formulaDesc: '立面投影面积(㎡) × $76.00 × (1 + 5%)'
+      },
+      {
+        id: 'VAR-DOOR-001-2',
+        specCode: 'DOOR-PET-22MM',
+        specName: '22mm 加厚平整门板 / 抗指纹PET膜 / 预埋通长拉手',
+        unit: '投影㎡',
+        basePriceUSD: 88.0,
+        basePriceRMB: 630.0,
+        wasteRatePercent: 5,
+        formulaDesc: '立面投影面积(㎡) × $88.00 × (1 + 5%)'
+      },
+      {
+        id: 'VAR-DOOR-001-3',
+        specCode: 'DOOR-PET-25MM',
+        specName: '25mm 别墅超高通顶门板 / 双面覆膜 / 双拉直器防变形',
+        unit: '投影㎡',
+        basePriceUSD: 105.0,
+        basePriceRMB: 750.0,
+        wasteRatePercent: 6,
+        formulaDesc: '立面投影面积(㎡) × $105.00 × (1 + 6%)'
+      }
+    ]
   },
   {
     id: 'BOQ-DOOR-002',
@@ -4207,7 +4325,39 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '立面投影面积(㎡) × 烤漆单价 × (1 + 损耗 6%)',
     status: '已生效',
     updatedAt: '2026-08-26 15:20',
-    tags: ['无缝喷粉', '六面全包', '高端定制']
+    tags: ['无缝喷粉', '六面全包', '高端定制'],
+    variants: [
+      {
+        id: 'VAR-DOOR-002-1',
+        specCode: 'DOOR-LACQUER-18MM',
+        specName: '18mm 哑光喷粉烤漆 / 六面全包覆 / 零甲醛释放',
+        unit: '投影㎡',
+        basePriceUSD: 98.0,
+        basePriceRMB: 700.0,
+        wasteRatePercent: 6,
+        formulaDesc: '立面投影面积(㎡) × $98.00 × (1 + 6%)'
+      },
+      {
+        id: 'VAR-DOOR-002-2',
+        specCode: 'DOOR-LACQUER-20MM',
+        specName: '20mm 加厚高定喷粉 / 哑光肤感抗刮 / 防水防潮',
+        unit: '投影㎡',
+        basePriceUSD: 115.0,
+        basePriceRMB: 825.0,
+        wasteRatePercent: 6,
+        formulaDesc: '立面投影面积(㎡) × $115.00 × (1 + 6%)'
+      },
+      {
+        id: 'VAR-DOOR-002-3',
+        specCode: 'DOOR-LACQUER-25MM',
+        specName: '25mm 豪宅加厚实心烤漆 / 铣型拉手 / 顶奢定制',
+        unit: '投影㎡',
+        basePriceUSD: 138.0,
+        basePriceRMB: 986.0,
+        wasteRatePercent: 7,
+        formulaDesc: '立面投影面积(㎡) × $138.00 × (1 + 7%)'
+      }
+    ]
   },
   {
     id: 'BOQ-DOOR-003',
@@ -4223,7 +4373,39 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '玻璃门投影面积(㎡) × 铝玻复合单价',
     status: '已生效',
     updatedAt: '2026-08-29 11:45',
-    tags: ['铝框玻璃门', '长虹玻璃', '轻奢']
+    tags: ['铝框玻璃门', '长虹玻璃', '轻奢'],
+    variants: [
+      {
+        id: 'VAR-DOOR-003-1',
+        specCode: 'DOOR-ALUM-GREY-4MM',
+        specName: '4mm 汽车级钢化灰玻 / 极窄黑钛边框 / 预埋通长拉手',
+        unit: '投影㎡',
+        basePriceUSD: 135.0,
+        basePriceRMB: 970.0,
+        wasteRatePercent: 5,
+        formulaDesc: '玻璃门投影面积(㎡) × $135.00'
+      },
+      {
+        id: 'VAR-DOOR-003-2',
+        specCode: 'DOOR-ALUM-REED-4MM',
+        specName: '4mm 钢化长虹超白玻 / 极窄黑钛边框 / 预埋通长拉手',
+        unit: '投影㎡',
+        basePriceUSD: 148.0,
+        basePriceRMB: 1060.0,
+        wasteRatePercent: 5,
+        formulaDesc: '玻璃门投影面积(㎡) × $148.00'
+      },
+      {
+        id: 'VAR-DOOR-003-3',
+        specCode: 'DOOR-ALUM-MESH-5MM',
+        specName: '5mm 夹丝防爆茶玻 / 极窄氟碳香槟金铝框 / 顶奢通高门',
+        unit: '投影㎡',
+        basePriceUSD: 165.0,
+        basePriceRMB: 1180.0,
+        wasteRatePercent: 5,
+        formulaDesc: '玻璃门投影面积(㎡) × $165.00'
+      }
+    ]
   },
   {
     id: 'BOQ-DOOR-004',
@@ -4255,7 +4437,39 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '延米长度(m) × 延米单价 × (1 + 损耗率 10%) + 倒角加工费',
     status: '已生效',
     updatedAt: '2026-08-27 13:50',
-    tags: ['鱼肚金岩板', '15mm厚', '莫氏硬度7级']
+    tags: ['鱼肚金岩板', '15mm厚', '莫氏硬度7级'],
+    variants: [
+      {
+        id: 'VAR-TOP-001-1',
+        specCode: 'TOP-PORCELAIN-12MM',
+        specName: '12mm 轻薄岩板 / 45度海棠角倒边 / 纳米防污',
+        unit: '延米',
+        basePriceUSD: 68.0,
+        basePriceRMB: 488.0,
+        wasteRatePercent: 10,
+        formulaDesc: '延米长度(m) × $68.00 × (1 + 10%)'
+      },
+      {
+        id: 'VAR-TOP-001-2',
+        specCode: 'TOP-PORCELAIN-15MM',
+        specName: '15mm 标准厚度通体岩板 / 莫氏7级 / 双层加固',
+        unit: '延米',
+        basePriceUSD: 78.0,
+        basePriceRMB: 560.0,
+        wasteRatePercent: 10,
+        formulaDesc: '延米长度(m) × $78.00 × (1 + 10%)'
+      },
+      {
+        id: 'VAR-TOP-001-3',
+        specCode: 'TOP-PORCELAIN-20MM',
+        specName: '20mm 豪华通体岩板 / 罗马倒边 / 纯实心抗冲击',
+        unit: '延米',
+        basePriceUSD: 98.0,
+        basePriceRMB: 702.0,
+        wasteRatePercent: 10,
+        formulaDesc: '延米长度(m) × $98.00 × (1 + 10%)'
+      }
+    ]
   },
   {
     id: 'BOQ-TOP-002',
@@ -4271,7 +4485,29 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '延米长度(m) × 石英石基准价 × (1 + 损耗率 8%)',
     status: '已生效',
     updatedAt: '2026-08-22 14:10',
-    tags: ['纯白石英石', '20mm厚', '食品级接触']
+    tags: ['纯白石英石', '20mm厚', '食品级接触'],
+    variants: [
+      {
+        id: 'VAR-TOP-002-1',
+        specCode: 'TOP-QUARTZ-15MM',
+        specName: '15mm 厚度石英石 / 93%石英砂晶体 / 直边磨边',
+        unit: '延米',
+        basePriceUSD: 52.0,
+        basePriceRMB: 372.0,
+        wasteRatePercent: 8,
+        formulaDesc: '延米长度(m) × $52.00 × (1 + 8%)'
+      },
+      {
+        id: 'VAR-TOP-002-2',
+        specCode: 'TOP-QUARTZ-20MM',
+        specName: '20mm 加厚石英石 / 93%石英砂 / 罗马边或小斜边',
+        unit: '延米',
+        basePriceUSD: 62.0,
+        basePriceRMB: 445.0,
+        wasteRatePercent: 8,
+        formulaDesc: '延米长度(m) × $62.00 × (1 + 8%)'
+      }
+    ]
   },
   {
     id: 'BOQ-HARD-001',
@@ -4287,7 +4523,49 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '实际门板铰链配比数量(个) × 单价',
     status: '已生效',
     updatedAt: '2026-08-30 08:30',
-    tags: ['Blum百隆', '阻尼铰链', '质保20年']
+    tags: ['Blum百隆', '阻尼铰链', '质保20年'],
+    variants: [
+      {
+        id: 'VAR-BLUM-HINGE-1',
+        specCode: 'BLUM-HINGE-FULL',
+        specName: '110° 全盖(直臂)集成阻尼快装铰链 71B3550',
+        unit: '个',
+        basePriceUSD: 3.2,
+        basePriceRMB: 23.0,
+        wasteRatePercent: 3,
+        formulaDesc: '铰链配比数量(个) × $3.20'
+      },
+      {
+        id: 'VAR-BLUM-HINGE-2',
+        specCode: 'BLUM-HINGE-HALF',
+        specName: '110° 半盖(中弯)集成阻尼快装铰链 71B3650',
+        unit: '个',
+        basePriceUSD: 3.4,
+        basePriceRMB: 24.3,
+        wasteRatePercent: 3,
+        formulaDesc: '铰链配比数量(个) × $3.40'
+      },
+      {
+        id: 'VAR-BLUM-HINGE-3',
+        specCode: 'BLUM-HINGE-INSET',
+        specName: '110° 内嵌(大弯)集成阻尼快装铰链 71B3750',
+        unit: '个',
+        basePriceUSD: 3.6,
+        basePriceRMB: 25.7,
+        wasteRatePercent: 3,
+        formulaDesc: '铰链配比数量(个) × $3.60'
+      },
+      {
+        id: 'VAR-BLUM-HINGE-4',
+        specCode: 'BLUM-HINGE-155DEG',
+        specName: '155° 广角大角度快装铰链 71B7550 (内抽专用)',
+        unit: '个',
+        basePriceUSD: 6.8,
+        basePriceRMB: 48.6,
+        wasteRatePercent: 3,
+        formulaDesc: '大角度铰链数量(个) × $6.80'
+      }
+    ]
   },
   {
     id: 'BOQ-HARD-002',
@@ -4303,7 +4581,39 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     formulaDesc: '抽屉组数量(套) × 骑马抽单价',
     status: '已生效',
     updatedAt: '2026-08-29 16:20',
-    tags: ['骑马抽', '隐形滑轨', '高承重']
+    tags: ['骑马抽', '隐形滑轨', '高承重'],
+    variants: [
+      {
+        id: 'VAR-BLUM-BOX-1',
+        specCode: 'BLUM-BOX-350MM',
+        specName: '350mm 14寸 / 动载30kg / 静音自闭全拉出',
+        unit: '套',
+        basePriceUSD: 21.0,
+        basePriceRMB: 150.0,
+        wasteRatePercent: 2,
+        formulaDesc: '抽屉组数量(套) × $21.00'
+      },
+      {
+        id: 'VAR-BLUM-BOX-2',
+        specCode: 'BLUM-BOX-450MM',
+        specName: '450mm 18寸 / 动载40kg / 标配金属高抽帮',
+        unit: '套',
+        basePriceUSD: 24.5,
+        basePriceRMB: 176.0,
+        wasteRatePercent: 2,
+        formulaDesc: '抽屉组数量(套) × $24.50'
+      },
+      {
+        id: 'VAR-BLUM-BOX-3',
+        specCode: 'BLUM-BOX-550MM',
+        specName: '550mm 22寸加深型 / 动载50kg / 联动同步齿轮',
+        unit: '套',
+        basePriceUSD: 29.0,
+        basePriceRMB: 208.0,
+        wasteRatePercent: 2,
+        formulaDesc: '抽屉组数量(套) × $29.00'
+      }
+    ]
   },
   {
     id: 'BOQ-HARD-003',

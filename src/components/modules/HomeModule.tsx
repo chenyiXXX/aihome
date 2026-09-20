@@ -31,6 +31,7 @@ import {
   MicOff,
   Keyboard,
   Paperclip,
+  Swords,
   Image as ImageIcon
 } from 'lucide-react';
 import {
@@ -42,7 +43,7 @@ import { VoiceInputBanner } from '../common/VoiceInputBanner';
 import { useChatAttachment } from '../../hooks/useChatAttachment';
 import { ChatAttachmentDropZone } from '../common/ChatAttachmentDropZone';
 import { ImagePreviewModal } from '../common/ImagePreviewModal';
-import { CreateSessionModal } from './home/CreateSessionModal';
+import { CreateSessionModal, SessionCategoryType } from './home/CreateSessionModal';
 
 export interface ChatMessage {
   id: string;
@@ -64,7 +65,7 @@ export interface ChatSession {
   id: string;
   code?: string;
   title: string;
-  category: 'sales_training' | 'ops_training' | 'hr_training' | 'general';
+  category: SessionCategoryType;
   categoryLabel: string;
   badgeBg: string;
   badgeText: string;
@@ -411,7 +412,7 @@ export const HomeModule: React.FC = () => {
   // Create new session from modal configuration
   const handleCreateSessionFromConfig = (config: {
     title: string;
-    category: 'sales_training' | 'ops_training' | 'hr_training' | 'general';
+    category: SessionCategoryType;
     categoryLabel: string;
     badgeBg: string;
     badgeText: string;
@@ -608,6 +609,8 @@ export const HomeModule: React.FC = () => {
     switch (session.category) {
       case 'sales_training':
         return <Target className="w-4 h-4 text-[#EA3A20]" />;
+      case 'sales_drill':
+        return <Swords className="w-4 h-4 text-amber-600" />;
       case 'ops_training':
         return <TrendingUp className="w-4 h-4 text-blue-600" />;
       case 'hr_training':
@@ -731,18 +734,20 @@ export const HomeModule: React.FC = () => {
                         <span
                           className={`px-2 py-0.2 rounded-full font-bold text-[10px] border shrink-0 ${
                             sess.category === 'sales_training'
-                              ? 'bg-blue-50 text-blue-600 border-blue-100'
+                              ? 'bg-red-50 text-[#EA3A20] border-red-100'
+                              : sess.category === 'sales_drill'
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
                               : sess.category === 'ops_training'
-                              ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                              ? 'bg-blue-50 text-blue-600 border-blue-100'
                               : sess.category === 'hr_training'
-                              ? 'bg-purple-50 text-purple-700 border-purple-100'
-                              : 'bg-slate-100 text-slate-700 border-slate-200'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                              : 'bg-purple-50 text-purple-700 border-purple-100'
                           }`}
                         >
                           {sess.categoryLabel}
                         </span>
                         <span className="text-slate-500 text-[11px] truncate">
-                          {course?.mentorName || (sess.category === 'general' ? 'AI全案顾问' : '带教导师')}
+                          {course?.mentorName || (sess.category === 'sales_drill' ? 'AI实战考官' : sess.category === 'general' ? 'AI全案顾问' : '带教导师')}
                         </span>
                       </div>
                       {course && (

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   DollarSign,
   TrendingUp,
@@ -24,11 +24,21 @@ import { initialExchangeRates } from '../../data/mockData';
 interface ExchangeRateSubModuleProps {
   currentBaseRate: number;
   onUpdateBaseRate?: (newRate: number) => void;
+  hideHeader?: boolean;
+  externalRatesList?: Array<ExchangeRateItem & { docCell: string }>;
+  onRatesListChange?: (newRates: Array<ExchangeRateItem & { docCell: string }>) => void;
+  externalLastUpdatedTime?: string;
+  onLastUpdatedChange?: (newTime: string) => void;
 }
 
 export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
   currentBaseRate,
-  onUpdateBaseRate
+  onUpdateBaseRate,
+  hideHeader = false,
+  externalRatesList,
+  onRatesListChange,
+  externalLastUpdatedTime,
+  onLastUpdatedChange
 }) => {
   // Document source config
   const documentSourceInfo = {
@@ -41,11 +51,20 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
   };
 
   // State: Latest Update Time (formatted string)
-  const [docLastUpdatedTime, setDocLastUpdatedTime] = useState<string>('2026-09-03 16:30:15');
+  const [docLastUpdatedTime, setDocLastUpdatedTime] = useState<string>(
+    externalLastUpdatedTime || '2026-09-03 16:30:15'
+  );
   const [nextScheduledTime, setNextScheduledTime] = useState<string>('2026-09-04 09:30:00');
 
+  // Sync external update time
+  useEffect(() => {
+    if (externalLastUpdatedTime) {
+      setDocLastUpdatedTime(externalLastUpdatedTime);
+    }
+  }, [externalLastUpdatedTime]);
+
   // State: Exchange Rates List (Read directly from document)
-  const [ratesList, setRatesList] = useState<Array<ExchangeRateItem & { docCell: string }>>(() => {
+  const [internalRatesList, setInternalRatesList] = useState<Array<ExchangeRateItem & { docCell: string }>>(() => {
     const docCells = ['FX!B2:E2', 'FX!B3:E3', 'FX!B4:E4', 'FX!B5:E5', 'FX!B6:E6', 'FX!B7:E7', 'FX!B8:E8'];
     return initialExchangeRates.map((item, idx) => {
       const sysRate = item.currencyCode === 'USD' ? (currentBaseRate || item.systemRate) : item.systemRate;
@@ -59,6 +78,24 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
       };
     });
   });
+
+  const ratesList = externalRatesList || internalRatesList;
+  const setRatesList = (newVal: Array<ExchangeRateItem & { docCell: string }> | ((prev: Array<ExchangeRateItem & { docCell: string }>) => Array<ExchangeRateItem & { docCell: string }>)) => {
+    if (typeof newVal === 'function') {
+      const updated = newVal(ratesList);
+      if (onRatesListChange) {
+        onRatesListChange(updated);
+      } else {
+        setInternalRatesList(updated);
+      }
+    } else {
+      if (onRatesListChange) {
+        onRatesListChange(newVal);
+      } else {
+        setInternalRatesList(newVal);
+      }
+    }
+  };
 
   // Search & Filter
   const [searchKeyword, setSearchKeyword] = useState<string>('');
@@ -101,6 +138,9 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
       const nowStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
       
       setDocLastUpdatedTime(nowStr);
+      if (onLastUpdatedChange) {
+        onLastUpdatedChange(nowStr);
+      }
 
       // Slightly update rates to simulate reading fresh data from document
       const updated = ratesList.map((item) => {
@@ -128,105 +168,54 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
+    <div className={`flex-1 flex flex-col h-full overflow-hidden ${hideHeader ? 'min-h-0' : 'px-8 pb-8'}`}>
       
       {/* Top Header */}
-      <div className="flex items-center justify-between py-3 shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold shadow-xs">
-            <DollarSign className="w-4.5 h-4.5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold text-slate-900 leading-tight">汇率管理</h1>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200/80 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>从指定文档读取 (只读模式)</span>
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-              本系统直接读取财务指定文档中的外贸多币种汇率与结算基准，用于全系统BOQ工程量自动折算，无需本地维护
-            </p>
-          </div>
-        </div>
-
-        {/* Top Actions */}
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => setIsDocConfigModalOpen(true)}
-            className="h-9 px-4 rounded-full bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
-            title="查看汇率数据源文档连接信息"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-            <span>查看源文档配置</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleReReadDocument}
-            disabled={isSyncing}
-            className="h-9 px-4.5 rounded-full bg-[#EA3A20] text-white hover:bg-[#d6341c] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
-            title="立即从财务指定文档读取最新汇率"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? '正在从文档读取...' : '从指定文档重新读取'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* PROMINENT DOCUMENT SOURCE & LATEST UPDATE TIME BANNER (用户核心要求) */}
-      {/* ========================================================================= */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4 shrink-0 mb-3.5">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold shrink-0 border border-emerald-100">
-            <FileSpreadsheet className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-slate-900 text-sm">{documentSourceInfo.docName}</span>
-              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-medium border border-slate-200">
-                工作表: {documentSourceInfo.sheetName}
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                <span>已连接生效</span>
-              </span>
-            </div>
-            <div className="text-[11px] text-slate-500 mt-1 flex flex-wrap items-center gap-2">
-              <span>发布归属：{documentSourceInfo.sourceDept}</span>
-              <span>•</span>
-              <span>数据源映射：{documentSourceInfo.dataSource}</span>
-              <span>•</span>
-              <span className="text-amber-700 font-medium">数据由财务中心统一发布，本系统免手工录入</span>
-            </div>
-          </div>
-        </div>
-
-        {/* PROMINENT LATEST UPDATE TIME BADGE */}
-        <div className="flex items-center gap-3 shrink-0 self-start lg:self-auto">
-          <div className="bg-red-50/60 border border-red-100 rounded-xl px-4 py-2 flex items-center gap-3 shadow-2xs">
-            <div className="w-8 h-8 rounded-lg bg-[#EA3A20] text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Clock className="w-4 h-4" />
+      {!hideHeader && (
+        <div className="flex items-center justify-between py-3 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold shadow-xs">
+              <DollarSign className="w-4.5 h-4.5" />
             </div>
             <div>
-              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1">
-                <span>数据最新更新时间</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-bold text-slate-900 leading-tight">汇率管理</h1>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200/80 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>从指定文档读取 (只读模式)</span>
+                </span>
               </div>
-              <div className="text-sm font-mono font-extrabold text-[#EA3A20] tracking-tight mt-0.5">
-                {docLastUpdatedTime}
-              </div>
+              <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                本系统直接读取财务指定文档中的外贸多币种汇率与结算基准，用于全系统BOQ工程量自动折算，无需本地维护
+              </p>
             </div>
           </div>
 
-          <div className="hidden sm:flex flex-col text-[11px] text-slate-400 pl-2 border-l border-slate-200">
-            <span>下次自动同步:</span>
-            <span className="font-mono text-slate-600 font-semibold">{nextScheduledTime}</span>
+          {/* Top Actions */}
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsDocConfigModalOpen(true)}
+              className="h-9 px-4 rounded-full bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+              title="查看汇率数据源文档连接信息"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <span>查看源文档配置</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleReReadDocument}
+              disabled={isSyncing}
+              className="h-9 px-4.5 rounded-full bg-[#EA3A20] text-white hover:bg-[#d6341c] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
+              title="立即从财务指定文档读取最新汇率"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? '正在从文档读取...' : '从指定文档重新读取'}</span>
+            </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Scrollable Content */}
       <div className="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar">

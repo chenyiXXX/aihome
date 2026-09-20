@@ -56,7 +56,7 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
       case 'in_sales': return '客户';
       case 'marketing': return '运营助手';
       case 'knowledge_base': return '知识库管理';
-      case 'pricing_maintenance': return '产品价格维护';
+      case 'pricing_maintenance': return '面价汇率';
       case 'analytics': return '数据报告';
       case 'employee': return '员工权限';
       case 'sys_config': return '智能体基础设置';
@@ -349,26 +349,7 @@ export const SecondarySidebar: React.FC<SecondarySidebarProps> = ({
         );
 
       case 'pricing_maintenance':
-        return (
-          <div className="space-y-1">
-            <button
-              onClick={() => onSelectSubView('面价设置')}
-              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '面价设置' || subView === '单价库' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              面价设置
-            </button>
-            <button
-              onClick={() => onSelectSubView('汇率管理')}
-              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs cursor-pointer ${
-                subView === '汇率管理' ? 'bg-[#e8f0fe] text-[#1a73e8] font-bold' : 'text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              汇率管理
-            </button>
-          </div>
-        );
+        return null;
 
       case 'analytics':
         return (

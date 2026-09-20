@@ -105,20 +105,27 @@ export const ROUTE_DEFINITIONS: RouteDefinition[] = [
     moduleTitle: '知识库管理',
     pageTitle: '标签管理'
   },
-  // 6. 产品价格维护
+  // 6. 面价汇率
+  {
+    path: '/pricing',
+    moduleId: 'pricing_maintenance',
+    subView: '面价',
+    moduleTitle: '面价汇率',
+    pageTitle: '面价汇率'
+  },
   {
     path: '/pricing/list',
     moduleId: 'pricing_maintenance',
-    subView: '面价设置',
-    moduleTitle: '产品价格维护',
-    pageTitle: '面价设置'
+    subView: '面价',
+    moduleTitle: '面价汇率',
+    pageTitle: '面价汇率'
   },
   {
     path: '/pricing/exchange-rates',
     moduleId: 'pricing_maintenance',
-    subView: '汇率管理',
-    moduleTitle: '产品价格维护',
-    pageTitle: '汇率管理'
+    subView: '汇率',
+    moduleTitle: '面价汇率',
+    pageTitle: '面价汇率'
   },
   // 7. 数据统计
   {
@@ -177,6 +184,13 @@ export const ROUTE_DEFINITIONS: RouteDefinition[] = [
 
 // Map from module & subView to path
 export function getPathByModuleAndSubView(moduleId: ModuleType, subView?: string): string {
+  if (moduleId === 'pricing_maintenance') {
+    if (subView && (subView.includes('汇率') || subView.includes('rate'))) {
+      return '/pricing/exchange-rates';
+    }
+    return '/pricing/list';
+  }
+
   if (subView) {
     const match = ROUTE_DEFINITIONS.find(
       (r) => r.moduleId === moduleId && r.subView === subView
@@ -210,6 +224,9 @@ export function parseRoute(pathname: string): {
     return ROUTE_DEFINITIONS.find((r) => r.path === '/knowledge/upload')!;
   }
   if (normalized.startsWith('/pricing')) {
+    if (normalized.includes('rates') || normalized.includes('exchange')) {
+      return ROUTE_DEFINITIONS.find((r) => r.path === '/pricing/exchange-rates')!;
+    }
     return ROUTE_DEFINITIONS.find((r) => r.path === '/pricing/list')!;
   }
   if (normalized.startsWith('/analytics')) {

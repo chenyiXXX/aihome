@@ -98,8 +98,8 @@ export interface SessionItem {
   id: string;
   customerName: string;
   avatar: string;
-  channel: '企微' | 'WhatsApp' | 'WordPress' | '线下对接' | '企业微信' | string;
-  contactInfo?: string; // 手机号/企微ID/WordPress号码
+  channel: '企微' | 'WhatsApp' | '线下对接' | '企业微信' | string;
+  contactInfo?: string; // 手机号/企微ID/WhatsApp号码
   companyName?: string; // 企业或项目名称
   unreadCount: number;
   lastMessage: string;
@@ -146,6 +146,77 @@ export interface ChatMessage {
     content: string;
     timestamp?: string;
   }[];
+  // 报价需求确认卡片数据
+  quoteConfirmData?: QuotationRequirementConfirmData;
+  // AI 已生成的正式报价单 / 形式发票 (PI) 卡片数据
+  generatedQuoteData?: GeneratedQuotationCardData;
+}
+
+// 报价单需求确认卡片结构 (由AI从对话/设计图纸/知识库中提取)
+export interface QuotationRequirementConfirmData {
+  id: string;
+  status: 'pending_confirm' | 'confirmed' | 'cancelled';
+  customerName: string;
+  companyName?: string;
+  projectName: string;
+  tradeTerm: string;
+  currency: 'USD' | 'EUR' | 'CNY';
+  designDrawings: Array<{
+    name: string;
+    size: string;
+    type: string;
+    url?: string;
+    tag?: string;
+  }>;
+  productItems: Array<{
+    id: string;
+    category: string;
+    name: string;
+    spec: string;
+    qty: number;
+    unit: string;
+    estimatedPrice: number;
+    color?: string;
+    hardware?: string;
+    isCustom?: boolean;
+  }>;
+  leadTime: string;
+  depositTerm: string;
+  specialNotes?: string;
+  totalEstimatedAmount: number;
+  confirmedAt?: string;
+  generatedQuoteNo?: string;
+}
+
+// AI 生成的正式报价单卡片数据
+export interface GeneratedQuotationCardData {
+  quoteNo: string;
+  customerName: string;
+  companyName?: string;
+  projectName: string;
+  tradeTerm: string;
+  currency: 'USD' | 'EUR' | 'CNY';
+  items: Array<{
+    id: string;
+    name: string;
+    spec: string;
+    qty: number;
+    unit: string;
+    price: number;
+    subtotal: number;
+  }>;
+  totalAmount: number;
+  depositPercent: number;
+  depositAmount: number;
+  balanceAmount: number;
+  leadTime: string;
+  validDays: number;
+  cbmEstimate: number;
+  containerLoading: string;
+  createdAt: string;
+  pdfUrl?: string;
+  salesPitchEn: string;
+  salesPitchZh: string;
 }
 
 // 话术库 (Scripts Library - As shown in Screenshot 1!)
@@ -639,6 +710,18 @@ export interface ContentGenLog {
 }
 
 // 6. Product Price Maintenance & BOQ (产品价格维护与BOQ清单计算)
+export interface BOQPriceSpecVariant {
+  id: string;
+  specCode: string;          // 子规格编码 e.g. CAB-EGGER-E0-18MM
+  specName: string;          // 子规格描述 e.g. 18mm / 双饰面耐磨层 / ABS激光封边
+  unit?: '投影㎡' | '展开㎡' | '延米' | '个' | '套' | '米';
+  basePriceUSD: number;      // 该规格的外贸基准价 (USD)
+  basePriceRMB: number;      // 该规格的内销折算价 (RMB)
+  wasteRatePercent?: number; // 损耗率
+  formulaDesc?: string;      // 专属算价公式说明
+  remarks?: string;          // 备注说明
+}
+
 export interface BOQPriceItem {
   id: string;
   code: string;               // 部件编号 e.g. MAT-CAB-001
@@ -654,6 +737,7 @@ export interface BOQPriceItem {
   status: '已生效' | '待生效' | '已停用';
   updatedAt: string;
   tags?: string[];
+  variants?: BOQPriceSpecVariant[]; // 多规格二级变体列表
 }
 
 export interface BOQPricingRule {
@@ -711,5 +795,40 @@ export interface ExchangeRateLogItem {
   operator: string;
   timestamp: string;
   note: string;
+}
+
+// 10. 消息通知与提醒 Types
+export type NotificationCategory =
+  | 'kb_expiry'     // 知识库有效期提醒
+  | 'approval'      // 审批类提醒
+  | 'marketing_pub' // 运营内容发布情况通知
+  | 'all';
+
+export type NotificationPriority = 'urgent' | 'high' | 'normal' | 'low';
+
+export interface NotificationItem {
+  id: string;
+  category: 'kb_expiry' | 'approval' | 'marketing_pub';
+  title: string;
+  content: string;
+  timestamp: string;
+  isRead: boolean;
+  priority: NotificationPriority;
+  targetModule?: ModuleType;
+  targetSubView?: string;
+  actionText?: string;
+  actionPath?: string;
+  meta?: {
+    expiryDate?: string;
+    remainingDays?: number;
+    docName?: string;
+    approvalStatus?: 'pending' | 'approved' | 'rejected';
+    applicant?: string;
+    approver?: string;
+    publishPlatforms?: string[];
+    publishStatus?: 'success' | 'failed' | 'scheduled' | 'processing';
+    contentTitle?: string;
+    viewsCount?: number;
+  };
 }
 

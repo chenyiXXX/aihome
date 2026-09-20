@@ -28,6 +28,18 @@ app.post("/api/knowledge/qa", async (req, res) => {
 
     if (!ai) {
       // Intelligent categorized responses for internal training and product Q&A
+      if (category === 'sales_drill' || (question && (question.includes('对练') || question.includes('演练') || question.includes('实战模拟') || question.includes('刁钻')))) {
+        return res.json({
+          answer: `【AI 实战买家反馈与销冠复盘评估】\n\n针对您的回复/报价思路："${question}"\n\n🎭 **模拟买家（欧美采购总监）临场反应**：\n*"I hear what you're saying about your laser edge-banding, but $85,000 for 12 containers is still above our board's cap. If you can match $76,000 and include DDP customs clearance, we can sign the contract by this Friday. Otherwise, we will proceed with the Polish vendor."*\n\n📊 **AI 导师实战维度评分**：\n- **专业度与控场力**：88分（清晰亮出激光封边与百隆五金优势，未轻易降价）\n- **异议化解深度**：85分（建议进一步运用 3F 法则，将欧洲与波兰工厂交期不确定性与人工成本反差量化）\n- **谈判底线坚守**：92分（稳住 30% 定金与利润红线）\n\n💡 **销冠进阶攻防建议**：\n建议回应："We cannot match $76,000 without compromising Blum hardware and PUR waterproofing standards. However, to help you close the deal with your board, we can offer a $2,000 master sample rebate deducted from your bulk order, plus free 3D photo-realistic renderings for your client presentation."`,
+          sources: [
+            { title: "《海外买家刁钻异议模拟与攻防策略库》", code: "KB-DRILL-SALES-01" },
+            { title: "《外贸大单极限谈判心理博弈与控单手册》", code: "KB-TRAIN-SALES-02" }
+          ],
+          confidence: 0.99,
+          mode: "simulated_training"
+        });
+      }
+
       if (category === 'sales_training' || (question && (question.includes('销售') || question.includes('谈判') || question.includes('异议') || question.includes('定金') || question.includes('逼单')))) {
         return res.json({
           answer: `【品爱家居内部培训·外贸定制销冠技能与商务谈判问答】\n\n针对您的提问："${question}"\n\n1. **3F异议化解策略 (Feel, Felt, Found)**：\n   - 当欧美客户提出"别家工厂报价低15%"时，切忌直接降价。先共情肯定客户成本考量，再摆事实阐明全生命周期成本：德国豪迈激光封边（零胶缝防水）、进口百隆Blum五金（20万次开合寿命保障）与ISTA 3A防损海运包装，免去海外高达$80/小时的工人现场返工重做与投诉成本。\n\n2. **大单定金与锁价锁定法**：\n   - 定制全屋工程实行"30% T/T 锁产定金 + 70% 见B/L提单副本或装柜前电放"，强调"大宗板材与海运舱位价格按周浮动，30%定金到账即锁定当期最优BOM成本并启动1:1拆单施工图"。\n\n3. **海外买家决策推进节奏**：\n   - 询盘回复（4小时内）→ 发送3D全景样板图+粗报价（24小时内）→ DHL航寄实物色板包（3天内）→ Zoom在线讲图深化方案，步步锁定关键决策人。`,
@@ -77,7 +89,9 @@ app.post("/api/knowledge/qa", async (req, res) => {
     }
 
     let roleContext = "通用外贸定制家居产品与工艺专家";
-    if (category === 'sales_training') {
+    if (category === 'sales_drill') {
+      roleContext = "品爱家居外贸销售实战对练AI考官 / 刁钻海外买家采购总监，擅长全真模拟欧美/中东大客户在价格、质量、账期、交期上的极限挑刺施压，并对销售人员的应对进行实时实战演练、打分和销冠级攻防复盘";
+    } else if (category === 'sales_training') {
       roleContext = "品爱家居外贸销售总监与销冠实战培训导师，精通中东与欧美大客户异议化解、3F法则、30%定金谈判、价格博弈及全流程大单推进SOP";
     } else if (category === 'ops_training') {
       roleContext = "品爱家居跨境数字营销与海外运营导师，精通TikTok/Instagram Reels短视频爆款脚本、展会线上获客、海外大促排期及独立站SEO";

@@ -20,11 +20,15 @@ import {
   Sparkles,
   ArrowUpRight,
   X,
-  FileText
+  FileText,
+  ChevronDown,
+  ChevronRight,
+  CornerDownRight
 } from 'lucide-react';
-import { BOQPriceItem, BOQPricingRule, BOQLineItem } from '../../types';
-import { initialBOQPriceItems, initialBOQPricingRules } from '../../data/mockData';
+import { BOQPriceItem, BOQPricingRule, BOQLineItem, ExchangeRateItem } from '../../types';
+import { initialBOQPriceItems, initialBOQPricingRules, initialExchangeRates } from '../../data/mockData';
 import { ExchangeRateSubModule } from './ExchangeRateSubModule';
+import { PricingCopilot } from './pricing/PricingCopilot';
 
 interface PricingMaintenanceModuleProps {
   subView?: string;
@@ -32,24 +36,32 @@ interface PricingMaintenanceModuleProps {
 }
 
 export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> = ({
-  subView = '面价设置',
+  subView = '面价',
   onSelectSubView
 }) => {
-  // Current active subview tab (面价设置 | 算价规则配置 | BOQ报价试算)
-  const normalizedSubView = (subView === 'BOQ单价库' || subView === '单价库' || subView === '面价设置') ? '面价设置' : subView;
-  const [currentSubView, setCurrentSubView] = useState<string>(normalizedSubView || '面价设置');
+  // Current active tab: '面价' | '汇率'
+  const getTabFromSubView = (val?: string): '面价' | '汇率' => {
+    if (val && (val.includes('汇率') || val.includes('rate'))) {
+      return '汇率';
+    }
+    return '面价';
+  };
+
+  const [activeTab, setActiveTab] = useState<'面价' | '汇率'>(() => getTabFromSubView(subView));
+  const [currentSubView, setCurrentSubView] = useState<string>(subView || '面价');
 
   // Keep in sync with prop if changed externally
   React.useEffect(() => {
-    if (subView) {
-      setCurrentSubView((subView === 'BOQ单价库' || subView === '单价库' || subView === '面价设置') ? '面价设置' : subView);
-    }
+    const tab = getTabFromSubView(subView);
+    setActiveTab(tab);
+    setCurrentSubView(subView || tab);
   }, [subView]);
 
-  const handleTabChange = (view: string) => {
-    setCurrentSubView(view);
+  const handleTabChange = (tab: '面价' | '汇率') => {
+    setActiveTab(tab);
+    setCurrentSubView(tab);
     if (onSelectSubView) {
-      onSelectSubView(view);
+      onSelectSubView(tab);
     }
   };
 
@@ -60,6 +72,39 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
   const [unitFilter, setUnitFilter] = useState<string>('全部');
   const [currencyMode, setCurrencyMode] = useState<'USD' | 'CNY'>('USD');
   const [exchangeRate, setExchangeRate] = useState<number>(7.20);
+
+  // State: Expanded multi-spec product IDs for secondary level structure
+  const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(
+    new Set(['BOQ-CAB-001', 'BOQ-DOOR-001'])
+  );
+
+  const toggleExpandProduct = (productId: string) => {
+    setExpandedProductIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  };
+
+  // State: Exchange Rates List (read from document and updatable by AI Copilot)
+  const [ratesList, setRatesList] = useState<Array<ExchangeRateItem & { docCell: string }>>(() => {
+    const docCells = ['FX!B2:E2', 'FX!B3:E3', 'FX!B4:E4', 'FX!B5:E5', 'FX!B6:E6', 'FX!B7:E7', 'FX!B8:E8'];
+    return initialExchangeRates.map((item, idx) => {
+      const sysRate = item.currencyCode === 'USD' ? 7.20 : item.systemRate;
+      const settle = +(sysRate * (1 + item.bufferPercent / 100)).toFixed(4);
+      return {
+        ...item,
+        systemRate: sysRate,
+        settlementRate: settle,
+        lastUpdated: '2026-09-03 16:30:15',
+        docCell: docCells[idx] || `FX!B${idx + 2}`
+      };
+    });
+  });
 
   // Document Source Configuration (指定数据源文档信息)
   const documentSourceInfo = {
@@ -114,11 +159,46 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
         const matchCode = item.code.toLowerCase().includes(q);
         const matchSpec = item.spec.toLowerCase().includes(q);
         const matchTag = item.tags?.some((t) => t.toLowerCase().includes(q));
-        if (!matchName && !matchCode && !matchSpec && !matchTag) return false;
+        const matchVariant = item.variants?.some(
+          (v) => v.specCode.toLowerCase().includes(q) || v.specName.toLowerCase().includes(q)
+        );
+        if (!matchName && !matchCode && !matchSpec && !matchTag && !matchVariant) return false;
       }
       return true;
     });
   }, [priceItems, selectedCategory, unitFilter, searchKeyword]);
+
+  // Multi-specification helpers for expand/collapse all
+  const hasMultiSpecItems = useMemo(
+    () => filteredItems.some((it) => it.variants && it.variants.length > 0),
+    [filteredItems]
+  );
+
+  const isAllExpanded = useMemo(() => {
+    const multiIds = filteredItems
+      .filter((it) => it.variants && it.variants.length > 0)
+      .map((it) => it.id);
+    return multiIds.length > 0 && multiIds.every((id) => expandedProductIds.has(id));
+  }, [filteredItems, expandedProductIds]);
+
+  const toggleExpandAll = () => {
+    const multiIds = filteredItems
+      .filter((it) => it.variants && it.variants.length > 0)
+      .map((it) => it.id);
+    if (isAllExpanded) {
+      setExpandedProductIds((prev) => {
+        const next = new Set(prev);
+        multiIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    } else {
+      setExpandedProductIds((prev) => {
+        const next = new Set(prev);
+        multiIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
+  };
 
   // Re-read / Sync Price Items directly from Designated Document
   const handleSyncFromDoc = () => {
@@ -435,154 +515,109 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
     setTimeout(() => setCopiedSuccess(false), 2500);
   };
 
-  // If subView is 汇率管理, render ExchangeRateSubModule
-  if (currentSubView === '汇率管理') {
-    return (
-      <ExchangeRateSubModule
-        currentBaseRate={exchangeRate}
-        onUpdateBaseRate={(newRate) => {
-          setExchangeRate(newRate);
-          // Recalculate priceItems basePriceRMB if needed
-          setPriceItems((prev) =>
-            prev.map((item) => ({
-              ...item,
-              basePriceRMB: +(item.basePriceUSD * newRate).toFixed(2)
-            }))
-          );
-        }}
-      />
-    );
-  }
-
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
-      
-      {/* Top Header */}
-      <div className="flex items-center justify-between py-3 shrink-0">
+    <div className="flex-1 flex flex-col h-full px-4 lg:px-6 pb-6 pt-1 overflow-hidden select-none bg-[#F8F9FA]">
+      {/* Main Dual-Column Split Workspace: Left Copilot + Right Tabs */}
+      <div className="flex-1 flex gap-3.5 lg:gap-4 overflow-hidden min-h-0">
         
-        {/* Left: Module Title */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold shadow-xs">
-            <Calculator className="w-4.5 h-4.5" />
+        {/* Left Column: AI Assistant Copilot (左右结构之左侧) */}
+        <PricingCopilot
+          priceItems={priceItems}
+          ratesList={ratesList}
+          onUpdatePriceItems={(newItems) => {
+            setPriceItems(newItems);
+            const nowStr = new Date().toLocaleDateString('zh-CN').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString();
+            setDocLastUpdatedTime(nowStr);
+          }}
+          onUpdateRatesList={(newRates) => {
+            setRatesList(newRates);
+            const usd = newRates.find((r) => r.currencyCode === 'USD');
+            if (usd) {
+              setExchangeRate(usd.systemRate);
+              setPriceItems((prev) =>
+                prev.map((item) => ({
+                  ...item,
+                  basePriceRMB: +(item.basePriceUSD * usd.systemRate).toFixed(2)
+                }))
+              );
+            }
+          }}
+          onSelectTab={handleTabChange}
+          activeTab={activeTab}
+          currentExchangeRate={exchangeRate}
+          onShowToast={showToast}
+        />
+
+        {/* Right Column: Two Tabs (面价, 汇率) (左右结构之右侧) */}
+        <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
+        
+        {/* Top Header: Tabs & Actions */}
+        <div className="flex items-center justify-between py-2 shrink-0">
+          {/* Direct Two Tabs: 面价 | 汇率 */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => handleTabChange('面价')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === '面价'
+                  ? 'bg-white text-[#EA3A20] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+              }`}
+            >
+              <FileSpreadsheet className={`w-3.5 h-3.5 ${activeTab === '面价' ? 'text-[#EA3A20]' : 'text-slate-400'}`} />
+              <span>面价</span>
+              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-mono ${
+                activeTab === '面价' ? 'bg-red-50 text-[#EA3A20]' : 'bg-slate-200/70 text-slate-500'
+              }`}>
+                {priceItems.length}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange('汇率')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === '汇率'
+                  ? 'bg-white text-[#EA3A20] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+              }`}
+            >
+              <DollarSign className={`w-3.5 h-3.5 ${activeTab === '汇率' ? 'text-[#EA3A20]' : 'text-slate-400'}`} />
+              <span>汇率</span>
+              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-mono ${
+                activeTab === '汇率' ? 'bg-red-50 text-[#EA3A20]' : 'bg-slate-200/70 text-slate-500'
+              }`}>
+                {ratesList.length}
+              </span>
+            </button>
           </div>
-          <div>
-            <h1 className="text-base font-bold text-slate-900 leading-tight">产品价格维护</h1>
-            <p className="text-[11px] text-slate-400 font-medium">维护外贸定制产品单价、损耗与计算公式，为报价单BOQ工程量清单提供实时精确价格</p>
+
+          {/* Right: Actions & Last Updated Time */}
+          <div className="flex items-center gap-3">
+            {/* 数据最后更新时间 */}
+            <div
+              id="pricing-last-updated-badge"
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl text-xs text-slate-500 transition-colors shadow-2xs cursor-default"
+              title="数据来源于企业财务与工程指定文档，支持自动定时拉取与即时同步"
+            >
+              <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-slate-400">数据最后更新时间:</span>
+                <span className="font-mono font-medium text-slate-700">{docLastUpdatedTime}</span>
+              </div>
+            </div>
+
+            {activeTab === '汇率' && (
+              <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/70">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>外币汇率由财务中心统一发布并按天锁汇</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2.5">
-          {(currentSubView === '面价设置' || currentSubView === '单价库' || currentSubView === 'BOQ单价库') ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setIsDocConfigModalOpen(true)}
-                className="h-9 px-4 rounded-full bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
-                title="查看外部指定单价文档数据源配置"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                <span>源文档配置</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSyncFromDoc}
-                disabled={isSyncingDoc}
-                className="h-9 px-4.5 rounded-full bg-[#EA3A20] text-white hover:bg-[#d6341c] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
-                title="从指定文档重新读取最新单价定额"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncingDoc ? 'animate-spin' : ''}`} />
-                <span>{isSyncingDoc ? '正在读取...' : '从指定文档重新读取'}</span>
-              </button>
-            </>
-          ) : (
-            <div className="flex items-center gap-2">
-              {currentSubView === 'BOQ报价试算' && (
-                <button
-                  type="button"
-                  onClick={handleCopyBOQ}
-                  className="h-9 px-4.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
-                >
-                  {copiedSuccess ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  <span>{copiedSuccess ? '已复制BOQ清单' : '一键复制BOQ清单'}</span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => handleTabChange('面价设置')}
-                className="h-9 px-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
-              >
-                <span>← 返回面价设置</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ======================= TAB 1: 面价设置 ======================= */}
-      {(currentSubView === '面价设置' || currentSubView === '单价库' || currentSubView === 'BOQ单价库') && (
-        <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
-
-          {/* Document Source Banner & Latest Update Time */}
-          <div className="bg-white rounded-2xl p-3.5 border border-slate-200/90 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold shrink-0 border border-emerald-200/60">
-                <FileSpreadsheet className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-bold text-slate-900 text-sm">{documentSourceInfo.docName}</span>
-                  <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-medium border border-slate-200">
-                    工作表: {documentSourceInfo.sheetName}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200/60 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    <span>指定文档直读模式 (只读)</span>
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-500 mt-1 flex flex-wrap items-center gap-2">
-                  <span>数据源：<span className="text-slate-700 font-medium">{documentSourceInfo.sourceDept}</span></span>
-                  <span>•</span>
-                  <span>当前已加载：<strong className="text-slate-800">{priceItems.length}</strong> 条标准单价定额</span>
-                  <span>•</span>
-                  <span className="text-amber-700 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
-                    单价数据由源文档统一维护，系统只读解析，保障外贸报价基准绝对统一
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Latest Update Time Card */}
-            <div className="flex items-center gap-3 shrink-0 self-start lg:self-auto">
-              <div className="bg-red-50/70 border border-red-100/90 rounded-xl px-4 py-2 flex items-center gap-3 shadow-2xs">
-                <div className="w-8 h-8 rounded-lg bg-[#EA3A20] text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <Clock className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                    <span>数据最新更新时间</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  </div>
-                  <div className="text-sm font-mono font-extrabold text-[#EA3A20] tracking-tight mt-0.5">
-                    {docLastUpdatedTime}
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleSyncFromDoc}
-                disabled={isSyncingDoc}
-                className="h-10 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
-                title="立即从指定文档重新读取最新单价"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncingDoc ? 'animate-spin' : ''}`} />
-                <span>重新读取</span>
-              </button>
-            </div>
-          </div>
+        {/* ======================= TAB 1: 面价 ======================= */}
+        {activeTab === '面价' && (
+          <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
           
           {/* Top Filter & Search Controls */}
           <div className="flex items-center justify-between gap-4 shrink-0 bg-white p-3 rounded-2xl border border-slate-100/90 shadow-2xs">
@@ -610,6 +645,19 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
             {/* Right Search & Unit Filter */}
             <div className="flex items-center gap-2.5 shrink-0">
               
+              {/* Expand All / Collapse All Multi-Spec Items */}
+              {hasMultiSpecItems && (
+                <button
+                  type="button"
+                  onClick={toggleExpandAll}
+                  className="h-8 px-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="一键展开或收起所有多规格产品"
+                >
+                  <Layers className="w-3.5 h-3.5 text-[#EA3A20]" />
+                  <span>{isAllExpanded ? '收起所有规格' : '展开多规格'}</span>
+                </button>
+              )}
+
               {/* Unit Dropdown */}
               <select
                 value={unitFilter}
@@ -688,97 +736,308 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                     </th>
                     <th className="py-3.5 px-3 font-bold text-slate-900 text-center">损耗率</th>
                     <th className="py-3.5 px-3 font-bold text-slate-900">BOQ核算逻辑与公式</th>
-                    <th className="py-3.5 px-3 font-bold text-slate-900 text-center">状态</th>
                     <th className="py-3.5 pr-6 pl-3 font-bold text-slate-900 text-right">文档明细</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100/80 text-xs">
                   {filteredItems.map((item) => {
-                    const displayPrice = currencyMode === 'USD'
-                      ? `$${item.basePriceUSD.toFixed(2)}`
-                      : `¥${item.basePriceRMB.toFixed(2)}`;
+                    const hasVariants = Boolean(item.variants && item.variants.length > 0);
+                    const isExpanded = expandedProductIds.has(item.id);
+
+                    // 价格区间计算（若有多规格）
+                    let displayPrice = '';
+                    let subPrice = '';
+                    let hasPriceRange = false;
+
+                    if (hasVariants && item.variants && item.variants.length > 0) {
+                      const minUSD = Math.min(...item.variants.map((v) => v.basePriceUSD));
+                      const maxUSD = Math.max(...item.variants.map((v) => v.basePriceUSD));
+                      const minRMB = Math.min(...item.variants.map((v) => v.basePriceRMB));
+                      const maxRMB = Math.max(...item.variants.map((v) => v.basePriceRMB));
+
+                      if (minUSD !== maxUSD) {
+                        hasPriceRange = true;
+                        if (currencyMode === 'USD') {
+                          displayPrice = `$${minUSD.toFixed(2)} ~ $${maxUSD.toFixed(2)}`;
+                          subPrice = `≈ ¥${minRMB.toFixed(1)} ~ ¥${maxRMB.toFixed(1)}`;
+                        } else {
+                          displayPrice = `¥${minRMB.toFixed(1)} ~ ¥${maxRMB.toFixed(1)}`;
+                          subPrice = `≈ $${minUSD.toFixed(2)} ~ $${maxUSD.toFixed(2)}`;
+                        }
+                      }
+                    }
+
+                    if (!hasPriceRange) {
+                      displayPrice = currencyMode === 'USD'
+                        ? `$${item.basePriceUSD.toFixed(2)}`
+                        : `¥${item.basePriceRMB.toFixed(2)}`;
+                      subPrice = currencyMode === 'USD'
+                        ? `≈ ¥${item.basePriceRMB.toFixed(1)}`
+                        : `≈ $${item.basePriceUSD.toFixed(2)}`;
+                    }
 
                     return (
-                      <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3 pl-6 pr-3 text-center">
-                          <input type="checkbox" className="rounded-md border-slate-300 w-4 h-4 cursor-pointer" />
-                        </td>
-                        <td className="py-3 px-3 font-mono font-bold text-slate-700 text-[11px]">
-                          {item.code}
-                        </td>
-                        <td className="py-3 px-3 font-bold text-slate-900">
-                          <div>
-                            <span>{item.name}</span>
-                            {item.tags && item.tags.length > 0 && (
-                              <div className="flex items-center gap-1 mt-1">
-                                {item.tags.slice(0, 3).map((t, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="px-1.5 py-0.5 text-[10px] bg-slate-100 text-slate-500 rounded font-normal"
+                      <React.Fragment key={item.id}>
+                        {/* 一级产品主行 */}
+                        <tr
+                          className={`transition-colors ${
+                            isExpanded ? 'bg-slate-50/60' : 'hover:bg-slate-50/70'
+                          }`}
+                        >
+                          <td className="py-3 pl-6 pr-3 text-center">
+                            <input type="checkbox" className="rounded-md border-slate-300 w-4 h-4 cursor-pointer" />
+                          </td>
+
+                          {/* 部件编码：带展开按钮 */}
+                          <td className="py-3 px-3 font-mono font-bold text-slate-700 text-[11px]">
+                            <div className="flex items-center gap-1">
+                              {hasVariants ? (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleExpandProduct(item.id)}
+                                  className="w-5 h-5 -ml-1 rounded flex items-center justify-center hover:bg-slate-200/80 text-slate-500 hover:text-[#EA3A20] transition-colors cursor-pointer"
+                                  title={isExpanded ? '收起规格列表' : '展开多规格价格列表'}
+                                >
+                                  {isExpanded ? (
+                                    <ChevronDown className="w-3.5 h-3.5 text-[#EA3A20]" />
+                                  ) : (
+                                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                                  )}
+                                </button>
+                              ) : (
+                                <span className="w-4" />
+                              )}
+                              <span>{item.code}</span>
+                            </div>
+                          </td>
+
+                          {/* 部件名称：带多规格标识 */}
+                          <td className="py-3 px-3 font-bold text-slate-900">
+                            <div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span>{item.name}</span>
+                                {hasVariants && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleExpandProduct(item.id)}
+                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                                      isExpanded
+                                        ? 'bg-red-50 text-[#EA3A20] border border-red-200/80 shadow-2xs'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-[#EA3A20] border border-slate-200/60'
+                                    }`}
+                                    title="点击展开或收起此产品的多个规格定价"
                                   >
-                                    {t}
-                                  </span>
-                                ))}
+                                    <span>{item.variants!.length} 个规格</span>
+                                    {isExpanded ? (
+                                      <ChevronDown className="w-2.5 h-2.5" />
+                                    ) : (
+                                      <ChevronRight className="w-2.5 h-2.5" />
+                                    )}
+                                  </button>
+                                )}
                               </div>
+                              {item.tags && item.tags.length > 0 && (
+                                <div className="flex items-center gap-1 mt-1">
+                                  {item.tags.slice(0, 3).map((t, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="px-1.5 py-0.5 text-[10px] bg-slate-100 text-slate-500 rounded font-normal"
+                                    >
+                                      {t}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* 类别 */}
+                          <td className="py-3 px-3">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                              item.category === '柜体板材' ? 'bg-amber-50 text-amber-700 border-amber-200/70' :
+                              item.category === '定制门板' ? 'bg-blue-50 text-blue-700 border-blue-200/70' :
+                              item.category === '台面石材' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/70' :
+                              item.category === '基础五金' ? 'bg-indigo-50 text-indigo-700 border-indigo-200/70' :
+                              item.category === '功能配件' ? 'bg-purple-50 text-purple-700 border-purple-200/70' :
+                              'bg-slate-100 text-slate-700 border-slate-200'
+                            }`}>
+                              {item.category}
+                            </span>
+                          </td>
+
+                          {/* 规格 */}
+                          <td className="py-3 px-3 text-slate-600 max-w-[200px]" title={item.spec}>
+                            <span className="line-clamp-1">{item.spec}</span>
+                            {hasVariants && (
+                              <span className="text-[10px] text-slate-400 block mt-0.5">
+                                包含 {item.variants!.length} 种细分规格定额 (可展开)
+                              </span>
                             )}
-                          </div>
-                        </td>
-                        <td className="py-3 px-3">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                            item.category === '柜体板材' ? 'bg-amber-50 text-amber-700 border-amber-200/70' :
-                            item.category === '定制门板' ? 'bg-blue-50 text-blue-700 border-blue-200/70' :
-                            item.category === '台面石材' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/70' :
-                            item.category === '基础五金' ? 'bg-indigo-50 text-indigo-700 border-indigo-200/70' :
-                            item.category === '功能配件' ? 'bg-purple-50 text-purple-700 border-purple-200/70' :
-                            'bg-slate-100 text-slate-700 border-slate-200'
-                          }`}>
-                            {item.category}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-slate-600 max-w-[200px] truncate" title={item.spec}>
-                          {item.spec}
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
-                            {item.unit}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          <div className="font-mono font-bold text-slate-900 text-sm">
-                            {displayPrice}
-                          </div>
-                          <div className="text-[10px] text-slate-400 font-mono">
-                            {currencyMode === 'USD' ? `≈ ¥${item.basePriceRMB.toFixed(1)}` : `≈ $${item.basePriceUSD.toFixed(2)}`}
-                          </div>
-                        </td>
-                        <td className="py-3 px-3 text-center font-mono font-bold text-slate-600">
-                          {item.wasteRatePercent}%
-                        </td>
-                        <td className="py-3 px-3 text-slate-500 text-[11px] max-w-[220px]">
-                          <span className="bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded text-slate-600 inline-block font-mono">
-                            {item.formulaDesc}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            文档同步
-                          </span>
-                        </td>
-                        <td className="py-3 pr-6 pl-3 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedDetailItem(item)}
-                              className="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors text-[11px] font-bold flex items-center gap-1 border border-slate-200/60 bg-white"
-                              title="查看该单价在源文档中的完整映射属性"
+                          </td>
+
+                          {/* 单位 */}
+                          <td className="py-3 px-3 text-center">
+                            <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+                              {item.unit}
+                            </span>
+                          </td>
+
+                          {/* 单价 */}
+                          <td className="py-3 px-3 text-right">
+                            <div className="font-mono font-bold text-slate-900 text-sm flex items-center justify-end gap-1">
+                              <span>{displayPrice}</span>
+                              {hasPriceRange && (
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-50 text-amber-700 font-normal">
+                                  区间
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono">
+                              {subPrice}
+                            </div>
+                          </td>
+
+                          {/* 损耗率 */}
+                          <td className="py-3 px-3 text-center font-mono font-bold text-slate-600">
+                            {item.wasteRatePercent}%
+                          </td>
+
+                          {/* 公式 */}
+                          <td className="py-3 px-3 text-slate-500 text-[11px] max-w-[220px]">
+                            <span className="bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded text-slate-600 inline-block font-mono truncate max-w-full" title={item.formulaDesc}>
+                              {item.formulaDesc}
+                            </span>
+                          </td>
+
+                          {/* 文档明细 */}
+                          <td className="py-3 pr-6 pl-3 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedDetailItem(item)}
+                                className="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors text-[11px] font-bold flex items-center gap-1 border border-slate-200/60 bg-white"
+                                title="查看该单价在源文档中的完整映射属性"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-slate-500" />
+                                <span>详情</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* 二级展开规格子行 */}
+                        {hasVariants && isExpanded && item.variants!.map((variant, vIdx) => {
+                          const vPriceDisplay = currencyMode === 'USD'
+                            ? `$${variant.basePriceUSD.toFixed(2)}`
+                            : `¥${variant.basePriceRMB.toFixed(2)}`;
+                          const vPriceSub = currencyMode === 'USD'
+                            ? `≈ ¥${variant.basePriceRMB.toFixed(1)}`
+                            : `≈ $${variant.basePriceUSD.toFixed(2)}`;
+                          const vUnit = variant.unit || item.unit;
+                          const vWaste = variant.wasteRatePercent !== undefined ? variant.wasteRatePercent : item.wasteRatePercent;
+                          const vFormula = variant.formulaDesc || item.formulaDesc;
+
+                          return (
+                            <tr
+                              key={variant.id || `${item.id}-var-${vIdx}`}
+                              className="bg-amber-50/20 hover:bg-amber-50/50 transition-colors border-b border-slate-100/60 text-xs"
                             >
-                              <Eye className="w-3.5 h-3.5 text-slate-500" />
-                              <span>详情</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
+                              {/* 缩进层级点 */}
+                              <td className="py-2.5 pl-6 pr-3 text-center">
+                                <div className="flex items-center justify-center text-slate-300">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                                </div>
+                              </td>
+
+                              {/* 二级规格编码：带树状连接图标 */}
+                              <td className="py-2.5 px-3 font-mono text-slate-700 text-[11px]">
+                                <div className="flex items-center gap-1.5 pl-2">
+                                  <CornerDownRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <span className="bg-white px-2 py-0.5 rounded border border-slate-200/80 font-bold text-slate-800 shadow-2xs">
+                                    {variant.specCode}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* 二级规格描述 */}
+                              <td className="py-2.5 px-3">
+                                <div className="flex items-center gap-1.5 pl-2">
+                                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-100/80 text-amber-800 shrink-0">
+                                    规格 {vIdx + 1}
+                                  </span>
+                                  <span className="font-semibold text-slate-800 text-xs">
+                                    {variant.specName}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* 类别 */}
+                              <td className="py-2.5 px-3">
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  ↳ 规格变体
+                                </span>
+                              </td>
+
+                              {/* 规格说明 */}
+                              <td className="py-2.5 px-3 text-slate-500 text-[11px] max-w-[200px]" title={variant.specName}>
+                                <span className="line-clamp-1">{variant.specName}</span>
+                              </td>
+
+                              {/* 单位 */}
+                              <td className="py-2.5 px-3 text-center">
+                                <span className="font-mono text-slate-700 bg-white border border-slate-200/80 px-2 py-0.5 rounded text-[11px]">
+                                  {vUnit}
+                                </span>
+                              </td>
+
+                              {/* 规格独立价格（高亮显示） */}
+                              <td className="py-2.5 px-3 text-right bg-amber-50/40">
+                                <div className="font-mono font-extrabold text-[#EA3A20] text-sm">
+                                  {vPriceDisplay}
+                                </div>
+                                <div className="text-[10px] text-slate-400 font-mono">
+                                  {vPriceSub}
+                                </div>
+                              </td>
+
+                              {/* 损耗率 */}
+                              <td className="py-2.5 px-3 text-center font-mono font-semibold text-slate-700">
+                                {vWaste}%
+                              </td>
+
+                              {/* 公式 */}
+                              <td className="py-2.5 px-3 text-slate-500 text-[11px] max-w-[220px]">
+                                <span className="bg-white/90 border border-slate-200/70 px-2 py-0.5 rounded font-mono text-slate-700 block truncate" title={vFormula}>
+                                  {vFormula}
+                                </span>
+                              </td>
+
+                              {/* 操作明细 */}
+                              <td className="py-2.5 pr-6 pl-3 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedDetailItem({
+                                    ...item,
+                                    code: variant.specCode,
+                                    name: `${item.name} (${variant.specName})`,
+                                    spec: variant.specName,
+                                    unit: vUnit,
+                                    basePriceUSD: variant.basePriceUSD,
+                                    basePriceRMB: variant.basePriceRMB,
+                                    wasteRatePercent: vWaste,
+                                    formulaDesc: vFormula
+                                  })}
+                                  className="px-2 py-0.5 text-slate-600 hover:text-slate-900 hover:bg-white rounded cursor-pointer transition-colors text-[10px] font-bold inline-flex items-center gap-1 border border-slate-200/60 bg-white/80 shadow-2xs"
+                                  title="查看此规格明细"
+                                >
+                                  <Eye className="w-3 h-3 text-slate-400" />
+                                  <span>明细</span>
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
@@ -792,13 +1051,42 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                 <span>•</span>
                 <span>当前筛选显示 <strong className="text-[#EA3A20]">{filteredItems.length}</strong> 项</span>
               </div>
-              <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                <Info className="w-3.5 h-3.5" />
-                <span>BOQ清单生成时将根据部件单位及损耗率自动累加分项金额</span>
-              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* ======================= TAB 2: 汇率 ======================= */}
+      {activeTab === '汇率' && (
+        <ExchangeRateSubModule
+          hideHeader={true}
+          currentBaseRate={exchangeRate}
+          externalRatesList={ratesList}
+          onRatesListChange={(newRates) => {
+            setRatesList(newRates);
+            const usd = newRates.find((r) => r.currencyCode === 'USD');
+            if (usd) {
+              setExchangeRate(usd.systemRate);
+              setPriceItems((prev) =>
+                prev.map((item) => ({
+                  ...item,
+                  basePriceRMB: +(item.basePriceUSD * usd.systemRate).toFixed(2)
+                }))
+              );
+            }
+          }}
+          externalLastUpdatedTime={docLastUpdatedTime}
+          onLastUpdatedChange={(newTime) => setDocLastUpdatedTime(newTime)}
+          onUpdateBaseRate={(newRate) => {
+            setExchangeRate(newRate);
+            setPriceItems((prev) =>
+              prev.map((item) => ({
+                ...item,
+                basePriceRMB: +(item.basePriceUSD * newRate).toFixed(2)
+              }))
+            );
+          }}
+        />
       )}
 
       {/* ======================= TAB 2: 算价规则配置 ======================= */}
@@ -1216,9 +1504,9 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
 
       {/* ======================= MODAL: 源文档连接与映射配置 ======================= */}
       {isDocConfigModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scale-in">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scale-in max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
                   <FileSpreadsheet className="w-4 h-4" />
@@ -1237,7 +1525,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
               </button>
             </div>
 
-            <div className="space-y-3.5 text-xs">
+            <div className="space-y-3.5 text-xs overflow-y-auto custom-scrollbar flex-1 pr-1">
               <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 font-medium">指定源文档名称:</span>
@@ -1322,11 +1610,14 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
         </div>
       )}
 
+      </div> {/* End Right Column */}
+      </div> {/* End Dual-Column Split Workspace */}
+
       {/* ======================= MODAL: 查看单价项源文档映射明细 ======================= */}
       {selectedDetailItem && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scale-in">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scale-in max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
                   <FileText className="w-4 h-4" />
@@ -1345,7 +1636,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3 text-xs overflow-y-auto custom-scrollbar flex-1 pr-1">
               <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 grid grid-cols-2 gap-2.5">
                 <div>
                   <span className="text-slate-400 text-[11px] block">部件名称</span>
@@ -1395,6 +1686,35 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                 <span className="text-slate-400 text-[11px] block">BOQ核算逻辑与计算公式</span>
                 <p className="font-mono text-slate-800 text-xs font-medium">{selectedDetailItem.formulaDesc}</p>
               </div>
+
+              {selectedDetailItem.variants && selectedDetailItem.variants.length > 0 && (
+                <div className="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/70 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-amber-900">
+                    <div className="flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-amber-700" />
+                      <span>包含细分规格与定价 ({selectedDetailItem.variants.length})</span>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar">
+                    {selectedDetailItem.variants.map((v, idx) => (
+                      <div
+                        key={v.id || idx}
+                        className="bg-white/90 p-2 rounded-xl border border-amber-200/50 flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                            {v.specCode}
+                          </span>
+                          <span className="font-semibold text-slate-800">{v.specName}</span>
+                        </div>
+                        <div className="text-right font-mono font-bold text-[#EA3A20]">
+                          ${v.basePriceUSD.toFixed(2)} / {v.unit || selectedDetailItem.unit}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between text-[11px]">
                 <div>

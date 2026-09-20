@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { X, Target, TrendingUp, Users, BookOpen, Check } from 'lucide-react';
+import { X, Target, TrendingUp, Users, BookOpen, Check, Swords } from 'lucide-react';
 
-export type SessionCategoryType = 'sales_training' | 'ops_training' | 'hr_training' | 'general';
+export type SessionCategoryType = 'sales_training' | 'sales_drill' | 'ops_training' | 'hr_training' | 'general';
 
 interface CreateSessionModalProps {
   isOpen: boolean;
@@ -51,6 +51,24 @@ const CATEGORY_OPTIONS: CategoryOption[] = [
       '海外客户要求减少定金至10%，如何引导并坚持30%底线？',
       '德国百隆Blum五金与国产优质五金相比，向客户讲解溢价卖点的话术有哪些？',
       '外贸全屋定制如何向海外总包商讲解打样费并在大货中抵扣？'
+    ]
+  },
+  {
+    type: 'sales_drill',
+    title: '销售对练',
+    badge: '销售对练',
+    tagBg: 'bg-amber-50 text-amber-700 border-amber-200',
+    tagColor: 'text-amber-600',
+    icon: Swords,
+    roleTitle: 'AI 刁钻买家 / 采购总监 · 拟真实战对练',
+    roleSubtitle: '全真模拟海外严苛客户，针对价格压制、质量质疑、打样账期与交期索赔开展实战攻防',
+    kbScope: '《海外买家刁钻异议模拟库》/《大客户采购心理画像》/《销冠实战通关标准》',
+    defaultTitlePrefix: '销售对练 · ',
+    prompts: [
+      '【价格施压】"你们的FOB报价比越南和波兰工厂高20%，不降价我们立即切换供应商。"',
+      '【质量质疑】"我们收到过中国其他工厂的起皮开裂投诉，你们凭什么保证防潮5年？"',
+      '【账期与定金】"首单我们只能付10%订金，见提单副本后付尾款，否则免谈。"',
+      '【交期逼迫】"45天必须到鹿特丹港，延误一天按合同扣款2%，你们敢不敢签？"'
     ]
   },
   {
@@ -119,7 +137,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
 
   if (!isOpen) return null;
 
-  const currentOption = CATEGORY_OPTIONS.find((c) => c.type === selectedCategory) || CATEGORY_OPTIONS[3];
+  const currentOption = CATEGORY_OPTIONS.find((c) => c.type === selectedCategory) || CATEGORY_OPTIONS[4];
 
   const handleConfirm = () => {
     const finalTitle = customTitle.trim() || `${currentOption.title} · ${new Date().toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}`;
@@ -136,6 +154,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       recommendedPrompts: currentOption.prompts,
       welcomeMessage: currentOption.type === 'general'
         ? `您好！我是品爱家居 AI 知识导师。您可以随时向我提问产品工艺、技术标准、外贸大单交付、内部流程或国际贸易合规细节。`
+        : currentOption.type === 'sales_drill'
+        ? `【销售实战对练开启】您好！我是本次对练的【欧美/中东大客户采购总监 · AI 模拟买家】。我将针对定制柜体价格、交期、定金条款及产品品质进行全真极限施压。请准备好，您可以直接向我发起商务破冰或承接我的采购询盘！`
         : `您好！我是您的【${currentOption.title}】专属导师。本会话已关联${currentOption.kbScope}，您可以直接向我发起实操提问或业务演练。`
     });
 
@@ -162,7 +182,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
 
         {/* Content */}
         <div className="p-6 space-y-5">
-          {/* Category Select Grid (4 categories requested: 销售培训、运营培训、人力资源培训、知识问答) */}
+          {/* Category Select Grid */}
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-700 block">
               会话类型
@@ -182,6 +202,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                       }
                     }}
                     className={`p-3 rounded-2xl border text-left cursor-pointer transition-all relative flex flex-col justify-between min-h-[82px] ${
+                      opt.type === 'general' ? 'col-span-2' : ''
+                    } ${
                       isSelected
                         ? 'bg-[#EA3A20]/5 border-[#0F4A47] ring-1 ring-[#0F4A47]/20 shadow-2xs'
                         : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300'
@@ -228,7 +250,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           {/* Associated Context Preview */}
           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">配置导师：</span>
+              <span className="text-slate-400">配置角色：</span>
               <span className="font-bold text-slate-700">{currentOption.roleTitle}</span>
             </div>
             <div className="flex items-center justify-between">
@@ -259,3 +281,4 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     </div>
   );
 };
+

@@ -155,10 +155,10 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
     },
     {
       id: 'pricing_maintenance' as ModuleType,
-      label: '产品价格维护',
+      label: '面价汇率',
       icon: Calculator,
-      defaultSubView: '面价设置',
-      subViews: ['面价设置', '汇率管理']
+      defaultSubView: '面价',
+      subViews: []
     },
     {
       id: 'analytics' as ModuleType,

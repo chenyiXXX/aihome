@@ -83,7 +83,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
     '销售助手',
     '运营助手',
     '知识库管理',
-    '产品价格维护',
+    '面价汇率',
     '数据统计',
     '员工权限',
     '智能体基础设置',
