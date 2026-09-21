@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { ExchangeRateItem } from '../../types';
 import { initialExchangeRates } from '../../data/mockData';
+import { Pagination } from '../common/Pagination';
 
 interface ExchangeRateSubModuleProps {
   currentBaseRate: number;
@@ -128,6 +129,19 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
       return matchKeyword && matchStatus;
     });
   }, [ratesList, searchKeyword, statusFilter]);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(5);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchKeyword, statusFilter]);
+
+  const paginatedRates = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredRates.slice(start, start + pageSize);
+  }, [filteredRates, currentPage, pageSize]);
 
   // Re-read rates from designated document
   const handleReReadDocument = () => {
@@ -274,7 +288,7 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
-                {filteredRates.map((item) => (
+                {paginatedRates.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3 px-4 font-bold text-slate-900">
                       <div className="flex items-center gap-2">
@@ -347,17 +361,31 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
             </table>
           </div>
 
-          {/* Bottom Table Footer */}
-          <div className="pt-3 border-t border-slate-100 mt-2 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
-            <div className="flex items-center gap-2">
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-              <span>数据源文档：<strong className="text-slate-800">{documentSourceInfo.docName}</strong></span>
-              <span>•</span>
-              <span>当前共读取 <strong className="text-slate-800">{ratesList.length}</strong> 个结算币种汇率</span>
-            </div>
-            <div className="text-[11px] text-slate-400 flex items-center gap-1">
-              <Info className="w-3.5 h-3.5" />
-              <span>如需调整基准汇率或锁汇政策，请直接在集团财务中心的指定文档中维护，保存后本系统自动同步</span>
+          {/* Bottom Table Footer with Pagination */}
+          <div className="mt-2 space-y-2">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredRates.length}
+              pageSize={pageSize}
+              pageSizeOptions={[5, 10, 20]}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
+              itemUnit="个币种"
+            />
+            <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                <span>数据源文档：<strong className="text-slate-800">{documentSourceInfo.docName}</strong></span>
+                <span>•</span>
+                <span>当前共读取 <strong className="text-slate-800">{ratesList.length}</strong> 个结算币种汇率</span>
+              </div>
+              <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                <Info className="w-3.5 h-3.5" />
+                <span>如需调整基准汇率或锁汇政策，请直接在集团财务中心的指定文档中维护，保存后本系统自动同步</span>
+              </div>
             </div>
           </div>
         </div>

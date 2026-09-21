@@ -439,7 +439,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [initialNote, setInitialNote] = useState('');
   const [showWaNotBoundModal, setShowWaNotBoundModal] = useState(false);
-  const [waBindingRequestSent, setWaBindingRequestSent] = useState(false);
 
   // 检查员工是否已关联绑定 WhatsApp 账号
   const isStaffBoundToWhatsApp = (staffName: string): boolean => {
@@ -2314,35 +2313,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                             <p className="mt-1 text-xs text-amber-900 leading-relaxed">
                               当前负责销售人员「<strong className="text-slate-900 font-bold">{newAssignedStaff}</strong>」尚未绑定 WhatsApp 账号。选择 WhatsApp 方式创建会话，需要提示员工联系管理员关联 WhatsApp 账号后再发起会话。
                             </p>
-                            <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setWaBindingRequestSent(true);
-                                  setTimeout(() => setWaBindingRequestSent(false), 3500);
-                                }}
-                                className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                              >
-                                {waBindingRequestSent ? (
-                                  <>
-                                    <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                    <span>已向系统管理员发送关联申请</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <MessageSquare className="w-3.5 h-3.5" />
-                                    <span>联系管理员关联 WhatsApp 账号</span>
-                                  </>
-                                )}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setNewAssignedStaff('Sophia')}
-                                className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100/80 text-amber-900 border border-amber-300 font-bold text-xs transition-colors cursor-pointer"
-                              >
-                                切换已绑定 WhatsApp 的销售 (Sophia)
-                              </button>
-                            </div>
                           </div>
                         </div>
                       </div>
@@ -2699,53 +2669,19 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                 </div>
               )}
 
-              {/* 客户姓名 & 负责销售人员 */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 font-bold mb-1">
-                    客户姓名 / 称呼 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newCustomerName}
-                    onChange={(e) => setNewCustomerName(e.target.value)}
-                    placeholder="如：张明远 先生 / Alex"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 font-bold mb-1">负责销售人员</label>
-                  <select
-                    value={newAssignedStaff}
-                    onChange={(e) => setNewAssignedStaff(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20] font-medium"
-                  >
-                    <option value="Franklin Jr">Franklin Jr (当前账号 - 未绑定 WA)</option>
-                    <option value="Sophia">Sophia / 王淑华 (外贸主管 - 已绑定 WA)</option>
-                    <option value="Alex">Alex / 施密特 (销售业务员 - 已绑定 WA)</option>
-                    <option value="陈逸">陈逸 (产品中心总监 - 已绑定 WA)</option>
-                    <option value="卢卡斯">卢卡斯 (UI/UX - 已绑定 WA)</option>
-                    <option value="叶莲娜">叶莲娜 (智能温控 - 已绑定 WA)</option>
-                    <option value="张晓雅">张晓雅 (工业设计 - 未绑定 WA)</option>
-                    <option value="万斯">万斯 (商用厨电 - 未绑定 WA)</option>
-                  </select>
-                  {newChannel === 'WhatsApp' && (
-                    <div className="mt-1 flex items-center justify-between text-[11px]">
-                      {isStaffBoundToWhatsApp(newAssignedStaff) ? (
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <Check className="w-3 h-3 stroke-[3]" />
-                          已关联 WhatsApp: {getStaffBoundWhatsAppInfo(newAssignedStaff)?.phone}
-                        </span>
-                      ) : (
-                        <span className="text-amber-700 font-bold flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3" />
-                          未绑定，请联系管理员关联
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
+              {/* 客户姓名 / 称呼 */}
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">
+                  客户姓名 / 称呼 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newCustomerName}
+                  onChange={(e) => setNewCustomerName(e.target.value)}
+                  placeholder="如：张明远 先生 / Alex"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EA3A20]/20 focus:border-[#EA3A20]"
+                />
               </div>
 
               {/* 客户需求备忘 (支持手动输入 / 上传聊天记录 / 上传面谈录音 + AI解析) */}
@@ -3143,33 +3079,10 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
             <div className="space-y-2 pt-1">
               <button
                 type="button"
-                onClick={() => {
-                  setWaBindingRequestSent(true);
-                  setShowWaNotBoundModal(false);
-                }}
-                className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>联系管理员关联 WhatsApp 账号</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setNewAssignedStaff('Sophia');
-                  setShowWaNotBoundModal(false);
-                }}
-                className="w-full py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
-              >
-                切换为已绑定 WhatsApp 的销售 (Sophia)
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setShowWaNotBoundModal(false)}
-                className="w-full py-1 text-center text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
               >
-                我知道了，稍后处理
+                <span>我知道了</span>
               </button>
             </div>
           </div>

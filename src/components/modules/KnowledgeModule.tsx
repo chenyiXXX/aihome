@@ -72,6 +72,7 @@ import { ArticleTagsTab } from './knowledge/ArticleTagsTab';
 import { ArticlePermissionsTab } from './knowledge/ArticlePermissionsTab';
 import { ArticleDetailDrawer } from './knowledge/ArticleDetailDrawer';
 import { ArticleReviewSubView } from './knowledge/ArticleReviewSubView';
+import { Pagination } from '../common/Pagination';
 
 // 预设配置选项 (用于知识条目新建/编辑配置)
 export const PRESET_ROLES = [
@@ -895,6 +896,20 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     return true;
   });
 
+  // Knowledge content pagination
+  const [contentCurrentPage, setContentCurrentPage] = useState<number>(1);
+  const [contentPageSize, setContentPageSize] = useState<number>(10);
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setContentCurrentPage(1);
+  }, [selectedCategoryFilter, contentTypeFilter, contentSearchQuery]);
+
+  const paginatedContentList = React.useMemo(() => {
+    const start = (contentCurrentPage - 1) * contentPageSize;
+    return filteredContentList.slice(start, start + contentPageSize);
+  }, [filteredContentList, contentCurrentPage, contentPageSize]);
+
   // Calculate category stats
   const countStats = (nodes: KBCategory[]): { totalNodes: number; totalItems: number } => {
     let totalNodes = 0;
@@ -1354,7 +1369,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     const targetCatObj = findCategoryByPathOrName(articleFormCategory);
 
     if (editingArticle) {
-      const requiresReview = Boolean(
+      const isPendingEffectiveArticle = Boolean(editingArticle.pendingEffectiveVersion);
+      const requiresReview = !isPendingEffectiveArticle && Boolean(
         targetCatObj?.requireReview && (targetCatObj.reviewTriggers?.onEdit !== false)
       );
 
@@ -1364,12 +1380,22 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
         ? `v${(parseFloat(editingArticle.version.slice(1)) + 0.1).toFixed(1)}.0`
         : 'v2.0.0';
 
-      const finalVersion = requiresReview
+      const finalVersion = isPendingEffectiveArticle
+        ? editingArticle.version
+        : requiresReview
         ? (wasAlreadyPublished ? editingArticle.version : `${nextVer}-rc`)
         : nextVer;
 
-      const pendingVer = requiresReview && wasAlreadyPublished ? `${nextVer}-rc` : undefined;
-      const finalStatus = requiresReview ? '等待复核' : '已发布';
+      const pendingVer = isPendingEffectiveArticle
+        ? undefined
+        : requiresReview && wasAlreadyPublished
+        ? `${nextVer}-rc`
+        : undefined;
+      const finalStatus = isPendingEffectiveArticle
+        ? editingArticle.status
+        : requiresReview
+        ? '等待复核'
+        : '已发布';
       const finalWasPublished = wasAlreadyPublished || !requiresReview;
 
       const auditLog: KBAuditLog = {
@@ -1378,11 +1404,17 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
         operator: 'Sophia (主管)',
         operatorRole: '业务主管',
         timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-        action: requiresReview ? 'submit_review' : 'edit',
-        actionLabel: requiresReview ? (editingArticle.status === '复核不通过' ? '重新编辑并提交复核' : '编辑知识条目并提交复核') : '直接更新发布知识条目',
-        version: pendingVer || finalVersion,
+        action: isPendingEffectiveArticle ? 'edit' : requiresReview ? 'submit_review' : 'edit',
+        actionLabel: isPendingEffectiveArticle
+          ? `编辑待生效新版本【${editingArticle.pendingEffectiveVersion}】`
+          : requiresReview
+          ? (editingArticle.status === '复核不通过' ? '重新编辑并提交复核' : '编辑知识条目并提交复核')
+          : '直接更新发布知识条目',
+        version: isPendingEffectiveArticle ? (editingArticle.pendingEffectiveVersion || finalVersion) : (pendingVer || finalVersion),
         wasPublished: finalWasPublished,
-        diffSummary: requiresReview
+        diffSummary: isPendingEffectiveArticle
+          ? `修改待生效新版条目【${articleFormTitle}】内容与配置（新版本 ${editingArticle.pendingEffectiveVersion} 排期于 ${editingArticle.pendingEffectiveStartDate || '设定日'} 生效）`
+          : requiresReview
           ? (wasAlreadyPublished
               ? `修改已发布条目【${articleFormTitle}】，生成新版本 ${pendingVer} 提交平台管理员复核（当前 ${finalVersion} 继续生效）`
               : `修改条目【${articleFormTitle}】（所属分类开启了编辑复核规则），已提交平台管理员复核`)
@@ -1399,7 +1431,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
           title: articleFormTitle,
           category: articleFormCategory,
           content: articleFormContent,
-          version: pendingVer || finalVersion,
+          version: isPendingEffectiveArticle ? (editingArticle.pendingEffectiveVersion || finalVersion) : (pendingVer || finalVersion),
           status: finalStatus,
           tags: tagsArray
         }
@@ -1415,10 +1447,12 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 code: editingArticle.code,
                 version: finalVersion,
                 pendingVersion: pendingVer,
+                pendingEffectiveVersion: editingArticle.pendingEffectiveVersion,
+                pendingEffectiveStartDate: editingArticle.pendingEffectiveStartDate,
                 wasPublished: finalWasPublished,
                 status: finalStatus,
-                reviewStatus: requiresReview ? 'pending' : undefined,
-                pendingAction: requiresReview ? 'update' : undefined,
+                reviewStatus: isPendingEffectiveArticle ? (editingArticle.reviewStatus || 'approved') : requiresReview ? 'pending' : undefined,
+                pendingAction: isPendingEffectiveArticle ? undefined : requiresReview ? 'update' : undefined,
                 tags: tagsArray,
                 contentType: articleContentType,
                 fileType: finalFileType,
@@ -1442,7 +1476,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
         )
       );
 
-      if (requiresReview) {
+      if (isPendingEffectiveArticle) {
+        showToast(`已成功保存待生效条目「${articleFormTitle}」（新版本 ${editingArticle.pendingEffectiveVersion} 将于 ${editingArticle.pendingEffectiveStartDate || '设定日'} 生效）`);
+      } else if (requiresReview) {
         showToast(`📝 知识条目「${articleFormTitle}」修改已提交！因所属分类开启了复核，需平台管理员审核通过后正式发布。`);
       } else {
         showToast(`已成功更新知识条目「${articleFormTitle}」`);
@@ -1601,10 +1637,21 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
   // Batch Operations
   const handleToggleSelectAll = () => {
-    if (selectedContentIds.size === filteredContentList.length) {
-      setSelectedContentIds(new Set());
+    const isAllPageSelected =
+      paginatedContentList.length > 0 &&
+      paginatedContentList.every((item) => selectedContentIds.has(item.id));
+    if (isAllPageSelected) {
+      setSelectedContentIds((prev) => {
+        const next = new Set(prev);
+        paginatedContentList.forEach((item) => next.delete(item.id));
+        return next;
+      });
     } else {
-      setSelectedContentIds(new Set(filteredContentList.map((item) => item.id)));
+      setSelectedContentIds((prev) => {
+        const next = new Set(prev);
+        paginatedContentList.forEach((item) => next.add(item.id));
+        return next;
+      });
     }
   };
 
@@ -2646,7 +2693,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                     onClick={handleToggleSelectAll}
                     className="text-slate-400 hover:text-slate-700 cursor-pointer"
                   >
-                    {selectedContentIds.size > 0 && selectedContentIds.size === filteredContentList.length ? (
+                    {paginatedContentList.length > 0 &&
+                    paginatedContentList.every((item) => selectedContentIds.has(item.id)) ? (
                       <CheckSquare className="w-3.5 h-3.5 text-[#EA3A20]" />
                     ) : (
                       <Square className="w-3.5 h-3.5" />
@@ -2685,7 +2733,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                     </div>
                   </div>
                 ) : (
-                  filteredContentList.map((item) => {
+                  paginatedContentList.map((item) => {
                     const isSelected = selectedContentIds.has(item.id);
                     // Version & Review status logic
                     const isExpired = item.status === '失效' || (item.expiryType === 'custom' && Boolean(item.validityEndDate || item.expiryDate) && (item.validityEndDate || item.expiryDate)! < '2026-08-26');
@@ -3044,36 +3092,23 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                                   showToast(isExpired ? `新版本【${item.pendingVersion || ''}】正在复核中` : `新版本【${item.pendingVersion || ''}】正在复核中`);
                                 }}
                                 title="新版本复核中"
-                                className="p-1 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-100/80 border border-amber-200/80 transition-colors cursor-pointer"
+                                className="p-1 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
                               >
                                 <Clock className="w-3.5 h-3.5" />
-                              </button>
-                            ) : hasPendingEffective ? (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  showToast(`新版本【${item.pendingEffectiveVersion || ''}】已通过，将于 ${item.pendingEffectiveStartDate || '排期日期'} 生效`);
-                                }}
-                                title="排期待生效"
-                                className="p-1 rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-200/80 transition-colors cursor-pointer"
-                              >
-                                <CalendarClock className="w-3.5 h-3.5" />
-                              </button>
-                            ) : hasRejectedReview || isRejectedNeverPub ? (
-                              <button
-                                type="button"
-                                onClick={(e) => handleOpenEditArticle(item, e)}
-                                title="编辑并重新提交"
-                                className="p-1 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
                               </button>
                             ) : (
                               <button
                                 type="button"
                                 onClick={(e) => handleOpenEditArticle(item, e)}
-                                title={isDraft ? '编辑草稿' : '编辑条目'}
+                                title={
+                                  hasPendingEffective
+                                    ? '编辑待生效新版本'
+                                    : hasRejectedReview || isRejectedNeverPub
+                                    ? '编辑并重新提交'
+                                    : isDraft
+                                    ? '编辑草稿'
+                                    : '编辑条目'
+                                }
                                 className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -3102,10 +3137,18 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                 )}
               </div>
 
-              {/* Table Footer */}
-              <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/50 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
-                <span>共 {filteredContentList.length} 条记录（总计 {contentList.length} 篇）</span>
-              </div>
+              {/* Table Footer with Pagination */}
+              <Pagination
+                currentPage={contentCurrentPage}
+                totalItems={filteredContentList.length}
+                pageSize={contentPageSize}
+                onPageChange={setContentCurrentPage}
+                onPageSizeChange={(newSize) => {
+                  setContentPageSize(newSize);
+                  setContentCurrentPage(1);
+                }}
+                itemUnit="篇"
+              />
             </div>
           </div>
         )}
@@ -3504,6 +3547,19 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   <div className="mx-6 mt-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-2 text-xs text-amber-800 shrink-0">
                     <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                     <span>新版本【{editingArticle.pendingVersion}】审核中，保存将更新该待审核版本</span>
+                  </div>
+                )}
+                {editingArticle.pendingEffectiveVersion && (
+                  <div className="mx-6 mt-3 px-3.5 py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center gap-2.5 text-xs text-indigo-900 shrink-0">
+                    <CalendarClock className="w-4 h-4 text-indigo-600 shrink-0" />
+                    <div className="space-y-0.5">
+                      <p className="font-bold">
+                        新版本【{editingArticle.pendingEffectiveVersion}】审批已通过（排期待生效）
+                      </p>
+                      <p className="text-[11px] text-indigo-700">
+                        排期将于 {editingArticle.pendingEffectiveStartDate || '设定排期日'} 正式生效。在生效日前，支持随时根据业务调整编辑更新内容。
+                      </p>
+                    </div>
                   </div>
                 )}
               </>

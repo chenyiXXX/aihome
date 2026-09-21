@@ -29,6 +29,7 @@ import { BOQPriceItem, BOQPricingRule, BOQLineItem, ExchangeRateItem } from '../
 import { initialBOQPriceItems, initialBOQPricingRules, initialExchangeRates } from '../../data/mockData';
 import { ExchangeRateSubModule } from './ExchangeRateSubModule';
 import { PricingCopilot } from './pricing/PricingCopilot';
+import { Pagination } from '../common/Pagination';
 
 interface PricingMaintenanceModuleProps {
   subView?: string;
@@ -167,6 +168,19 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
       return true;
     });
   }, [priceItems, selectedCategory, unitFilter, searchKeyword]);
+
+  // Pagination for pricing table
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, unitFilter, searchKeyword]);
+
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [filteredItems, currentPage, pageSize]);
 
   // Multi-specification helpers for expand/collapse all
   const hasMultiSpecItems = useMemo(
@@ -740,7 +754,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100/80 text-xs">
-                  {filteredItems.map((item) => {
+                  {paginatedItems.map((item) => {
                     const hasVariants = Boolean(item.variants && item.variants.length > 0);
                     const isExpanded = expandedProductIds.has(item.id);
 
@@ -1044,14 +1058,18 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
               </table>
             </div>
 
-            {/* Bottom Bar */}
-            <div className="py-3 px-6 bg-slate-50/80 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2">
-                <span>共维护 <strong className="text-slate-800">{priceItems.length}</strong> 个单价项</span>
-                <span>•</span>
-                <span>当前筛选显示 <strong className="text-[#EA3A20]">{filteredItems.length}</strong> 项</span>
-              </div>
-            </div>
+            {/* Bottom Bar with Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredItems.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
+              itemUnit="项"
+            />
           </div>
         </div>
       )}

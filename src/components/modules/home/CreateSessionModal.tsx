@@ -169,7 +169,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div>
             <h3 className="text-sm font-bold text-slate-900">新建会话</h3>
-            <p className="text-xs text-slate-400 mt-0.5">选择会话类别以匹配专属知识库与带教导师</p>
+            <p className="text-xs text-slate-400 mt-0.5">选择会话类别以匹配专属知识库与业务场景</p>
           </div>
           <button
             type="button"
@@ -201,7 +201,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                         setCustomTitle(`${opt.defaultTitlePrefix}${new Date().toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}`);
                       }
                     }}
-                    className={`p-3 rounded-2xl border text-left cursor-pointer transition-all relative flex flex-col justify-between min-h-[82px] ${
+                    className={`p-3 rounded-2xl border text-left cursor-pointer transition-all relative flex items-center justify-between min-h-[52px] ${
                       opt.type === 'general' ? 'col-span-2' : ''
                     } ${
                       isSelected
@@ -209,24 +209,19 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                         : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300'
                     }`}
                   >
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-7 h-7 rounded-xl flex items-center justify-center ${isSelected ? 'bg-[#EA3A20] text-white' : 'bg-slate-100 text-slate-600'}`}>
-                          <IconComponent className="w-3.5 h-3.5" />
-                        </div>
-                        <span className={`text-xs font-bold ${isSelected ? 'text-[#0F4A47]' : 'text-slate-800'}`}>
-                          {opt.title}
-                        </span>
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#EA3A20] text-white' : 'bg-slate-100 text-slate-600'}`}>
+                        <IconComponent className="w-3.5 h-3.5" />
                       </div>
-                      {isSelected && (
-                        <span className="w-4 h-4 rounded-full bg-[#EA3A20] text-white flex items-center justify-center text-[10px]">
-                          <Check className="w-2.5 h-2.5" />
-                        </span>
-                      )}
+                      <span className={`text-xs font-bold ${isSelected ? 'text-[#0F4A47]' : 'text-slate-800'}`}>
+                        {opt.title}
+                      </span>
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
-                      {opt.roleTitle.split('·')[0].trim()}
-                    </div>
+                    {isSelected && (
+                      <span className="w-4 h-4 rounded-full bg-[#EA3A20] text-white flex items-center justify-center text-[10px] shrink-0">
+                        <Check className="w-2.5 h-2.5" />
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -245,18 +240,6 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
               placeholder={`例：${currentOption.defaultTitlePrefix}外贸大单实战`}
               className="h-9 w-full px-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#0F4A47] focus:border-[#0F4A47]"
             />
-          </div>
-
-          {/* Associated Context Preview */}
-          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">配置角色：</span>
-              <span className="font-bold text-slate-700">{currentOption.roleTitle}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">关联知识库：</span>
-              <span className="font-mono text-[11px] text-slate-600 truncate max-w-[280px]">{currentOption.kbScope}</span>
-            </div>
           </div>
         </div>
 

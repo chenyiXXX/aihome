@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Download, Search, CheckCircle2, Calendar, Cpu, X, Copy, Check, ExternalLink, RotateCcw } from 'lucide-react';
+import { Pagination } from '../common/Pagination';
 
 interface OperationLogItem {
   id: string;
@@ -206,13 +207,48 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
       ? filteredQALogs.length
       : filteredLoginLogs.length;
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedIds([]);
+  }, [activeTab, searchKeyword, dateRange]);
+
+  const paginatedOpLogs = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredOpLogs.slice(start, start + pageSize);
+  }, [filteredOpLogs, currentPage, pageSize]);
+
+  const paginatedQALogs = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredQALogs.slice(start, start + pageSize);
+  }, [filteredQALogs, currentPage, pageSize]);
+
+  const paginatedLoginLogs = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredLoginLogs.slice(start, start + pageSize);
+  }, [filteredLoginLogs, currentPage, pageSize]);
+
+  const currentPaginatedList = useMemo(() => {
+    if (activeTab === '操作日志') return paginatedOpLogs;
+    if (activeTab === 'AI 问答日志') return paginatedQALogs;
+    return paginatedLoginLogs;
+  }, [activeTab, paginatedOpLogs, paginatedQALogs, paginatedLoginLogs]);
+
+  const isCurrentPageAllSelected =
+    currentPaginatedList.length > 0 && currentPaginatedList.every((i) => selectedIds.includes(i.id));
+
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      if (activeTab === '操作日志') setSelectedIds(filteredOpLogs.map((i) => i.id));
-      else if (activeTab === 'AI 问答日志') setSelectedIds(filteredQALogs.map((i) => i.id));
-      else setSelectedIds(filteredLoginLogs.map((i) => i.id));
+      setSelectedIds((prev) => {
+        const set = new Set(prev);
+        currentPaginatedList.forEach((i) => set.add(i.id));
+        return Array.from(set);
+      });
     } else {
-      setSelectedIds([]);
+      setSelectedIds((prev) => prev.filter((id) => !currentPaginatedList.some((i) => i.id === id)));
     }
   };
 
@@ -529,7 +565,7 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
                     <input
                       type="checkbox"
                       onChange={handleSelectAll}
-                      checked={filteredOpLogs.length > 0 && selectedIds.length === filteredOpLogs.length}
+                      checked={isCurrentPageAllSelected}
                       className="rounded-md border-slate-300 w-4 h-4 cursor-pointer accent-[#EA3A20]"
                     />
                   </th>
@@ -542,7 +578,7 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100/80 text-xs">
-                {filteredOpLogs.map((log) => {
+                {paginatedOpLogs.map((log) => {
                   const isChecked = selectedIds.includes(log.id);
                   return (
                     <tr key={log.id} className="hover:bg-slate-50/70 transition-colors h-16">
@@ -589,7 +625,7 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
                     <input
                       type="checkbox"
                       onChange={handleSelectAll}
-                      checked={filteredQALogs.length > 0 && selectedIds.length === filteredQALogs.length}
+                      checked={isCurrentPageAllSelected}
                       className="rounded-md border-slate-300 w-4 h-4 cursor-pointer accent-[#EA3A20]"
                     />
                   </th>
@@ -603,7 +639,7 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100/80 text-xs">
-                {filteredQALogs.map((log) => {
+                {paginatedQALogs.map((log) => {
                   const isChecked = selectedIds.includes(log.id);
                   const firstKb = log.knowledgeBaseRefs[0] || '';
                   const extraKbCount = log.knowledgeBaseRefs.length - 1;
@@ -684,7 +720,7 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
                     <input
                       type="checkbox"
                       onChange={handleSelectAll}
-                      checked={filteredLoginLogs.length > 0 && selectedIds.length === filteredLoginLogs.length}
+                      checked={isCurrentPageAllSelected}
                       className="rounded-md border-slate-300 w-4 h-4 cursor-pointer accent-[#EA3A20]"
                     />
                   </th>
@@ -696,7 +732,7 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100/80 text-xs">
-                {filteredLoginLogs.map((log) => {
+                {paginatedLoginLogs.map((log) => {
                   const isChecked = selectedIds.includes(log.id);
                   const isLogin = log.actionType === '登录系统';
                   return (
@@ -745,11 +781,18 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
         </div>
 
         {/* Standard Clean Enterprise Pagination / Data Summary Footer */}
-        <div className="flex items-center justify-between pt-4 pb-1 shrink-0 px-2 text-xs text-slate-500">
-          <span>共 {currentCount} 条日志数据</span>
-          <div className="flex items-center gap-1">
-            <span className="px-3 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold">第 1 页</span>
-          </div>
+        <div className="shrink-0 pt-3">
+          <Pagination
+            currentPage={currentPage}
+            totalItems={currentCount}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
+            itemUnit="条日志"
+          />
         </div>
       </div>
 

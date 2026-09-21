@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { KBArticle, KBAuditLog } from '../../../types';
 import { DualColumnDiff, VersionOption } from './DualColumnDiff';
+import { Pagination } from '../../common/Pagination';
 
 interface ArticleReviewSubViewProps {
   articles?: KBArticle[];
@@ -318,12 +319,36 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
     return true;
   });
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery, categoryFilter, opTypeFilter]);
+
+  const paginatedArticles = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredArticles.slice(start, start + pageSize);
+  }, [filteredArticles, currentPage, pageSize]);
+
   // Toggle selection
   const handleToggleSelectAll = () => {
-    if (selectedIds.size === filteredArticles.length) {
-      setSelectedIds(new Set());
+    const isAllPageSelected =
+      paginatedArticles.length > 0 &&
+      paginatedArticles.every((a) => selectedIds.has(a.id));
+    if (isAllPageSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        paginatedArticles.forEach((a) => next.delete(a.id));
+        return next;
+      });
     } else {
-      setSelectedIds(new Set(filteredArticles.map((a) => a.id)));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        paginatedArticles.forEach((a) => next.add(a.id));
+        return next;
+      });
     }
   };
 
@@ -613,7 +638,8 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
               onClick={handleToggleSelectAll}
               className="text-slate-400 hover:text-slate-700 cursor-pointer"
             >
-              {selectedIds.size > 0 && selectedIds.size === filteredArticles.length ? (
+              {paginatedArticles.length > 0 &&
+              paginatedArticles.every((a) => selectedIds.has(a.id)) ? (
                 <CheckSquare className="w-3.5 h-3.5 text-[#EA3A20]" />
               ) : (
                 <Square className="w-3.5 h-3.5" />
@@ -647,7 +673,7 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
               )}
             </div>
           ) : (
-            filteredArticles.map((item) => {
+            paginatedArticles.map((item) => {
               const isSelected = selectedIds.has(item.id);
               const latestLog = getLatestAuditLog(item);
               const hasDiff = Boolean(latestLog?.beforeSnapshot || latestLog?.afterSnapshot);
@@ -849,12 +875,18 @@ export const ArticleReviewSubView: React.FC<ArticleReviewSubViewProps> = ({
           )}
         </div>
 
-        {/* Footer Summary */}
-        <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/50 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
-          <span>
-            共 {filteredArticles.length} 条记录
-          </span>
-        </div>
+        {/* Footer Summary with Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredArticles.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+          itemUnit="条"
+        />
       </div>
 
       {/* ========================================================================= */}

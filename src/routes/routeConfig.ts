@@ -198,7 +198,7 @@ export function getPathByModuleAndSubView(moduleId: ModuleType, subView?: string
     if (match) return match.path;
   }
   const defaultMatch = ROUTE_DEFINITIONS.find((r) => r.moduleId === moduleId);
-  return defaultMatch ? defaultMatch.path : '/pre-sales';
+  return defaultMatch ? defaultMatch.path : '/home';
 }
 
 // Parse pathname to module and subView
@@ -248,6 +248,6 @@ export function parseRoute(pathname: string): {
     return ROUTE_DEFINITIONS.find((r) => r.path === '/home')!;
   }
 
-  // Default fallback
-  return ROUTE_DEFINITIONS.find((r) => r.path === '/pre-sales')!;
+  // Default fallback (知识问答)
+  return ROUTE_DEFINITIONS.find((r) => r.path === '/home')!;
 }

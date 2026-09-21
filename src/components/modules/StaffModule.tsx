@@ -33,6 +33,7 @@ import {
 import { EmployeeItem, RoleConfig, WeComDept, OrgDeptNode, WhatsAppAccount } from '../../types';
 import { initialWeComDepts, initialOrgTree, initialWhatsAppAccounts } from '../../data/mockData';
 import { RolePermissionModal } from './staff/RolePermissionModal';
+import { Pagination } from '../common/Pagination';
 
 interface StaffModuleProps {
   employees: EmployeeItem[];
@@ -654,6 +655,32 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
     );
   });
 
+  // Employee Pagination
+  const [empCurrentPage, setEmpCurrentPage] = useState<number>(1);
+  const [empPageSize, setEmpPageSize] = useState<number>(10);
+
+  useEffect(() => {
+    setEmpCurrentPage(1);
+  }, [selectedDeptId, selectedRoleFilter, selectedLeaderFilter, selectedStatusFilter, selectedWhatsAppFilter, searchQuery]);
+
+  const paginatedEmployees = React.useMemo(() => {
+    const start = (empCurrentPage - 1) * empPageSize;
+    return filteredEmployees.slice(start, start + empPageSize);
+  }, [filteredEmployees, empCurrentPage, empPageSize]);
+
+  // Role Pagination
+  const [roleCurrentPage, setRoleCurrentPage] = useState<number>(1);
+  const [rolePageSize, setRolePageSize] = useState<number>(10);
+
+  useEffect(() => {
+    setRoleCurrentPage(1);
+  }, [roleSearchQuery]);
+
+  const paginatedRoles = React.useMemo(() => {
+    const start = (roleCurrentPage - 1) * rolePageSize;
+    return filteredRoles.slice(start, start + rolePageSize);
+  }, [filteredRoles, roleCurrentPage, rolePageSize]);
+
   const selectedDeptName = getDeptNameById(selectedDeptId, initialOrgTree) || '全部员工';
 
   return (
@@ -883,7 +910,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100/80 text-xs">
-                    {filteredEmployees.map((emp, empIdx) => {
+                    {paginatedEmployees.map((emp, empIdx) => {
                       const isEnabled = emp.status === '启用' || emp.status === '在职 (正常)';
 
                       return (
@@ -1420,6 +1447,18 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                 )}
               </div>
 
+              {/* Employee Table Pagination */}
+              <Pagination
+                currentPage={empCurrentPage}
+                totalItems={filteredEmployees.length}
+                pageSize={empPageSize}
+                onPageChange={setEmpCurrentPage}
+                onPageSizeChange={(newSize) => {
+                  setEmpPageSize(newSize);
+                  setEmpCurrentPage(1);
+                }}
+                itemUnit="人"
+              />
             </div>
 
           </div>
@@ -1482,7 +1521,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
-                  {filteredRoles.map((role) => {
+                  {paginatedRoles.map((role) => {
                     const menuCount = role.permissions.filter((p) => p.view).length;
                     const totalMenu = role.permissions.length;
                     const isSuperAdmin = role.id === 'ROLE-ADMIN' || role.roleName === '超级管理员';
@@ -1604,6 +1643,18 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
               </table>
             </div>
 
+            {/* Role Table Pagination */}
+            <Pagination
+              currentPage={roleCurrentPage}
+              totalItems={filteredRoles.length}
+              pageSize={rolePageSize}
+              onPageChange={setRoleCurrentPage}
+              onPageSizeChange={(newSize) => {
+                setRolePageSize(newSize);
+                setRoleCurrentPage(1);
+              }}
+              itemUnit="个角色"
+            />
           </div>
         )}
 

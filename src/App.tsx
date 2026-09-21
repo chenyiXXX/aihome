@@ -185,6 +185,8 @@ export function App() {
             }));
           }
           setIsAuthenticated(true);
+          // 登录成功时，默认打开知识问答模块 (/home)
+          navigate('/home');
         }}
       />
     );
@@ -225,8 +227,8 @@ export function App() {
         {/* Dynamic Module Workspace via React Router */}
         <main className="flex-1 min-h-0 overflow-hidden flex flex-col pt-1">
           <Routes>
-            {/* Root redirect */}
-            <Route path="/" element={<Navigate to="/pre-sales" replace />} />
+            {/* Root redirect (系统默认打开知识问答模块) */}
+            <Route path="/" element={<Navigate to="/home" replace />} />
 
             {/* 1. 知识问答 */}
             <Route path="/home" element={<HomeModule />} />
@@ -464,7 +466,7 @@ export function App() {
             <Route path="/audit/*" element={<AuditLogsModule />} />
 
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/pre-sales" replace />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </main>
 

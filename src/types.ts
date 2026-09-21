@@ -436,6 +436,30 @@ export interface AgentStatMetric {
   avgResponseSeconds: number;
 }
 
+export interface EmployeeAgentStat {
+  id: string;
+  rank: number;
+  name: string;
+  empCode: string;
+  dept: string;
+  deptCategory: string;
+  role: string;
+  totalCalls: number;
+  totalTokens: string;
+  tokenCountRaw: number;
+  activeDays: number;
+  favAgent: string;
+  resolutionRate: string;
+  lastActive: string;
+  agentBreakdown: {
+    agentName: string;
+    calls: number;
+    tokens: string;
+    resolutionRate: string;
+    avgLatency: string;
+  }[];
+}
+
 // 7. Employee & Permissions Types (员工权限)
 export interface OrgDeptNode {
   id: string;

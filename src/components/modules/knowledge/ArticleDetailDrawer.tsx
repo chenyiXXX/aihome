@@ -2061,19 +2061,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                       </p>
                     </div>
                   </div>
-
-                  {/* Actions: Re-chunk & Re-embed All */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      disabled={isRevectorizingAll}
-                      onClick={handleRevectorizeAll}
-                      className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${isRevectorizingAll ? 'animate-spin' : ''}`} />
-                      <span>{isRevectorizingAll ? '正在重构全量向量...' : '全量重新向量化'}</span>
-                    </button>
-                  </div>
                 </div>
 
                 {/* 4 Pipeline Stat Badges */}
@@ -2143,41 +2130,6 @@ export const ArticleDetailDrawer: React.FC<ArticleDetailDrawerProps> = ({
                       <X className="w-3.5 h-3.5" />
                     </button>
                   )}
-                </div>
-
-                {/* Topic Filter Chips */}
-                <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                  <span className="text-[11px] text-slate-400 flex items-center gap-1 mr-1">
-                    <Filter className="w-3 h-3" /> 主题筛选:
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedChunkTopic('all')}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                      selectedChunkTopic === 'all'
-                        ? 'bg-slate-900 text-white shadow-xs font-bold'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
-                    }`}
-                  >
-                    全部 ({baseSemanticChunks.length})
-                  </button>
-                  {chunkTopics.map((topic) => {
-                    const count = baseSemanticChunks.filter((c) => c.topic === topic).length;
-                    return (
-                      <button
-                        key={topic}
-                        type="button"
-                        onClick={() => setSelectedChunkTopic(topic)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                          selectedChunkTopic === topic
-                            ? 'bg-slate-900 text-white shadow-xs font-bold'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
-                        }`}
-                      >
-                        {topic} ({count})
-                      </button>
-                    );
-                  })}
                 </div>
 
                 {/* Search Match Notice */}

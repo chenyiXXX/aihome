@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Send,
   Sparkles,
@@ -32,7 +32,8 @@ import {
   Keyboard,
   Paperclip,
   Swords,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Folder
 } from 'lucide-react';
 import {
   TrainingCourse,
@@ -44,6 +45,10 @@ import { useChatAttachment } from '../../hooks/useChatAttachment';
 import { ChatAttachmentDropZone } from '../common/ChatAttachmentDropZone';
 import { ImagePreviewModal } from '../common/ImagePreviewModal';
 import { CreateSessionModal, SessionCategoryType } from './home/CreateSessionModal';
+import {
+  KnowledgeBaseSelectorDrawer,
+  SelectedKBArticleItem
+} from './home/KnowledgeBaseSelectorDrawer';
 
 export interface ChatMessage {
   id: string;
@@ -259,7 +264,7 @@ const initialSessionsList: ChatSession[] = [
     code: 'SESS-104',
     title: '通用问答 · 欧美认证与定制工艺标准',
     category: 'general',
-    categoryLabel: '产品工艺',
+    categoryLabel: 'AI全案顾问',
     badgeBg: 'bg-purple-50 text-purple-700 border-purple-100',
     badgeText: '工艺合规',
     isBuiltin: false,
@@ -320,6 +325,65 @@ export const HomeModule: React.FC = () => {
   const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
   const [previewModalImage, setPreviewModalImage] = useState<{ url: string; name: string } | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Knowledge Base scope selection (for general knowledge QA sessions)
+  const [isKBDrawerOpen, setIsKBDrawerOpen] = useState(false);
+  const [selectedKBCategories, setSelectedKBCategories] = useState<string[]>([]);
+  const [selectedKBArticles, setSelectedKBArticles] = useState<SelectedKBArticleItem[]>([]);
+
+  // When a whole category is selected, exclude articles belonging to selected categories to avoid redundant display
+  const standaloneArticles = useMemo(() => {
+    return selectedKBArticles.filter(
+      (art) => !selectedKBCategories.includes(art.category || '')
+    );
+  }, [selectedKBArticles, selectedKBCategories]);
+
+  const totalKBReferencesCount = selectedKBCategories.length + standaloneArticles.length;
+
+  const handleToggleKBCategory = (categoryName: string, articlesInCategory?: any[]) => {
+    const isCurrentlySelected = selectedKBCategories.includes(categoryName);
+    if (isCurrentlySelected) {
+      setSelectedKBCategories((prev) => prev.filter((c) => c !== categoryName));
+    } else {
+      setSelectedKBCategories((prev) => [...prev, categoryName]);
+      // When selecting the entire category, remove individual articles under it to simplify display
+      const childIds = new Set((articlesInCategory || []).map((a: any) => a.id));
+      setSelectedKBArticles((prev) =>
+        prev.filter((art) => art.category !== categoryName && !childIds.has(art.id))
+      );
+    }
+  };
+
+  const handleToggleKBArticle = (article: SelectedKBArticleItem) => {
+    // If the category is currently selected, uncheck whole category and switch to single article selection
+    if (selectedKBCategories.includes(article.category || '')) {
+      setSelectedKBCategories((prev) => prev.filter((c) => c !== article.category));
+      setSelectedKBArticles((prev) => [...prev.filter((a) => a.id !== article.id), article]);
+      return;
+    }
+
+    setSelectedKBArticles((prev) => {
+      const exists = prev.some((a) => a.id === article.id);
+      if (exists) {
+        return prev.filter((a) => a.id !== article.id);
+      } else {
+        return [...prev, article];
+      }
+    });
+  };
+
+  const handleClearKBSelection = () => {
+    setSelectedKBCategories([]);
+    setSelectedKBArticles([]);
+  };
+
+  const handleRemoveCategoryChip = (catName: string) => {
+    setSelectedKBCategories((prev) => prev.filter((c) => c !== catName));
+  };
+
+  const handleRemoveArticleChip = (artId: string) => {
+    setSelectedKBArticles((prev) => prev.filter((a) => a.id !== artId));
+  };
 
   // Chat attachments: Ctrl+V clipboard paste & Drag-and-drop
   const {
@@ -520,20 +584,27 @@ export const HomeModule: React.FC = () => {
           body: JSON.stringify({
             question: q,
             category: activeSession.category,
-            roleContext: activeSession.roleTitle
+            roleContext: activeSession.roleTitle,
+            referencedCategories: selectedKBCategories,
+            referencedArticles: standaloneArticles
           })
         });
         data = await res.json();
       }
+
+      const defaultSources = [
+        ...standaloneArticles.map((a) => ({ title: a.title, code: a.code })),
+        ...selectedKBCategories.map((c) => ({ title: `知识分类 · ${c}`, code: 'KB-CAT' }))
+      ];
 
       const assistantMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'assistant',
         content: data.answer || '未能从知识库匹配到详细解答，请尝试补充更多背景条件。',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sources: data.sources || [
+        sources: data.sources || (defaultSources.length > 0 ? defaultSources : [
           { title: activeSession.kbScope, code: 'KB-MASTER-AUTO' }
-        ],
+        ]),
         confidence: data.confidence || 0.98
       };
 
@@ -728,26 +799,11 @@ export const HomeModule: React.FC = () => {
                       <span className="text-[10px] text-slate-400 shrink-0 font-mono">{sess.lastTime}</span>
                     </div>
 
-                    {/* Meta Row: Category Badge & Mentor/Advisor */}
+                    {/* Meta Row: Category Badge */}
                     <div className="flex items-center justify-between gap-2 mb-1.5 text-[11px]">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span
-                          className={`px-2 py-0.2 rounded-full font-bold text-[10px] border shrink-0 ${
-                            sess.category === 'sales_training'
-                              ? 'bg-red-50 text-[#EA3A20] border-red-100'
-                              : sess.category === 'sales_drill'
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : sess.category === 'ops_training'
-                              ? 'bg-blue-50 text-blue-600 border-blue-100'
-                              : sess.category === 'hr_training'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                              : 'bg-purple-50 text-purple-700 border-purple-100'
-                          }`}
-                        >
+                        <span className="px-2 py-0.5 rounded-full font-bold text-[10px] border shrink-0 bg-red-50 text-[#EA3A20] border-red-100">
                           {sess.categoryLabel}
-                        </span>
-                        <span className="text-slate-500 text-[11px] truncate">
-                          {course?.mentorName || (sess.category === 'sales_drill' ? 'AI实战考官' : sess.category === 'general' ? 'AI全案顾问' : '带教导师')}
                         </span>
                       </div>
                       {course && (
@@ -777,25 +833,48 @@ export const HomeModule: React.FC = () => {
         {/* ========================================================= */}
         <div className="flex-1 flex flex-col bg-white rounded-3xl border border-slate-200/90 shadow-[0_4px_25px_rgba(0,0,0,0.03)] overflow-hidden min-w-0">
         
-        {/* Right Header: Active Session Title & Mentor Info */}
+        {/* Right Header: Active Session Title */}
         <div className="px-6 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <h1 className="text-sm font-bold text-slate-900">{activeSession.title}</h1>
-            {isTrainingSession && (
+            {isTrainingSession ? (
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-[#EA3A20] border border-red-200">
                 内部培训
               </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                知识问答
+              </span>
             )}
           </div>
-          {isTrainingSession && currentCourse && (
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-400">带教导师:</span>
-              <span className="font-bold text-slate-800">{currentCourse.mentorName}</span>
-              <span className="text-slate-300">|</span>
-              <span className="text-slate-500 text-[11px] hidden sm:inline">{currentCourse.mentorTitle}</span>
-            </div>
+
+          {/* If active session is general (知识问答), show "打开知识库" button in top-right */}
+          {activeSession.category === 'general' && (
+            <button
+              type="button"
+              onClick={() => setIsKBDrawerOpen((prev) => !prev)}
+              className={`h-8 px-3.5 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-xs border ${
+                isKBDrawerOpen
+                  ? 'bg-[#0F4A47] text-white border-[#0F4A47]'
+                  : 'bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50 border-slate-200'
+              }`}
+              title="打开企业知识库侧边栏，选择当前会话授权可见的知识分类与条目"
+            >
+              <BookOpen className={`w-3.5 h-3.5 ${isKBDrawerOpen ? 'text-white' : 'text-[#EA3A20]'}`} />
+              <span>{isKBDrawerOpen ? '收起知识库' : '打开知识库'}</span>
+              {totalKBReferencesCount > 0 && (
+                <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] bg-[#EA3A20] text-white font-mono font-bold">
+                  {totalKBReferencesCount}
+                </span>
+              )}
+            </button>
           )}
         </div>
+
+        {/* Dual Split: Chat Conversation + Knowledge Base Drawer */}
+        <div className="flex-1 flex overflow-hidden min-h-0">
+          {/* Left/Center: Messages + Input Dock */}
+          <div className="flex-1 flex flex-col min-w-0">
 
         {/* Right Chat Messages Scrollable Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
@@ -1003,6 +1082,69 @@ export const HomeModule: React.FC = () => {
             errorMsg={errorMsg}
           />
 
+          {/* Active Knowledge References Bar */}
+          {activeSession.category === 'general' && totalKBReferencesCount > 0 && (
+            <div className="p-2.5 bg-purple-50/80 border border-purple-200/90 rounded-2xl space-y-1.5 animate-in fade-in duration-150">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5 text-purple-900 font-bold text-[11px]">
+                  <BookOpen className="w-3.5 h-3.5 text-purple-700" />
+                  <span>已引用知识范围（将优先针对以下范围精准问答）：</span>
+                  <span className="font-mono text-purple-600 bg-purple-100/90 px-1.5 py-0.2 rounded-full text-[10px]">
+                    {totalKBReferencesCount} 项
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClearKBSelection}
+                  className="text-[11px] text-purple-700 hover:text-purple-900 font-medium hover:underline cursor-pointer"
+                >
+                  清空引用
+                </button>
+              </div>
+
+              {/* Chips list: When a whole category is selected, only show the category name chip without child article details */}
+              <div className="flex items-center gap-1.5 flex-wrap max-h-24 overflow-y-auto custom-scrollbar">
+                {selectedKBCategories.map((catName) => (
+                  <span
+                    key={catName}
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-purple-100/90 text-purple-900 text-[11px] font-medium border border-purple-200 shadow-2xs"
+                  >
+                    <Folder className="w-3 h-3 text-purple-600" />
+                    <span>分类：{catName}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCategoryChip(catName)}
+                      className="text-purple-400 hover:text-purple-800 ml-0.5 cursor-pointer"
+                      title="移除该分类引用"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </span>
+                ))}
+
+                {standaloneArticles.map((art) => (
+                  <span
+                    key={art.id}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white text-slate-800 text-[11px] font-medium border border-purple-200 shadow-2xs"
+                    title={art.title}
+                  >
+                    <FileText className="w-3 h-3 text-purple-600" />
+                    <span className="truncate max-w-[200px]">{art.title}</span>
+                    <span className="text-[9px] text-slate-400 font-mono">[{art.code}]</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveArticleChip(art.id)}
+                      className="text-slate-400 hover:text-red-600 ml-0.5 cursor-pointer"
+                      title="移除该条目引用"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Input Method Switch & Textarea Container */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between px-1">
@@ -1061,6 +1203,8 @@ export const HomeModule: React.FC = () => {
                 placeholder={
                   isListening
                     ? '正在倾听语音...'
+                    : activeSession.category === 'general' && totalKBReferencesCount > 0
+                    ? `已圈定 ${totalKBReferencesCount} 项知识引用范围，请输入针对该范围提出的问题...`
                     : `在【${activeSession.categoryLabel}】中输入您的问题，支持直接输入或粘贴上传附件...`
                 }
                 className="flex-1 bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed p-1"
@@ -1085,6 +1229,27 @@ export const HomeModule: React.FC = () => {
               <span>内部知识库风控合规已启用</span>
             </span>
           </div>
+
+        </div>
+
+          </div>
+
+          {/* Right: Knowledge Base Selector Drawer (for general knowledge QA sessions) */}
+          {activeSession.category === 'general' && isKBDrawerOpen && (
+            <KnowledgeBaseSelectorDrawer
+              isOpen={isKBDrawerOpen}
+              onClose={() => setIsKBDrawerOpen(false)}
+              selectedCategories={selectedKBCategories}
+              selectedArticles={selectedKBArticles}
+              onToggleCategory={handleToggleKBCategory}
+              onToggleArticle={handleToggleKBArticle}
+              onClearSelection={handleClearKBSelection}
+              onInsertQuoteToInput={(quote) => {
+                setInputQuery((prev) => (prev ? `${prev} ${quote}` : quote));
+              }}
+              currentUserRole="超级管理员 (Superadmin)"
+            />
+          )}
 
         </div>
 
