@@ -23,6 +23,12 @@ import {
   getPathByModuleAndSubView,
   parseRoute
 } from './routes/routeConfig';
+import {
+  MOCK_ROLE_ACCOUNTS,
+  UserRoleProfile,
+  getAllowedModulesForRole,
+  isModuleAllowedForRole
+} from './config/rolePermissions';
 
 import {
   initialInquiries,
@@ -53,12 +59,7 @@ export function App() {
 
   // Authentication State (Enterprise WeChat Scan Login)
   const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [currentUser, setCurrentUser] = useState({
-    name: 'Franklin Jr',
-    role: '超级管理员 (Superadmin)',
-    department: '智能数字化中心',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-  });
+  const [currentUser, setCurrentUser] = useState<UserRoleProfile>(MOCK_ROLE_ACCOUNTS[0]);
 
   const [isScriptDrawerOpen, setIsScriptDrawerOpen] = useState(false);
   const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
@@ -106,9 +107,19 @@ export function App() {
     }
   ]);
 
-  // Whenever URL changes, ensure current route tab is present in openTabs
+  // Whenever URL changes or role changes, ensure permissions and sync openTabs
   useEffect(() => {
     const route = parseRoute(location.pathname);
+    const allowed = getAllowedModulesForRole(currentUser.role);
+
+    // If attempting to visit a module not allowed for this role, redirect to first allowed module
+    if (route.moduleId && !allowed.includes(route.moduleId)) {
+      const defaultModule = allowed[0] || 'home';
+      const defaultPath = getPathByModuleAndSubView(defaultModule);
+      navigate(defaultPath, { replace: true });
+      return;
+    }
+
     const tabKey = `${route.moduleId}__${route.subView}`;
 
     setOpenTabs((prev) => {
@@ -128,7 +139,42 @@ export function App() {
         }
       ];
     });
-  }, [location.pathname]);
+  }, [location.pathname, currentUser.role, navigate]);
+
+  // When switching user role directly from header or login
+  const handleSwitchRole = (roleProfile: UserRoleProfile) => {
+    setCurrentUser(roleProfile);
+    const allowed = getAllowedModulesForRole(roleProfile.role);
+
+    // Filter open tabs to keep only allowed modules
+    setOpenTabs((prev) => {
+      const filtered = prev.filter((tab) => allowed.includes(tab.moduleId));
+      if (filtered.length === 0) {
+        const defaultModule = allowed[0] || 'home';
+        const defaultPath = getPathByModuleAndSubView(defaultModule);
+        const routeDef = parseRoute(defaultPath);
+        return [
+          {
+            id: `${routeDef.moduleId}__${routeDef.subView}`,
+            moduleId: routeDef.moduleId,
+            moduleTitle: routeDef.moduleTitle,
+            subView: routeDef.subView,
+            title: routeDef.pageTitle,
+            closable: true
+          }
+        ];
+      }
+      return filtered;
+    });
+
+    // Check if current route is allowed
+    const route = parseRoute(location.pathname);
+    if (!allowed.includes(route.moduleId)) {
+      const defaultModule = allowed[0] || 'home';
+      const defaultPath = getPathByModuleAndSubView(defaultModule);
+      navigate(defaultPath, { replace: true });
+    }
+  };
 
   // When selecting a module/subview from sidebar
   const handleSelectModule = (mod: ModuleType, targetSubView?: string) => {
@@ -176,17 +222,21 @@ export function App() {
       <LoginPage
         onLoginSuccess={(user) => {
           if (user) {
-            setCurrentUser((prev) => ({
-              ...prev,
+            handleSwitchRole({
               name: user.name,
               role: user.role,
               avatar: user.avatar,
-              department: user.department || prev.department
-            }));
+              department: user.department || '智能数字化中心'
+            });
+            const allowed = getAllowedModulesForRole(user.role);
+            const defaultModule = allowed[0] || 'home';
+            const defaultPath = getPathByModuleAndSubView(defaultModule);
+            setIsAuthenticated(true);
+            navigate(defaultPath);
+          } else {
+            setIsAuthenticated(true);
+            navigate('/home');
           }
-          setIsAuthenticated(true);
-          // 登录成功时，默认打开知识问答模块 (/home)
-          navigate('/home');
         }}
       />
     );
@@ -202,6 +252,7 @@ export function App() {
         onSelectModule={handleSelectModule}
         onSelectSubView={handleSelectSubView}
         unreadInquiriesCount={2}
+        currentUserRole={currentUser.role}
       />
 
       {/* 2. Main Workspace Layout */}
@@ -217,6 +268,7 @@ export function App() {
           onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
           currentUser={currentUser}
           onLogout={() => setIsAuthenticated(false)}
+          onSwitchRole={handleSwitchRole}
           onNewAction={() => {
             if (activeModule === 'in_sales') {
               setIsScriptDrawerOpen(true);

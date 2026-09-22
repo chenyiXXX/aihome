@@ -1066,7 +1066,7 @@ export const MaterialLibraryModule: React.FC<MaterialLibraryModuleProps> = ({ on
   };
 
   return (
-    <div id="material-library-module" className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden p-3 lg:p-4">
+    <div id="material-library-module" className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden px-4 lg:px-6 pb-6 pt-1">
       {/* Hidden audio element for instant preview */}
       <audio
         ref={audioPreviewRef}

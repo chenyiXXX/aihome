@@ -18,7 +18,8 @@ import {
   Calendar,
   Share2,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  AlertOctagon
 } from 'lucide-react';
 import { NotificationItem, NotificationCategory } from '../../types';
 
@@ -50,6 +51,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   const unreadCountKB = useMemo(() => notifications.filter((n) => n.category === 'kb_expiry' && !n.isRead).length, [notifications]);
   const unreadCountApproval = useMemo(() => notifications.filter((n) => n.category === 'approval' && !n.isRead).length, [notifications]);
   const unreadCountPub = useMemo(() => notifications.filter((n) => n.category === 'marketing_pub' && !n.isRead).length, [notifications]);
+  const unreadCountAgentError = useMemo(() => notifications.filter((n) => n.category === 'agent_error' && !n.isRead).length, [notifications]);
 
   // Filtered notifications
   const filteredNotifications = useMemo(() => {
@@ -70,7 +72,10 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
         const inDoc = item.meta?.docName?.toLowerCase().includes(kw) || false;
         const inContentTitle = item.meta?.contentTitle?.toLowerCase().includes(kw) || false;
         const inApplicant = item.meta?.applicant?.toLowerCase().includes(kw) || false;
-        if (!inTitle && !inContent && !inDoc && !inContentTitle && !inApplicant) {
+        const inAgentName = item.meta?.agentName?.toLowerCase().includes(kw) || false;
+        const inAgentCode = item.meta?.agentCode?.toLowerCase().includes(kw) || false;
+        const inErrorCode = item.meta?.errorCode?.toLowerCase().includes(kw) || false;
+        if (!inTitle && !inContent && !inDoc && !inContentTitle && !inApplicant && !inAgentName && !inAgentCode && !inErrorCode) {
           return false;
         }
       }
@@ -104,6 +109,12 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
       label: '运营内容发布情况通知',
       unreadCount: unreadCountPub,
       icon: Send
+    },
+    {
+      key: 'agent_error' as NotificationCategory,
+      label: 'Agent运行报错',
+      unreadCount: unreadCountAgentError,
+      icon: AlertOctagon
     }
   ];
 
@@ -116,7 +127,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
       />
 
       {/* Drawer Container */}
-      <div className="relative w-full max-w-[580px] bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300 border-l border-slate-200">
+      <div className="relative w-full md:w-[75vw] max-w-7xl bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300 border-l border-slate-200">
         
         {/* Top Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/70">
@@ -134,7 +145,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                 )}
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                实时接收知识库临期预警、流程审批与运营全渠道发布状态
+                实时接收知识库临期预警、流程审批、运营全渠道发布与 Agent 运行报错告警
               </p>
             </div>
           </div>
@@ -185,6 +196,8 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                       className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold leading-none ${
                         isActive
                           ? 'bg-[#EA3A20] text-white'
+                          : tab.key === 'agent_error'
+                          ? 'bg-rose-100 text-rose-700'
                           : 'bg-slate-200 text-slate-600'
                       }`}
                     >
@@ -203,7 +216,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="搜索消息内容、文档名称、申请人..."
+              placeholder="搜索消息内容、文档名称、申请人、Agent..."
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#EA3A20] focus:border-[#EA3A20]"
@@ -261,6 +274,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
               const isKb = item.category === 'kb_expiry';
               const isApproval = item.category === 'approval';
               const isPub = item.category === 'marketing_pub';
+              const isAgentError = item.category === 'agent_error';
 
               return (
                 <div
@@ -286,12 +300,15 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                           ? 'bg-amber-50 text-amber-600 border border-amber-200/60'
                           : isApproval
                           ? 'bg-blue-50 text-blue-600 border border-blue-200/60'
-                          : 'bg-emerald-50 text-emerald-600 border border-emerald-200/60'
+                          : isPub
+                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/60'
+                          : 'bg-rose-50 text-rose-600 border border-rose-200/60'
                       }`}
                     >
                       {isKb && <BookOpen className="w-4.5 h-4.5" />}
                       {isApproval && <CheckSquare className="w-4.5 h-4.5" />}
                       {isPub && <Send className="w-4.5 h-4.5" />}
+                      {isAgentError && <AlertOctagon className="w-4.5 h-4.5" />}
                     </div>
 
                     <div className="flex-1 min-w-0 pr-4">
@@ -352,6 +369,18 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                             {item.meta.publishStatus === 'success' ? '发布成功' : item.meta.publishStatus === 'scheduled' ? '定时就绪' : '推送失败'}
                           </span>
                         )}
+
+                        {isAgentError && item.meta?.agentName && (
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-100 text-rose-800">
+                            {item.meta.agentName}
+                          </span>
+                        )}
+
+                        {isAgentError && item.meta?.errorCode && (
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-slate-100 text-rose-700 border border-rose-200">
+                            {item.meta.errorCode}
+                          </span>
+                        )}
                       </div>
 
                       {/* Content Description */}
@@ -359,7 +388,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                         {item.content}
                       </p>
 
-                      {/* Meta Pills (Platforms / Expiry dates / Views) */}
+                      {/* Meta Pills (Platforms / Expiry dates / Views / Error Details) */}
                       {isPub && item.meta?.publishPlatforms && (
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                           <span className="text-[11px] text-slate-400">推送渠道:</span>
@@ -375,6 +404,21 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                             <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-50 text-emerald-700 font-bold ml-1 flex items-center gap-0.5">
                               <TrendingUp className="w-2.5 h-2.5" />
                               <span>{item.meta.viewsCount.toLocaleString()} 播放</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {isAgentError && (item.meta?.errorDetails || item.meta?.agentCode) && (
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                          {item.meta.agentCode && (
+                            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-100 text-slate-700 font-medium">
+                              Code: {item.meta.agentCode}
+                            </span>
+                          )}
+                          {item.meta.errorDetails && (
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-rose-50/80 text-rose-700 border border-rose-100 font-mono">
+                              {item.meta.errorDetails}
                             </span>
                           )}
                         </div>

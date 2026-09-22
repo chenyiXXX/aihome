@@ -21,12 +21,8 @@ import {
   UploadCloud,
   Mic,
   FileText,
-  FileAudio,
   CheckCircle2,
-  Play,
-  Pause,
   Volume2,
-  Wand2,
   ArrowRight,
   HelpCircle,
   FileCheck,
@@ -60,10 +56,28 @@ import {
   Plus,
   Trash2,
   Download,
-  Package
+  Package,
+  Edit3
 } from 'lucide-react';
-import { SessionItem, ChatMessage, ScriptItem, QuotationRequirementConfirmData, GeneratedQuotationCardData } from '../../types';
-import { QuotationConfirmCard, GeneratedQuotationCard } from './sales/QuotationChatCards';
+import {
+  SessionItem,
+  ChatMessage,
+  ScriptItem,
+  QuotationRequirementConfirmData,
+  GeneratedQuotationCardData,
+  MissingQuoteFieldsData,
+  QuotationCalculationMethod,
+  QuoteMarketType
+} from '../../types';
+import {
+  QuotationConfirmCard,
+  GeneratedQuotationCard,
+  MissingQuoteFieldsCard,
+  DEFAULT_DISASSEMBLY_ITEMS,
+  DEFAULT_DISASSEMBLY_ITEMS_DOMESTIC,
+  DEFAULT_PROJECTION_ITEMS_OVERSEAS,
+  DEFAULT_PROJECTION_ITEMS_DOMESTIC
+} from './sales/QuotationChatCards';
 import { initialEmployees, initialWhatsAppAccounts } from '../../data/mockData';
 import { useVoiceToText } from '../../hooks/useVoiceToText';
 import { VoiceInputBanner } from '../common/VoiceInputBanner';
@@ -262,6 +276,38 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(false);
   const [isRightProfileCollapsed, setIsRightProfileCollapsed] = useState<boolean>(false);
   const [showQuoteDetailsModal, setShowQuoteDetailsModal] = useState<boolean>(false);
+
+  // Session Title Renaming State
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState<string>('');
+
+  const handleStartRename = (sess: SessionItem, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setEditingSessionId(sess.id);
+    setEditingTitle(sess.customerName);
+  };
+
+  const handleSaveRename = (sessionId: string, e?: React.MouseEvent | React.FormEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
+    const trimmed = editingTitle.trim();
+    if (trimmed) {
+      setSessionList((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, customerName: trimmed } : s))
+      );
+      if (activeSession && activeSession.id === sessionId) {
+        setActiveSession((prev) => (prev ? { ...prev, customerName: trimmed } : null));
+      }
+    }
+    setEditingSessionId(null);
+    setEditingTitle('');
+  };
+
+  const handleCancelRename = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setEditingSessionId(null);
+    setEditingTitle('');
+  };
   
   // Replace the direct customer chat with an AI Copilot chat
   const initialAiMessages: ChatMessage[] = [
@@ -467,7 +513,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   };
 
   // AI & Upload State for Session Creation
-  const [recordInputMode, setRecordInputMode] = useState<'manual' | 'chat_upload' | 'audio_upload'>('manual');
+  const [recordInputMode, setRecordInputMode] = useState<'manual' | 'chat_upload'>('manual');
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [uploadedFileSize, setUploadedFileSize] = useState<string | null>(null);
   const [rawRecordText, setRawRecordText] = useState('');
@@ -482,9 +528,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     urgencyLevel?: '高' | '中' | '一般';
     estimatedBudget?: string;
   } | null>(null);
-
-  // Audio Playback simulation
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   // Social chat sync state
   const [selectedExternalChatId, setSelectedExternalChatId] = useState<string | null>(null);
@@ -558,7 +601,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   }, [isChatPickerOpen]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const audioInputRef = useRef<HTMLInputElement>(null);
 
   // CBM Calculator Modal
   const [showCbmCalc, setShowCbmCalc] = useState(false);
@@ -661,68 +703,77 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     setTimeout(() => {
       clearInterval(timer);
       const targetData = updatedData;
-      const quoteNo = `PI-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(10 + Math.random() * 90)}`;
-      const totalAmount = targetData?.totalEstimatedAmount || 78500;
-      const depositAmount = Math.round(totalAmount * 0.3);
-      const balanceAmount = totalAmount - depositAmount;
+      const calcMethod: QuotationCalculationMethod = targetData?.calculationMethod || 'projection';
+      const isDom = targetData?.currency === 'CNY' || targetData?.quoteMarketType === 'domestic';
+      const quoteNo = `${isDom ? 'QT' : 'PI'}-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(10 + Math.random() * 90)}`;
 
-      const items = targetData?.productItems?.map((p) => ({
-        id: p.id,
-        name: p.name,
-        spec: p.spec,
-        qty: p.qty,
-        unit: p.unit,
-        price: p.estimatedPrice,
-        subtotal: Math.round(p.qty * p.estimatedPrice)
-      })) || [
-        {
-          id: 'qi-1',
-          name: '主厨现代极简橱柜定制 (含中岛台)',
-          spec: '进口爱格板W1000 + 45°斜切无拉手 + 纯白岩板台面 + RAL 5004 海军蓝哑光烤漆',
-          qty: 12.5,
-          unit: '延米',
-          price: 680,
-          subtotal: 8500
-        },
-        {
-          id: 'qi-2',
-          name: '主卧实木步入式衣帽间系统',
-          spec: '多层实木高定柜体 + 铝框茶玻门 + 嵌入式暖光感应灯带',
-          qty: 24,
-          unit: '㎡',
-          price: 450,
-          subtotal: 10800
-        },
-        {
-          id: 'qi-3',
-          name: '奥地利百隆 (Blum) 原装阻尼五金系统',
-          spec: '集成顶配阻尼缓冲铰链 48只 + 豪华骑马抽屉 12套',
-          qty: 1,
-          unit: '套',
-          price: 1850,
-          subtotal: 1850
-        }
-      ];
+      let items: GeneratedQuotationCardData['items'];
+      let totalAmount: number;
+
+      if (calcMethod === 'disassembly') {
+        const disassemblyList = (targetData?.disassemblyItems && targetData.disassemblyItems.length > 0)
+          ? targetData.disassemblyItems
+          : (isDom ? DEFAULT_DISASSEMBLY_ITEMS_DOMESTIC : DEFAULT_DISASSEMBLY_ITEMS);
+        items = disassemblyList.map((p) => ({
+          id: p.id,
+          name: p.name,
+          spec: p.spec,
+          qty: p.qty,
+          unit: p.unit,
+          price: p.estimatedPrice,
+          subtotal: Math.round(p.qty * p.estimatedPrice)
+        }));
+        totalAmount = targetData?.totalEstimatedAmount || items.reduce((sum, it) => sum + it.subtotal, 0);
+      } else {
+        items = targetData?.productItems?.map((p) => ({
+          id: p.id,
+          name: p.name,
+          spec: p.spec,
+          qty: p.qty,
+          unit: p.unit,
+          price: p.estimatedPrice,
+          subtotal: Math.round(p.qty * p.estimatedPrice)
+        })) || (isDom ? DEFAULT_PROJECTION_ITEMS_DOMESTIC : DEFAULT_PROJECTION_ITEMS_OVERSEAS).map(p => ({
+          id: p.id,
+          name: p.name,
+          spec: p.spec,
+          qty: p.qty,
+          unit: p.unit,
+          price: p.estimatedPrice,
+          subtotal: Math.round(p.qty * p.estimatedPrice)
+        }));
+        totalAmount = targetData?.totalEstimatedAmount || items.reduce((sum, it) => sum + it.subtotal, 0);
+      }
+
+      const depositPercent = isDom ? 40 : 30;
+      const depositAmount = Math.round(totalAmount * (depositPercent / 100));
+      const balanceAmount = totalAmount - depositAmount;
 
       const genData: GeneratedQuotationCardData = {
         quoteNo,
-        customerName: targetData?.customerName || (activeSession?.customerName || 'David Miller'),
-        companyName: targetData?.companyName || (activeSession?.companyName || 'Apex Architecture & Interiors LLC'),
-        projectName: targetData?.projectName || '3 套加州独立别墅高定全屋工程',
-        tradeTerm: targetData?.tradeTerm || 'CIF Los Angeles Port',
-        currency: targetData?.currency || 'USD',
+        customerName: targetData?.customerName || (activeSession?.customerName || (isDom ? '张明远 先生' : 'David Miller')),
+        companyName: targetData?.companyName || (activeSession?.companyName || (isDom ? '华润置地大平层全屋高定' : 'Apex Architecture & Interiors LLC')),
+        projectName: targetData?.projectName || (isDom ? '上海华润外滩九里现代轻奢大宅全屋高定项目' : '加州现代奢华独栋别墅全屋定制工程'),
+        tradeTerm: targetData?.tradeTerm || (isDom ? '国内专车入户送装 (含13%专票)' : 'CIF Los Angeles Port'),
+        currency: isDom ? 'CNY' : 'USD',
+        calculationMethod: calcMethod,
+        calculationMethodLabel: calcMethod === 'disassembly' ? '按拆板计价 (展开面积与五金BOM)' : '按投影计价 (正立面投影平米)',
         items,
         totalAmount,
-        depositPercent: 30,
+        depositPercent,
         depositAmount,
         balanceAmount,
-        leadTime: targetData?.leadTime || '25~30 工作日 (确认图纸与色板后)',
+        leadTime: targetData?.leadTime || (isDom ? '20~25 工作日 (确认深化下单排产)' : '25~30 工作日 (确认图纸与色板后)'),
         validDays: 30,
-        cbmEstimate: 42.5,
-        containerLoading: '1 × 40HQ 高柜 (装柜利用率 62.5%)',
+        cbmEstimate: calcMethod === 'disassembly' ? 44.8 : 42.5,
+        containerLoading: isDom ? '9.6米厢式货车专车直达入户' : '1 × 40HQ 高柜 (装柜利用率 65%)',
         createdAt: new Date().toLocaleDateString('zh-CN'),
-        salesPitchEn: `Dear David,\n\nFollowing your confirmation of the project specifications (including the RAL 5004 Navy Blue island, walnut walk-in wardrobe, and Blum hardware setup), please find our formal Proforma Invoice (${quoteNo}) attached for your review.\n\nKey Highlights:\n1. Total Contract Amount (CIF Los Angeles Port): $${totalAmount.toLocaleString()} USD\n2. 30% Deposit: $${depositAmount.toLocaleString()} USD (secures factory production slot and locks raw material batch pricing)\n3. 70% Balance: $${balanceAmount.toLocaleString()} USD payable against B/L copy\n4. Guaranteed Production Lead Time: 25-30 working days with ISTA 3A export crating.\n\nPlease let us know if you would like us to reserve the dedicated production line for this order today.\n\nBest regards,\nPA Kitchen Export Team`,
-        salesPitchZh: `已为您自动排单并生成正式形式发票 (${quoteNo})：\n• 报价总额: $${totalAmount.toLocaleString()} USD (CIF 洛杉矶港)\n• 30% 首期定金: $${depositAmount.toLocaleString()} USD，用于锁定板材排产与色板实物打样\n• 尾款: $${balanceAmount.toLocaleString()} USD，出厂前提供 1:1 预组装视频验收\n• 附带中英文对客报价邮件话术，支持一键复制直接发送给客户。`
+        salesPitchEn: isDom
+          ? `尊敬的 ${targetData?.customerName || '张先生'}：\n\n已为您核算并出具《${quoteNo} 全屋定制工程报价明细表》：\n1. 合同总金额：¥${totalAmount.toLocaleString()} CNY (含13%增值税专票)\n2. 计价方式：${calcMethod === 'disassembly' ? '按拆板展开面积与五金BOM' : '按正立面投影平米'}\n3. 40% 首期定金：¥${depositAmount.toLocaleString()} CNY，用于锁定进口爱格板现货排产\n4. 60% 尾款：¥${balanceAmount.toLocaleString()} CNY，现场安装调试验收合格后支付\n5. 工期保障：20~25工作日精准交付，包含专车入户安装与5年质保服务。`
+          : `Dear David,\n\nFollowing your confirmation of the project specifications (pricing calculated via ${calcMethod === 'disassembly' ? 'disassembly BOM components' : 'facade projection area'}), please find our formal Proforma Invoice (${quoteNo}) attached for your review.\n\nKey Highlights:\n1. Total Contract Amount (${targetData?.tradeTerm || 'CIF Los Angeles Port'}): $${totalAmount.toLocaleString()} USD\n2. Pricing Calculation Method: ${calcMethod === 'disassembly' ? 'Disassembly (展开面积与五金BOM)' : 'Projection Area'}\n3. 30% Deposit: $${depositAmount.toLocaleString()} USD (secures factory production slot and locks raw material batch pricing)\n4. 70% Balance: $${balanceAmount.toLocaleString()} USD payable against B/L copy\n5. Guaranteed Production Lead Time: 25-30 working days with ISTA 3A export crating.\n\nPlease let us know if you would like us to reserve the dedicated production line for this order today.\n\nBest regards,\nPA Kitchen Export Team`,
+        salesPitchZh: isDom
+          ? `已为您自动生成正式国内定制报价单 (${quoteNo})：\n• 计价模式: ${calcMethod === 'disassembly' ? '按拆板计价 (展开板件与五金BOM)' : '按投影计价 (正立面投影面积)'}\n• 报价总额: ¥${totalAmount.toLocaleString()} CNY (${targetData?.tradeTerm || '国内专车送装入户'})\n• 40% 首期定金: ¥${depositAmount.toLocaleString()} CNY，锁定板材排产与现场放样\n• 尾款: ¥${balanceAmount.toLocaleString()} CNY，上门精细安装调试验收合格后付清\n• 附带微信对客沟通话术，支持一键复制直接发送给客户。`
+          : `已为您自动排单并生成正式外贸形式发票 (${quoteNo})：\n• 计价模式: ${calcMethod === 'disassembly' ? '按拆板计价 (展开板件与五金BOM)' : '按投影计价 (正立面投影面积)'}\n• 报价总额: $${totalAmount.toLocaleString()} USD (${targetData?.tradeTerm || 'CIF 洛杉矶港'})\n• 30% 首期定金: $${depositAmount.toLocaleString()} USD，用于锁定板材排产与色板实物打样\n• 尾款: $${balanceAmount.toLocaleString()} USD，出厂前提供 1:1 预组装视频验收\n• 附带中英文对客报价邮件话术，支持一键复制直接发送给客户。`
       };
 
       setMessages((prev) =>
@@ -731,15 +782,19 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
             return {
               ...m,
               isGenerating: false,
-              content: `### 📄 正式外贸报价单 (Proforma Invoice) 已生成完毕\n\n已根据您刚刚核准的客户定制需求清单与设计图纸，生成正式单据 **${quoteNo}**。报价总额 **$${totalAmount.toLocaleString()} USD**，预估海运体积 **42.5 CBM**。详情请查阅下方卡片：`,
+              content: isDom
+                ? `### 📄 正式国内定制报价单已生成完毕\n\n已根据您刚刚核准的客户定制需求清单与计价模式（**${calcMethod === 'disassembly' ? '按拆板计价' : '按投影计价'}**），生成正式报价单据 **${quoteNo}**。报价总额 **¥${totalAmount.toLocaleString()} CNY**。详情请查阅下方卡片：`
+                : `### 📄 正式外贸报价单 (Proforma Invoice) 已生成完毕\n\n已根据您刚刚核准的客户定制需求清单与计价模式（**${calcMethod === 'disassembly' ? '按拆板计价' : '按投影计价'}**），生成正式单据 **${quoteNo}**。报价总额 **$${totalAmount.toLocaleString()} USD**，预估海运体积 **${genData.cbmEstimate} CBM**。详情请查阅下方卡片：`,
               generatedQuoteData: genData,
               citations: [
                 {
-                  id: 'kb-pi-01',
-                  title: '《外贸工程高定报价与 PI 签发审核规范》',
-                  version: 'v2.2',
+                  id: isDom ? 'kb-qt-dom' : 'kb-pi-01',
+                  title: isDom ? '《国内高定私宅报价与工程结算规范》' : '《外贸工程高定报价与 PI 签发审核规范》',
+                  version: 'v3.0',
                   category: '商务合规指南',
-                  excerpt: '财务条款：外贸大单统一执行 30% T/T 定金锁定汇率与原材料 BOM 成本，出厂前提供 1:1 试装视频质检。'
+                  excerpt: isDom
+                    ? '财务条款：国内定制大单统一执行 40% 定金锁定板材现货，出厂入户安装调试验收合格后支付尾款。'
+                    : '财务条款：外贸大单统一执行 30% T/T 定金锁定汇率与原材料 BOM 成本，出厂前提供 1:1 试装视频质检。'
                 }
               ]
             };
@@ -748,6 +803,229 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
         })
       );
     }, 1200);
+  };
+
+  // 销售一键选择缺失字段预设方案 (投影 / 拆板 / 国内 / 国外)
+  const handleSelectQuotePreset = (presetMethod: QuotationCalculationMethod, marketType?: QuoteMarketType) => {
+    if (!activeSession) return;
+    const isDis = presetMethod === 'disassembly';
+    const isDom = marketType === 'domestic' || (!marketType && (activeSession.channel === '企微' || activeSession.channel === '企业微信'));
+    const finalMarketType: QuoteMarketType = isDom ? 'domestic' : 'overseas';
+    const currSymbol = isDom ? '¥' : '$';
+
+    let totalAmount = 0;
+    if (isDom) {
+      totalAmount = isDis ? 152800 : 149600;
+    } else {
+      totalAmount = isDis ? 82400 : 78500;
+    }
+
+    const userMsg: ChatMessage = {
+      id: `msg-user-supp-${Date.now()}`,
+      sessionId: activeSession.id,
+      sender: 'sales',
+      content: isDom
+        ? (isDis
+            ? '已选定国内方案：🇨🇳 按「国内拆板」方式精细计价（板件展开与五金BOM逐项精调，国内含税送装，CNY 人民币结算）。'
+            : '已选定国内方案：🇨🇳 按「国内投影」方式计价（24㎡衣帽间+12.5延米中岛橱柜，含13%专票与入户安装调试，CNY 人民币结算）。')
+        : (isDis
+            ? '已选定外贸方案：🌍 按「国外拆板」方式精细计价（采用18mm多层实木+铝框茶玻门板，展开面积与五金BOM精算，FOB深圳/CIF洛杉矶，USD 结算）。'
+            : '已选定外贸方案：🌍 按「国外投影」方式快速计价（24㎡衣帽间+12.5延米中岛橱柜，进口爱格板W1000与百隆阻尼铰链，CIF洛杉矶港，USD 结算）。'),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    const aiMsgId = `msg-ai-supp-${Date.now()}`;
+    const aiGeneratingMsg: ChatMessage = {
+      id: aiMsgId,
+      sessionId: activeSession.id,
+      sender: 'ai_copilot',
+      content: '',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isGenerating: true,
+      generationTimeMs: 0
+    };
+
+    setMessages((prev) => [...prev, userMsg, aiGeneratingMsg]);
+
+    setTimeout(() => {
+      const confirmCardData: QuotationRequirementConfirmData = {
+        id: `qc-${Date.now()}`,
+        status: 'pending_confirm',
+        customerName: activeSession.customerName || (isDom ? '张明远 先生' : 'David Miller'),
+        companyName: activeSession.companyName || (isDom ? '华润置地大平层全屋高定' : 'Apex Architecture & Interiors LLC'),
+        projectName: isDom ? '上海华润外滩九里现代轻奢大宅全屋高定项目' : '加州现代奢华独栋别墅全屋定制工程 (California Villa High-End Project)',
+        tradeTerm: isDom ? '国内专车入户送装 (含13%增值税专用发票)' : 'CIF Los Angeles Port',
+        currency: isDom ? 'CNY' : 'USD',
+        calculationMethod: presetMethod,
+        quoteMarketType: finalMarketType,
+        designDrawings: [
+          {
+            name: isDom ? 'Huaren_Villa_Kitchen_Cabinet_CAD_v2.dwg' : 'Miami_Villa_Kitchen_Cabinet_v2.dwg',
+            size: '4.8 MB',
+            type: 'dwg',
+            tag: 'CAD 拆单深化图'
+          },
+          {
+            name: 'Island_NavyBlue_RAL5004_Render.jpg',
+            size: '3.2 MB',
+            type: 'image',
+            tag: '3D 效果图'
+          },
+          {
+            name: isDom ? 'Huaren_WalkIn_Wardrobe_Details.pdf' : 'Master_WalkIn_Wardrobe_Renderings.pdf',
+            size: '12.4 MB',
+            type: 'pdf',
+            tag: '施工节点大样'
+          }
+        ],
+        productItems: isDom ? DEFAULT_PROJECTION_ITEMS_DOMESTIC : DEFAULT_PROJECTION_ITEMS_OVERSEAS,
+        disassemblyItems: isDom ? DEFAULT_DISASSEMBLY_ITEMS_DOMESTIC : DEFAULT_DISASSEMBLY_ITEMS,
+        leadTime: isDom ? '20~25 工作日 (精准下单排产)' : '25~30 工作日 (确认深化图纸与色板后)',
+        depositTerm: isDom ? '40% 首期定金锁定板材排产 + 60% 安装调试完毕验收后付清' : '30% T/T 订金锁定排产 + 70% 见提单副本或装柜前电放',
+        specialNotes: isDom
+          ? '已包含国内专车干线运输、送货上楼、金牌技师上门安装及工厂5年质保'
+          : '已包含海运 ISTA 3A 蜂窝板木架防损包装，免费提供 1:1 试装视频与英文安装说明书',
+        totalEstimatedAmount: totalAmount
+      };
+
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id === aiMsgId) {
+            return {
+              ...m,
+              isGenerating: false,
+              content: `已为您梳理【${isDom ? '国内价格体系' : '国外价格体系'} · ${isDis ? '拆板计价' : '投影计价'}】需求核对卡，请核对下方客户定制清单，确认无误后点击开始计算报价：`,
+              quoteConfirmData: confirmCardData,
+              citations: [
+                {
+                  id: 'kb-pi-req',
+                  title: isDom ? '《国内高定私宅图纸拆单与报价核算标准》' : '《外贸工程图纸拆单与报价核算标准》',
+                  version: 'v3.0',
+                  category: '报价核算',
+                  excerpt: isDom
+                    ? '国内计价标准：支持投影平米与展开BOM精算，包含13%专票与上门送装调试。'
+                    : '计价规范：可选择投影平米或拆板BOM精细核算，核准后出具正式 PI 锁定工期与定金。'
+                }
+              ]
+            };
+          }
+          return m;
+        })
+      );
+    }, 800);
+  };
+
+  // 销售通过表单补充缺失的字段
+  const handleSupplementQuoteFields = (filledData: {
+    method: QuotationCalculationMethod;
+    marketType?: QuoteMarketType;
+    category: string;
+    dimensions: string;
+    material: string;
+    hardware: string;
+    tradeTerm: string;
+  }) => {
+    if (!activeSession) return;
+    const isDis = filledData.method === 'disassembly';
+    const isDom = filledData.marketType === 'domestic';
+    const finalMarketType: QuoteMarketType = isDom ? 'domestic' : 'overseas';
+    const currSymbol = isDom ? '¥' : '$';
+
+    let totalAmount = 0;
+    if (isDom) {
+      totalAmount = isDis ? 152800 : 149600;
+    } else {
+      totalAmount = isDis ? 82400 : 78500;
+    }
+
+    const userMsg: ChatMessage = {
+      id: `msg-user-supp-${Date.now()}`,
+      sessionId: activeSession.id,
+      sender: 'sales',
+      content: `已补充报价信息：市场体系【${isDom ? '国内内销价格' : '国外出口价格'}】，计价方式【${isDis ? '按拆板计价' : '按投影计价'}】，空间品类【${filledData.category}】，尺寸规格【${filledData.dimensions}】，板材材质【${filledData.material}】，核心五金【${filledData.hardware}】，贸易条款【${filledData.tradeTerm}】。`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    const aiMsgId = `msg-ai-supp-${Date.now()}`;
+    const aiGeneratingMsg: ChatMessage = {
+      id: aiMsgId,
+      sessionId: activeSession.id,
+      sender: 'ai_copilot',
+      content: '',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isGenerating: true,
+      generationTimeMs: 0
+    };
+
+    setMessages((prev) => [...prev, userMsg, aiGeneratingMsg]);
+
+    setTimeout(() => {
+      const confirmCardData: QuotationRequirementConfirmData = {
+        id: `qc-${Date.now()}`,
+        status: 'pending_confirm',
+        customerName: activeSession.customerName || (isDom ? '张明远 先生' : 'David Miller'),
+        companyName: activeSession.companyName || (isDom ? '华润置地大平层全屋高定' : 'Apex Architecture & Interiors LLC'),
+        projectName: isDom ? '上海华润外滩九里现代轻奢大宅全屋高定项目' : '加州现代奢华独栋别墅全屋定制工程 (California Villa High-End Project)',
+        tradeTerm: filledData.tradeTerm || (isDom ? '国内专车入户送装 (含13%专票)' : 'CIF Los Angeles Port'),
+        currency: isDom ? 'CNY' : 'USD',
+        calculationMethod: filledData.method,
+        quoteMarketType: finalMarketType,
+        designDrawings: [
+          {
+            name: isDom ? 'Huaren_Villa_Kitchen_Cabinet_CAD_v2.dwg' : 'Miami_Villa_Kitchen_Cabinet_v2.dwg',
+            size: '4.8 MB',
+            type: 'dwg',
+            tag: 'CAD 拆单深化图'
+          },
+          {
+            name: 'Island_NavyBlue_RAL5004_Render.jpg',
+            size: '3.2 MB',
+            type: 'image',
+            tag: '3D 效果图'
+          }
+        ],
+        productItems: [
+          {
+            id: 'item-1',
+            category: filledData.category || '全屋定制工程',
+            name: `${filledData.category || '全屋高定系统'} (${filledData.material})`,
+            spec: `${filledData.dimensions} + ${filledData.material} + ${filledData.hardware}`,
+            qty: 1,
+            unit: '全套',
+            estimatedPrice: totalAmount,
+            hardware: filledData.hardware
+          }
+        ],
+        disassemblyItems: isDom ? DEFAULT_DISASSEMBLY_ITEMS_DOMESTIC : DEFAULT_DISASSEMBLY_ITEMS,
+        leadTime: isDom ? '20~25 工作日 (确认深化下单排产)' : '25~30 工作日 (确认深化图纸与色板后)',
+        depositTerm: isDom ? '40% 首期定金锁定板材排产 + 60% 安装调试验收后付清' : '30% T/T 订金锁定排产 + 70% 见提单副本或装柜前电放',
+        specialNotes: isDom ? '包含国内专车干线直达配送与现场精细安装调试服务' : '已包含海运防震加固木箱包装与试装质检服务',
+        totalEstimatedAmount: totalAmount
+      };
+
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id === aiMsgId) {
+            return {
+              ...m,
+              isGenerating: false,
+              content: `已同步您填写的报价参数，请核对下方客户定制需求清单，确认无误后点击开始计算报价：`,
+              quoteConfirmData: confirmCardData,
+              citations: [
+                {
+                  id: 'kb-pi-req',
+                  title: isDom ? '《国内高定私宅图纸拆单与报价核算标准》' : '《外贸工程图纸拆单与报价核算标准》',
+                  version: 'v3.0',
+                  category: '报价核算',
+                  excerpt: '报价前需核实市场价格体系（国内/国外）及计价模式（投影/拆板），出具确认件。'
+                }
+              ]
+            };
+          }
+          return m;
+        })
+      );
+    }, 800);
   };
 
   const handleSendMessage = (textToSend?: string) => {
@@ -785,9 +1063,9 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
     setSelectedQuoteIds([]);
     setPendingQuotedMessages([]);
 
-    // Check if sales user is asking for a quotation / PI
+    // Check if sales user is asking for a quotation / PI or supplementing quote fields
     const normalizedText = text.toLowerCase();
-    const isQuoteDemand = (
+    const isExplicitQuote = (
       text.includes('报价') ||
       normalizedText.includes('pi') ||
       text.includes('形式发票') ||
@@ -798,6 +1076,22 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
       text.includes('算价') ||
       text.includes('估价')
     );
+    const isPreviousQuoteAsked = messages.some(
+      (m) => m.content.includes('报价单生成尚缺少') || m.quoteConfirmData || m.generatedQuoteData
+    );
+    const isSupplementingQuote = isPreviousQuoteAsked && (
+      text.includes('投影') ||
+      text.includes('拆板') ||
+      text.includes('展开') ||
+      text.includes('国内') ||
+      text.includes('国外') ||
+      text.includes('爱格') ||
+      text.includes('实木') ||
+      text.includes('百隆') ||
+      /(\d+(\.\d+)?)\s*(平米|延米|米|m²|㎡|套)/.test(text) ||
+      (attachmentsToSend && attachmentsToSend.length > 0)
+    );
+    const isQuoteDemand = isExplicitQuote || isSupplementingQuote;
 
     // Mock AI Generating State
     const aiMsgId = `msg-ai-${Date.now()}`;
@@ -825,19 +1119,107 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
       setMessages((prev) => 
         prev.map(m => {
           if (m.id === aiMsgId) {
-            // If sales requested a quotation, generate the interactive confirmation card!
+            // If sales requested a quotation or supplied info, check whether required fields are provided
             if (isQuoteDemand) {
+              const historyTexts = messages.map(msg => msg.content).join(' ');
+              const fullContextStr = `${historyTexts} ${text} ${quotesForThisMsg ? quotesForThisMsg.map(q => q.content).join(' ') : ''} ${activeSession.lastMessage || ''} ${(activeSession.tags || []).join(' ')} ${activeSession.customerName || ''} ${activeSession.companyName || ''}`.toLowerCase();
+
+              const hasMethod = fullContextStr.includes('投影') || fullContextStr.includes('拆板') || fullContextStr.includes('展开');
+              const hasDimensions = /(\d+(\.\d+)?)\s*(平米|延米|米|m²|㎡|套|只|张|块|个)/.test(fullContextStr) || (attachmentsToSend && attachmentsToSend.length > 0) || messages.some(msg => msg.attachments && msg.attachments.length > 0);
+              const hasMaterial = fullContextStr.includes('爱格') || fullContextStr.includes('实木') || fullContextStr.includes('欧松') || fullContextStr.includes('板') || fullContextStr.includes('烤漆') || fullContextStr.includes('岩板') || fullContextStr.includes('材质') || fullContextStr.includes('木皮') || fullContextStr.includes('pet');
+              const hasHardware = fullContextStr.includes('五金') || fullContextStr.includes('百隆') || fullContextStr.includes('blum') || fullContextStr.includes('海蒂诗') || fullContextStr.includes('hettich') || fullContextStr.includes('铰链') || fullContextStr.includes('滑轨') || fullContextStr.includes('抽屉');
+              const hasTradeTerm = fullContextStr.includes('cif') || fullContextStr.includes('fob') || fullContextStr.includes('exw') || fullContextStr.includes('usd') || fullContextStr.includes('美元') || fullContextStr.includes('港') || fullContextStr.includes('条款') || fullContextStr.includes('送装') || fullContextStr.includes('专票') || fullContextStr.includes('含税') || fullContextStr.includes('人民币');
+
+              // 识别国内外市场价格体系 (国内 CNY vs 国外 USD)
+              const isExplicitDomestic = fullContextStr.includes('国内') || fullContextStr.includes('内销') || fullContextStr.includes('人民币') || fullContextStr.includes('cny') || fullContextStr.includes('rmb') || fullContextStr.includes('上海') || fullContextStr.includes('北京') || fullContextStr.includes('广州') || fullContextStr.includes('深圳') || fullContextStr.includes('杭州') || fullContextStr.includes('成都') || fullContextStr.includes('专票') || fullContextStr.includes('含税');
+              const isExplicitOverseas = fullContextStr.includes('国外') || fullContextStr.includes('外贸') || fullContextStr.includes('出口') || fullContextStr.includes('美元') || fullContextStr.includes('usd') || fullContextStr.includes('加州') || fullContextStr.includes('洛杉矶') || fullContextStr.includes('美国') || fullContextStr.includes('cif') || fullContextStr.includes('fob') || fullContextStr.includes('exw') || fullContextStr.includes('海外');
+
+              const isContextDomestic = isExplicitDomestic || (!isExplicitOverseas && (activeSession.channel === '企微' || activeSession.channel === '企业微信' || fullContextStr.includes('华润') || fullContextStr.includes('大平层') || fullContextStr.includes('上海') || fullContextStr.includes('北京') || fullContextStr.includes('国内')));
+              const isContextOverseas = isExplicitOverseas || (!isExplicitDomestic && (activeSession.channel === 'WhatsApp' || fullContextStr.includes('california') || fullContextStr.includes('angeles') || fullContextStr.includes('villa') || fullContextStr.includes('export') || fullContextStr.includes('境外') || fullContextStr.includes('外贸')));
+
+              let detectedMarket: QuoteMarketType | undefined = undefined;
+              let isMarketAutoDetected = false;
+              let detectedMarketReason = '';
+
+              if (isExplicitDomestic || (isContextDomestic && !isContextOverseas)) {
+                detectedMarket = 'domestic';
+                isMarketAutoDetected = true;
+                detectedMarketReason = `已从客户沟通渠道（${activeSession.channel === '企微' || activeSession.channel === '企业微信' ? '企业微信 · 国内私宅项目' : '国内地区'}）自动识别归属为「国内价格体系」(CNY)`;
+              } else if (isExplicitOverseas || (isContextOverseas && !isContextDomestic)) {
+                detectedMarket = 'overseas';
+                isMarketAutoDetected = true;
+                detectedMarketReason = `已从客户沟通渠道（${activeSession.channel === 'WhatsApp' ? 'WhatsApp · 境外加州独栋' : '外贸出口'}）自动识别归属为「国外出口价格体系」(USD)`;
+              }
+
+              // Check if all essential fields are satisfied
+              const isAllRequiredProvided = hasMethod && hasDimensions && hasMaterial && (isMarketAutoDetected || isExplicitDomestic || isExplicitOverseas);
+
+              if (!isAllRequiredProvided) {
+                // Compile list of missing items for pure text display
+                const missingItems: string[] = [];
+
+                if (!hasMethod) {
+                  missingItems.push('计价方式：投影计价 或 拆板计价（说明：按正立面投影面积核算 或 按板件平铺展开与五金BOM精算）');
+                }
+                if (!isMarketAutoDetected && !isExplicitDomestic && !isExplicitOverseas) {
+                  missingItems.push('价格体系：国内价格 或 国外价格（说明：会话中尚未明确客户地区，需确认适用国内标准价还是国外出口价）');
+                }
+                if (!hasDimensions) {
+                  missingItems.push('尺寸规格：空间投影面积(㎡)/延米长度，或提供CAD图纸展开');
+                }
+                if (!hasMaterial) {
+                  missingItems.push('板材与工艺：基材等级(如进口爱格板/多层实木)与门板表面处理工艺');
+                }
+                if (!hasHardware) {
+                  missingItems.push('五金配置：铰链、导轨品牌及型号（可选，默认为奥地利百隆顶配阻尼系统）');
+                }
+
+                const missingCount = missingItems.length;
+                const textMessageLines = [
+                  `报价单生成尚缺少 ${missingCount} 项必要信息：`,
+                  ...missingItems.map(item => `• ${item}`),
+                  '',
+                  '💡 **补充说明**：',
+                  '您可直接在下方对话框中输入上述信息（例如：“按国内价格，投影计价，主卧衣帽间24㎡+橱柜12.5米，爱格板+百隆五金”），或发送图纸文件。信息补全后，AI 将自动向您发送【报价单需求确认卡】。'
+                ].join('\n');
+
+                return {
+                  ...m,
+                  isGenerating: false,
+                  content: textMessageLines,
+                  citations: [
+                    {
+                      id: 'kb-quote-spec',
+                      title: detectedMarket === 'domestic' ? '《国内高定私宅报价必要字段核算规范》' : '《定制家居外贸报价必要字段核算规范》',
+                      version: 'v3.2',
+                      category: '报价核算标准',
+                      excerpt: '定制单核算前提：必须明确国内外价格套系、计价模式（投影/拆板展开）、尺寸工程量及材质五金配置，方可出具正式报价单。'
+                    }
+                  ]
+                };
+              }
+
+              const isDom = detectedMarket === 'domestic';
+              const selectedMethod: QuotationCalculationMethod = (fullContextStr.includes('拆板') || fullContextStr.includes('展开')) ? 'disassembly' : 'projection';
+              const isDis = selectedMethod === 'disassembly';
+              const totalAmount = isDom ? (isDis ? 152800 : 149600) : (isDis ? 82400 : 78500);
+              const currSymbol = isDom ? '¥' : '$';
+
               const confirmCardData: QuotationRequirementConfirmData = {
                 id: `qc-${Date.now()}`,
                 status: 'pending_confirm',
-                customerName: activeSession.customerName || 'David Miller',
-                companyName: activeSession.companyName || 'Apex Architecture & Interiors LLC',
-                projectName: '加州现代奢华独栋别墅全屋定制工程 (California Villa High-End Project)',
-                tradeTerm: 'CIF Los Angeles Port',
-                currency: 'USD',
+                customerName: activeSession.customerName || (isDom ? '张明远 先生' : 'David Miller'),
+                companyName: activeSession.companyName || (isDom ? '华润置地大平层全屋高定' : 'Apex Architecture & Interiors LLC'),
+                projectName: isDom ? '上海华润外滩九里现代轻奢大宅全屋高定项目' : '加州现代奢华独栋别墅全屋定制工程 (California Villa High-End Project)',
+                tradeTerm: isDom ? '国内专车入户送装 (含13%专票)' : 'CIF Los Angeles Port',
+                currency: isDom ? 'CNY' : 'USD',
+                calculationMethod: selectedMethod,
+                quoteMarketType: isDom ? 'domestic' : 'overseas',
+                isMarketTypeAutoDetected: isMarketAutoDetected,
+                detectedMarketReason: detectedMarketReason,
                 designDrawings: [
                   {
-                    name: 'Miami_Villa_Kitchen_Cabinet_v2.dwg',
+                    name: isDom ? 'Huaren_Villa_Kitchen_Cabinet_CAD_v2.dwg' : 'Miami_Villa_Kitchen_Cabinet_v2.dwg',
                     size: '4.8 MB',
                     type: 'dwg',
                     tag: 'CAD 拆单深化图'
@@ -849,64 +1231,34 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                     tag: '3D 效果图'
                   },
                   {
-                    name: 'Master_WalkIn_Wardrobe_Renderings.pdf',
+                    name: isDom ? 'Huaren_WalkIn_Wardrobe_Details.pdf' : 'Master_WalkIn_Wardrobe_Renderings.pdf',
                     size: '12.4 MB',
                     type: 'pdf',
                     tag: '施工节点大样'
                   }
                 ],
-                productItems: [
-                  {
-                    id: 'item-1',
-                    category: '橱柜工程',
-                    name: '现代意式极简全屋定制橱柜 (含中岛台)',
-                    spec: '进口爱格板 W1000 + 45°斜切无拉手 + 纯白岩板台面 + 岛台指定 RAL 5004 海军蓝哑光烤漆',
-                    qty: 12.5,
-                    unit: '延米',
-                    estimatedPrice: 680,
-                    color: 'RAL 5004 海军蓝 (中岛) + 暖白肤感 (主柜)',
-                    hardware: 'Blum 阻尼铰链 + 隐形触碰反弹器'
-                  },
-                  {
-                    id: 'item-2',
-                    category: '衣帽间工程',
-                    name: '主卧实木高定步入式衣帽间系统',
-                    spec: '多层实木高定柜体 + 铝合金窄边框茶色玻璃门 + 嵌入式 3000K 暖光感应灯带',
-                    qty: 24,
-                    unit: '㎡',
-                    estimatedPrice: 450,
-                    color: '胡桃木纹多层实木 + 茶色透明钢化玻璃',
-                    hardware: '重型静音阻尼滑轨'
-                  },
-                  {
-                    id: 'item-3',
-                    category: '五金与配件',
-                    name: '奥地利百隆 (Blum) 原装顶配阻尼五金系统',
-                    spec: '集成顶配快装阻尼缓冲铰链 48 只 + 豪华金属骑马抽屉 12 套 + 调味拉篮',
-                    qty: 1,
-                    unit: '套',
-                    estimatedPrice: 1850,
-                    hardware: '原装进口 Blum 终身质保'
-                  }
-                ],
-                leadTime: '25~30 工作日 (确认深化图纸与色板后)',
-                depositTerm: '30% T/T 订金锁定排产 + 70% 见提单副本或装柜前电放',
-                specialNotes: '已包含海运 ISTA 3A 蜂窝板木架防损包装，免费提供 1:1 试装视频与英文安装说明书',
-                totalEstimatedAmount: 78500
+                productItems: isDom ? DEFAULT_PROJECTION_ITEMS_DOMESTIC : DEFAULT_PROJECTION_ITEMS_OVERSEAS,
+                disassemblyItems: isDom ? DEFAULT_DISASSEMBLY_ITEMS_DOMESTIC : DEFAULT_DISASSEMBLY_ITEMS,
+                leadTime: isDom ? '20~25 工作日 (精准下单排产)' : '25~30 工作日 (确认深化图纸与色板后)',
+                depositTerm: isDom ? '40% 首期定金锁定板材排产 + 60% 安装调试验收后付清' : '30% T/T 订金锁定排产 + 70% 见提单副本或装柜前电放',
+                specialNotes: isDom
+                  ? '已包含国内专车干线运输、送货上楼、金牌技师上门安装及工厂5年质保'
+                  : '已包含海运 ISTA 3A 蜂窝板木架防损包装，免费提供 1:1 试装视频与英文安装说明书',
+                totalEstimatedAmount: totalAmount
               };
 
               return {
                 ...m,
                 isGenerating: false,
-                content: `### 📋 客户定制需求与图纸提取已就绪\n\nAI 已自动解析当前客户《${activeSession.customerName}》的历史沟通纪要、关联 CAD 图纸与材质规格。请在下方卡片中核对产品类型、尺寸数量与图纸信息，确认无误后点击**「确认无误，立即生成报价单」**，系统将为您生成标准外贸形式发票 (PI)：`,
+                content: `已为您梳理客户定制需求与图纸参数，请核对下方需求信息，确认无误后点击生成正式报价单：`,
                 quoteConfirmData: confirmCardData,
                 citations: [
                   {
                     id: 'kb-pi-req',
-                    title: '《外贸工程图纸拆单与报价核算标准》',
+                    title: isDom ? '《国内高定私宅图纸拆单与报价核算标准》' : '《外贸工程图纸拆单与报价核算标准》',
                     version: 'v3.0',
                     category: '报价核算',
-                    excerpt: '拆单规范：图纸需经过销售与技术二次核对确认后，方可出具正式 PI 形式发票锁定工期与定金条款。'
+                    excerpt: '拆单规范：图纸需经过销售与技术二次核对确认市场价格体系与计价方式（投影/拆板）后，方可出具正式报价单/PI形式发票锁定工期与定金条款。'
                   }
                 ]
               };
@@ -1110,15 +1462,10 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
   };
 
   // Mock Upload Handler
-  const handleFileUpload = (file: File, type: 'chat' | 'audio') => {
+  const handleFileUpload = (file: File) => {
     setUploadedFileName(file.name);
     setUploadedFileSize(`${(file.size / (1024 * 1024)).toFixed(2)} MB`);
-    
-    if (type === 'chat') {
-      setRawRecordText(`[导入聊天文件: ${file.name}]\n客户：“你好，我们在广州珠江新城有一套360平米的顶复豪宅，需要全案定制。主卧需要爱格W1000板材的步入式衣帽间，客厅整面要做碳晶护墙板和磁吸隐藏门。预算大概50万以内，要求下个月15号前打样确认并排期进场。”\n销售：“收到！我们有德国百隆五金和爱格官方授权，可提供1:1节点图与色板包邮送样。”`);
-    } else {
-      setRawRecordText(`[语音识别音频文件: ${file.name} | 时长: 03分42秒]\n【客户发言】：我们是杭州极简美学设计院的李工，负责千岛湖高端度假独栋项目。对墙板防潮和柜体环保等级要求极高（必须达到ENF级或日本F4星）。你们实木贴皮和碳晶板的阻燃报告（BS5852 / B1级）能否下周附在报价单里？\n【销售回应】：没问题李工，我们所有工程板材均具备国家阻燃及环保双重认证，随时可安排打样专函寄送。`);
-    }
+    setRawRecordText(`[导入聊天文件: ${file.name}]\n客户：“你好，我们在广州珠江新城有一套360平米的顶复豪宅，需要全案定制。主卧需要爱格W1000板材的步入式衣帽间，客厅整面要做碳晶护墙板和磁吸隐藏门。预算大概50万以内，要求下个月15号前打样确认并排期进场。”\n销售：“收到！我们有德国百隆五金和爱格官方授权，可提供1:1节点图与色板包邮送样。”`);
   };
 
   // Run AI Analysis
@@ -1346,18 +1693,66 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   >
                     {/* First Line: Name, ID, Source badge, Time */}
                     <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className={`font-bold text-xs truncate ${isSelected ? 'text-[#0F4A47]' : 'text-slate-900'}`}>
-                          {sess.customerName}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-mono shrink-0">
-                          {sess.id}
-                        </span>
-                      </div>
+                      {editingSessionId === sess.id ? (
+                        <div
+                          className="flex items-center gap-1.5 flex-1 min-w-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="text"
+                            autoFocus
+                            value={editingTitle}
+                            onChange={(e) => setEditingTitle(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveRename(sess.id);
+                              if (e.key === 'Escape') handleCancelRename();
+                            }}
+                            className="h-6 px-2 text-xs font-bold text-slate-800 bg-white border border-[#0F4A47] rounded-md flex-1 min-w-0 focus:outline-none focus:ring-1 focus:ring-[#0F4A47]"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => handleSaveRename(sess.id, e)}
+                            title="保存名称"
+                            className="w-5 h-5 flex items-center justify-center rounded bg-[#0F4A47] text-white hover:bg-[#0c3c39] cursor-pointer shrink-0 transition-colors"
+                          >
+                            <Check className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleCancelRename(e)}
+                            title="取消"
+                            className="w-5 h-5 flex items-center justify-center rounded bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer shrink-0 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <span
+                              className={`font-bold text-xs truncate ${isSelected ? 'text-[#0F4A47]' : 'text-slate-900'}`}
+                              title={sess.customerName}
+                            >
+                              {sess.customerName}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                              {sess.id}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => handleStartRename(sess, e)}
+                              title="重命名会话"
+                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-[#0F4A47] hover:bg-slate-200/60 rounded transition-all cursor-pointer shrink-0 ml-0.5"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                            </button>
+                          </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-[10px] text-slate-400 font-mono">{sess.lastTime || '19:48'}</span>
-                      </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="text-[10px] text-slate-400 font-mono">{sess.lastTime || '19:48'}</span>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* Meta Row: Channel badge, Sales staff, Quick Status */}
@@ -1452,8 +1847,55 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                   </button>
 
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2.5">
-                      <h2 className="text-sm font-bold text-slate-900 truncate">{activeSession.customerName}</h2>
+                    <div className="flex items-center gap-2">
+                      {editingSessionId === activeSession.id ? (
+                        <div
+                          className="flex items-center gap-1.5 max-w-xs"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="text"
+                            autoFocus
+                            value={editingTitle}
+                            onChange={(e) => setEditingTitle(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveRename(activeSession.id);
+                              if (e.key === 'Escape') handleCancelRename();
+                            }}
+                            className="h-6 px-2 text-xs font-bold text-slate-800 bg-white border border-[#0F4A47] rounded-md focus:outline-none focus:ring-1 focus:ring-[#0F4A47]"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => handleSaveRename(activeSession.id, e)}
+                            title="保存名称"
+                            className="w-5 h-5 flex items-center justify-center rounded bg-[#0F4A47] text-white hover:bg-[#0c3c39] cursor-pointer shrink-0 transition-colors"
+                          >
+                            <Check className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleCancelRename(e)}
+                            title="取消"
+                            className="w-5 h-5 flex items-center justify-center rounded bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer shrink-0 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 group">
+                          <h2 className="text-sm font-bold text-slate-900 truncate" title={activeSession.customerName}>
+                            {activeSession.customerName}
+                          </h2>
+                          <button
+                            type="button"
+                            onClick={(e) => handleStartRename(activeSession, e)}
+                            title="重命名会话"
+                            className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-[#0F4A47] hover:bg-slate-100 rounded transition-all cursor-pointer shrink-0"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div className="text-[11px] text-slate-400 flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
                       <span>渠道: <strong className="text-slate-700">{activeSession.channel === '企业微信' ? '企微' : activeSession.channel}</strong></span>
@@ -1597,6 +2039,17 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                                         )}
                                       </div>
                                     ))}
+                                  </div>
+                                )}
+
+                                {/* Missing Quotation Fields Card (报价缺失字段总结卡片) */}
+                                {m.missingQuoteFieldsData && (
+                                  <div className="mt-3">
+                                    <MissingQuoteFieldsCard
+                                      data={m.missingQuoteFieldsData}
+                                      onSupplement={handleSupplementQuoteFields}
+                                      onSelectPreset={handleSelectQuotePreset}
+                                    />
                                   </div>
                                 )}
 
@@ -1752,20 +2205,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
 
                     <div className="flex items-center justify-between text-xs text-slate-500 pb-1 flex-wrap gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <label className="flex items-center gap-1 hover:text-[#EA3A20] text-slate-600 cursor-pointer font-bold transition-colors bg-slate-100/80 hover:bg-slate-200/80 px-2.5 py-1 rounded-lg">
-                          <Paperclip className="w-3.5 h-3.5 text-indigo-500" />
-                          <span>上传图纸/文件</span>
-                          <input
-                            type="file"
-                            multiple
-                            className="hidden"
-                            onChange={(e) => {
-                              if (e.target.files) processFiles(e.target.files);
-                              e.target.value = '';
-                            }}
-                          />
-                        </label>
-
                         <button
                           type="button"
                           onClick={() => handleSendMessage('请根据当前客户沟通与设计图纸，做一份定制报价单 (PI)。')}
@@ -1773,14 +2212,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         >
                           <Sparkles className="w-3 h-3 text-[#EA3A20]" />
                           <span>帮我做一份报价单 (PI)</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleSendMessage('帮我分析当前客户的痛点与预算意向，并提供针对性的促单话术。')}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[11px] font-semibold transition-colors cursor-pointer"
-                        >
-                          <span>💬 促单话术</span>
                         </button>
                       </div>
                     </div>
@@ -1940,7 +2371,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         const labels: Record<typeof tab, string> = {
                           history: '聊天记录',
                           tags: '客户标签',
-                          assets: '户型与报价',
+                          assets: '图纸与报价',
                           knowledge: '关联知识'
                         };
                         return (
@@ -2107,7 +2538,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         </div>
                       )}
 
-                      {/* Profile Tab Content: 户型与报价 */}
+                      {/* Profile Tab Content: 图纸与报价 */}
                       {profileTab === 'assets' && (
                         <div className="space-y-3">
                           <div className="p-3 bg-white border border-slate-200 rounded-xl hover:border-indigo-300 cursor-pointer transition-colors group flex items-start gap-3">
@@ -2718,18 +3149,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                         <MessageSquare className="w-3 h-3" />
                         <span>上传聊天记录</span>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setRecordInputMode('audio_upload')}
-                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
-                          recordInputMode === 'audio_upload'
-                            ? 'bg-white text-emerald-700 shadow-2xs font-bold'
-                            : 'text-slate-500 hover:text-emerald-600'
-                        }`}
-                      >
-                        <Mic className="w-3 h-3" />
-                        <span>上传面谈录音</span>
-                      </button>
                     </div>
                   ) : (
                     <div className="bg-slate-100 px-3 py-1 rounded-xl text-[11px] font-bold text-slate-700 flex items-center gap-1 shadow-2xs">
@@ -2758,7 +3177,7 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                       accept=".txt,.doc,.docx,.pdf,.png,.jpg,.jpeg"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, 'chat');
+                        if (file) handleFileUpload(file);
                       }}
                     />
 
@@ -2832,137 +3251,6 @@ export const InSalesModule: React.FC<InSalesModuleProps> = ({
                           <>
                             <Sparkles className="w-3.5 h-3.5" />
                             <span>✨ AI 解析聊天记录</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* 上传面谈录音视图（仅线下对接模式可选择并展示） */}
-                {newChannel === '线下对接' && recordInputMode === 'audio_upload' && (
-                  <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                          <Mic className="w-4 h-4" />
-                        </div>
-                        <div className="text-xs font-bold text-slate-800">上传面谈录音音频内容</div>
-                      </div>
-                    </div>
-
-                    {/* Hidden input */}
-                    <input
-                      type="file"
-                      ref={audioInputRef}
-                      className="hidden"
-                      accept=".mp3,.wav,.m4a,.aac,.ogg"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, 'audio');
-                      }}
-                    />
-
-                    {/* Audio Drop Zone */}
-                    {!uploadedFileName ? (
-                      <div
-                        onClick={() => audioInputRef.current?.click()}
-                        className="border-2 border-dashed border-emerald-200 hover:border-emerald-400 bg-white/70 hover:bg-white rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1"
-                      >
-                        <Mic className="w-5 h-5 text-emerald-600" />
-                        <span className="text-xs font-medium text-slate-600">点击或拖拽录音文件至此</span>
-                      </div>
-                    ) : (
-                      <div className="bg-white border border-emerald-200 rounded-xl p-3 space-y-2 shadow-2xs">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2.5 truncate">
-                            <FileAudio className="w-5 h-5 text-emerald-600 shrink-0" />
-                            <div className="truncate">
-                              <div className="text-xs font-bold text-slate-800 truncate">{uploadedFileName}</div>
-                              <div className="text-[10px] text-slate-400">{uploadedFileSize} · 录音音频文件</div>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setUploadedFileName(null);
-                              setUploadedFileSize(null);
-                              setRawRecordText('');
-                              setAiAnalysisCompleted(false);
-                            }}
-                            className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        {/* Simulated Audio Wave & Player */}
-                        <div className="bg-slate-50 p-2 rounded-lg flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                            className="w-7 h-7 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center cursor-pointer shadow-xs shrink-0"
-                          >
-                            {isPlayingAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
-                          </button>
-                          
-                          {/* Visual Audio Wave */}
-                          <div className="flex-1 flex items-center gap-0.5 h-5">
-                            {[30, 60, 45, 80, 95, 40, 70, 85, 30, 65, 90, 50, 75, 40, 85, 60, 35, 70, 90, 45, 60, 30].map((h, i) => (
-                              <div
-                                key={i}
-                                className={`flex-1 rounded-full transition-all duration-300 ${
-                                  isPlayingAudio ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'
-                                }`}
-                                style={{ height: `${h}%` }}
-                              />
-                            ))}
-                          </div>
-
-                          <span className="text-[10px] font-mono text-slate-500 font-bold shrink-0">03:45</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Audio Transcript / Raw Text */}
-                    {rawRecordText && (
-                      <div>
-                        <textarea
-                          rows={3}
-                          value={rawRecordText}
-                          onChange={(e) => setRawRecordText(e.target.value)}
-                          placeholder="录音自动识别文字（可手动校对）..."
-                          className="w-full p-2.5 bg-white border border-emerald-100 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        />
-                      </div>
-                    )}
-
-                    {/* AI Parse Audio Button */}
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[11px] text-slate-500">
-                        {uploadedFileName ? '语音就绪，支持 ASR 转文字与需求提取' : '请选择或上传录音文件'}
-                      </span>
-                      <button
-                        type="button"
-                        disabled={(!rawRecordText && !uploadedFileName) || isAiAnalyzing}
-                        onClick={handleTriggerAiAnalysis}
-                        className={`px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
-                          isAiAnalyzing
-                            ? 'bg-emerald-400 text-white cursor-wait'
-                            : rawRecordText || uploadedFileName
-                            ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white active:scale-95'
-                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                        }`}
-                      >
-                        {isAiAnalyzing ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            <span>AI 语音转写与意向提取中...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Wand2 className="w-3.5 h-3.5" />
-                            <span>✨ AI 解析面谈录音</span>
                           </>
                         )}
                       </button>

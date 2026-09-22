@@ -197,7 +197,7 @@ export const AnalyticsModule: React.FC<AnalyticsModuleProps> = ({ subView }) => 
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col h-full overflow-y-auto custom-scrollbar px-8 pb-16 space-y-6">
+    <div className="flex-1 min-h-0 flex flex-col h-full overflow-y-auto custom-scrollbar px-4 lg:px-6 pb-6 pt-1 space-y-4">
       {/* Toast Notification */}
       {toastMsg && (
         <div className="fixed top-4 right-8 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-fade-in text-xs">
@@ -207,15 +207,12 @@ export const AnalyticsModule: React.FC<AnalyticsModuleProps> = ({ subView }) => 
       )}
 
       {/* Header & SubView Info */}
-      <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-black text-slate-900 tracking-tight">
               {isUserAnalytics ? '用户使用系统统计' : '智能体数据统计'}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-[#EA3A20] border border-red-100">
-              数据看板
-            </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
             {isUserAnalytics

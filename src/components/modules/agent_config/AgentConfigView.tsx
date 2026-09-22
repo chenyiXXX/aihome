@@ -119,7 +119,18 @@ export const AgentConfigView: React.FC<AgentConfigViewProps> = ({ config, allSki
     }
   ]);
 
-  const [savedTip, setSavedTip] = useState(false);
+  // Update editing agent with real-time auto-save
+  const updateEditingAgent = (updater: (prev: SalesAgentItem) => SalesAgentItem) => {
+    setEditingAgent((prev) => {
+      const next = updater(prev);
+      setAgentsList((currentList) => {
+        const nextList = currentList.map((ag) => (ag.id === next.id ? next : ag));
+        if (onSave) onSave({ salesAgents: nextList });
+        return nextList;
+      });
+      return next;
+    });
+  };
 
   // 导出当前 Agent 配置包
   const handleExportAgentConfig = () => {
@@ -185,113 +196,12 @@ export const AgentConfigView: React.FC<AgentConfigViewProps> = ({ config, allSki
     if (onSave) onSave({ salesAgents: updated });
   };
 
-  // Update a parameter for editing agent
+  // Update a parameter for editing agent with real-time auto-save
   const handleUpdateAgentParam = (key: string, val: any) => {
-    setEditingAgent((prev) => {
+    updateEditingAgent((prev) => {
       const updatedParams = prev.parameters.map((p) => (p.key === key ? { ...p, value: val } : p));
       return { ...prev, parameters: updatedParams };
     });
-  };
-
-  // Save changes to current agent
-  const handleSaveCurrentAgent = () => {
-    const original = agentsList.find((a) => a.id === editingAgent.id) || selectedAgent;
-    const diffs: Array<{ field: string; before: string; after: string }> = [];
-
-    if (original.systemPrompt !== editingAgent.systemPrompt) {
-      const beforeSample = original.systemPrompt.trim().slice(0, 40) + '...';
-      const afterSample = editingAgent.systemPrompt.trim().slice(0, 40) + '...';
-      diffs.push({
-        field: '系统提示词 (System Prompt)',
-        before: beforeSample,
-        after: afterSample
-      });
-    }
-
-    if (original.geminiModel !== editingAgent.geminiModel) {
-      diffs.push({
-        field: '底座调度模型',
-        before: original.geminiModel,
-        after: editingAgent.geminiModel
-      });
-    }
-
-    if (original.temperature !== editingAgent.temperature) {
-      diffs.push({
-        field: '推理温度 (Temperature)',
-        before: String(original.temperature),
-        after: String(editingAgent.temperature)
-      });
-    }
-
-    if (original.topP !== editingAgent.topP) {
-      diffs.push({
-        field: 'Top-P 采样阈值',
-        before: String(original.topP),
-        after: String(editingAgent.topP)
-      });
-    }
-
-    if (original.maxOutputTokens !== editingAgent.maxOutputTokens) {
-      diffs.push({
-        field: '最大输出 Tokens',
-        before: String(original.maxOutputTokens),
-        after: String(editingAgent.maxOutputTokens)
-      });
-    }
-
-    if (original.contextRounds !== editingAgent.contextRounds) {
-      diffs.push({
-        field: '上下文记忆轮数',
-        before: `${original.contextRounds} 轮`,
-        after: `${editingAgent.contextRounds} 轮`
-      });
-    }
-
-    // Check parameters diff
-    editingAgent.parameters.forEach((param) => {
-      const origParam = original.parameters.find((p) => p.key === param.key);
-      if (origParam && JSON.stringify(origParam.value) !== JSON.stringify(param.value)) {
-        diffs.push({
-          field: `参数: ${param.name}`,
-          before: String(origParam.value),
-          after: String(param.value)
-        });
-      }
-    });
-
-    let currentHistory = getAgentChangeHistory(editingAgent);
-    if (diffs.length > 0) {
-      const isPrompt = diffs.some((d) => d.field.includes('Prompt'));
-      const isModel = diffs.some((d) => d.field.includes('模型'));
-      const newRecord: ConfigChangeRecord = {
-        id: `HIST-AG-${Date.now()}`,
-        targetId: editingAgent.id,
-        targetType: 'agent',
-        targetName: editingAgent.name,
-        operatorName: 'Chen Yi (陈总)',
-        operatorRole: '超级管理员',
-        timestamp: formatNow(),
-        changeType: isPrompt ? 'prompt' : isModel ? 'model' : 'parameter',
-        changeSummary: `修改智能体配置 (${diffs.map((d) => d.field).join('、')})`,
-        diffDetails: diffs
-      };
-      currentHistory = [newRecord, ...currentHistory];
-    }
-
-    const updatedAgent: SalesAgentItem = {
-      ...editingAgent,
-      changeHistory: currentHistory
-    };
-
-    setEditingAgent(updatedAgent);
-    const updated = agentsList.map((ag) => (ag.id === updatedAgent.id ? updatedAgent : ag));
-    setAgentsList(updated);
-    if (onSave) {
-      onSave({ salesAgents: updated });
-    }
-    setSavedTip(true);
-    setTimeout(() => setSavedTip(false), 2000);
   };
 
   // Save mounted skills for editing agent
@@ -342,9 +252,9 @@ export const AgentConfigView: React.FC<AgentConfigViewProps> = ({ config, allSki
 
   // Reset current agent prompt to default
   const handleResetAgentPrompt = () => {
-    const defaultAgent = initialSalesAgents.find((a) => a.id === editingAgent.id);
+    const defaultAgent = initialSalesAgents.find((a) => a.id === editingAgent.id || a.code === editingAgent.code);
     if (defaultAgent) {
-      setEditingAgent((prev) => ({ ...prev, systemPrompt: defaultAgent.systemPrompt }));
+      updateEditingAgent((prev) => ({ ...prev, systemPrompt: defaultAgent.systemPrompt }));
     }
   };
 
@@ -567,50 +477,18 @@ Regarding your inquiry on environmental compliance:
                   </div>
                   <div className="space-y-1 pl-1">
                     {groupAgents.map((agent) => {
-                      const Icon = getAgentIcon(agent.code);
                       const isSelected = agent.id === selectedAgentId;
-                      const isActive = agent.status === 'active';
                       return (
                         <div
                           key={agent.id}
                           onClick={() => setSelectedAgentId(agent.id)}
-                          className={`flex items-center justify-between p-2.5 rounded-xl text-xs cursor-pointer transition-all ${
+                          className={`flex items-center px-3 py-2.5 rounded-xl text-xs cursor-pointer transition-all ${
                             isSelected
                               ? 'bg-[#EA3A20]/10 text-[#EA3A20] font-bold shadow-2xs border border-[#EA3A20]/20'
                               : 'hover:bg-slate-100/80 text-slate-700 font-medium border border-transparent'
                           }`}
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div
-                              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                                isSelected ? 'bg-[#EA3A20] text-white' : 'bg-slate-100 text-slate-600'
-                              }`}
-                            >
-                              <Icon className="w-3.5 h-3.5" />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="font-bold truncate">{agent.name}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setHistoryTargetAgent(agent);
-                                setIsHistoryModalOpen(true);
-                              }}
-                              title={`查看【${agent.name}】修改记录`}
-                              className="w-5 h-5 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
-                            >
-                              <History className="w-3 h-3" />
-                            </button>
-                            <span
-                              className={`w-2 h-2 rounded-full ${
-                                isActive ? 'bg-emerald-500' : 'bg-slate-300'
-                              }`}
-                            />
-                          </div>
+                          <div className="font-bold truncate">{agent.name}</div>
                         </div>
                       );
                     })}
@@ -625,39 +503,25 @@ Regarding your inquiry on environmental compliance:
         <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-6 overflow-y-auto custom-scrollbar shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col space-y-6">
             {/* Header of Selected Agent */}
             <div className="flex items-start justify-between gap-4 flex-wrap pb-4 border-b border-slate-100">
-              <div className="flex items-start gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-[#EA3A20]/10 text-[#EA3A20] flex items-center justify-center shrink-0 shadow-xs">
-                  {React.createElement(getAgentIcon(editingAgent.code), { className: 'w-6 h-6' })}
+              <div>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h2 className="text-base font-bold text-slate-900">{editingAgent.name}</h2>
+                  <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-bold">
+                    {editingAgent.code}
+                  </span>
+                  <span className="text-xs font-medium text-slate-700 bg-slate-100/80 border border-slate-200 px-2.5 py-0.5 rounded-md flex items-center gap-1.5 font-mono">
+                    <Cpu className="w-3 h-3 text-[#EA3A20]" />
+                    <span>
+                      {editingAgent.geminiModel === 'gemini-2.5-flash' && 'Gemini 2.5 Flash'}
+                      {editingAgent.geminiModel === 'gemini-2.5-pro' && 'Gemini 2.5 Pro'}
+                      {editingAgent.geminiModel === 'gemini-2.5-flash-thinking' && 'Gemini 2.5 Flash Thinking'}
+                      {!['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-thinking'].includes(editingAgent.geminiModel) && editingAgent.geminiModel}
+                    </span>
+                  </span>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <h2 className="text-base font-bold text-slate-900">{editingAgent.name}</h2>
-                    <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-bold">
-                      {editingAgent.code}
-                    </span>
-                    <span
-                      className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                        editingAgent.status === 'active'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-slate-100 text-slate-500 border border-slate-200'
-                      }`}
-                    >
-                      {editingAgent.status === 'active' ? '● 运行中' : '○ 停用'}
-                    </span>
-                    <span className="text-xs font-medium text-slate-700 bg-slate-100/80 border border-slate-200 px-2.5 py-0.5 rounded-md flex items-center gap-1.5 font-mono">
-                      <Cpu className="w-3 h-3 text-[#EA3A20]" />
-                      <span>
-                        {editingAgent.geminiModel === 'gemini-2.5-flash' && 'Gemini 2.5 Flash'}
-                        {editingAgent.geminiModel === 'gemini-2.5-pro' && 'Gemini 2.5 Pro'}
-                        {editingAgent.geminiModel === 'gemini-2.5-flash-thinking' && 'Gemini 2.5 Flash Thinking'}
-                        {!['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-thinking'].includes(editingAgent.geminiModel) && editingAgent.geminiModel}
-                      </span>
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed max-w-2xl">
-                    {editingAgent.description}
-                  </p>
-                </div>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed max-w-2xl">
+                  {editingAgent.description}
+                </p>
               </div>
 
               {/* Header Actions */}
@@ -670,15 +534,6 @@ Regarding your inquiry on environmental compliance:
                 >
                   <Download className="w-3.5 h-3.5 text-slate-500" />
                   <span>导出配置包</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSaveCurrentAgent}
-                  className="px-4 py-2.5 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-all active:scale-95"
-                >
-                  <Check className={`w-3.5 h-3.5 ${savedTip ? 'animate-bounce' : ''}`} />
-                  <span>{savedTip ? '保存成功' : '保存修改'}</span>
                 </button>
               </div>
             </div>
@@ -759,7 +614,10 @@ Regarding your inquiry on environmental compliance:
                   <textarea
                     rows={10}
                     value={editingAgent.systemPrompt}
-                    onChange={(e) => setEditingAgent({ ...editingAgent, systemPrompt: e.target.value })}
+                    onChange={(e) => {
+                      const newPrompt = e.target.value;
+                      updateEditingAgent((prev) => ({ ...prev, systemPrompt: newPrompt }));
+                    }}
                     className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-xs font-mono leading-relaxed text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
                     placeholder="请输入详细的 System Prompt 指令..."
                   />
@@ -776,9 +634,10 @@ Regarding your inquiry on environmental compliance:
                     <input
                       type="number"
                       value={editingAgent.maxOutputTokens}
-                      onChange={(e) =>
-                        setEditingAgent({ ...editingAgent, maxOutputTokens: parseInt(e.target.value) || 2048 })
-                      }
+                      onChange={(e) => {
+                        const newTokens = parseInt(e.target.value) || 2048;
+                        updateEditingAgent((prev) => ({ ...prev, maxOutputTokens: newTokens }));
+                      }}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-800"
                     />
                   </div>

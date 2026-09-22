@@ -2336,7 +2336,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
+    <div className="flex-1 flex flex-col h-full overflow-hidden px-4 lg:px-6 pb-6 pt-1">
       {/* Toast Floating Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-10 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl border border-slate-800 text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-200">
@@ -2346,7 +2346,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       )}
 
       {/* Top Header Action Bar */}
-      <div className="flex items-center justify-between py-2.5 mb-2 shrink-0 gap-3 flex-wrap">
+      <div className="flex items-center justify-between py-1 mb-2 shrink-0 gap-3 flex-wrap">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <h1 className="text-sm font-black text-slate-900 shrink-0">
             {currentView === '分类管理'
@@ -2705,7 +2705,7 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
 
                 <div className="flex items-center gap-4 shrink-0">
                   <span className="hidden md:inline-block w-28 text-left">归属分类</span>
-                  <span className="hidden lg:inline-block w-24 text-left">切片 & 向量</span>
+                  <span className="hidden lg:inline-block w-24 text-left">切片</span>
                   <span className="hidden sm:inline-block w-44 xl:w-48 text-left">版本/更新</span>
                   <span className="w-32 text-right">操作</span>
                 </div>
@@ -2841,13 +2841,10 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                             </span>
                           </div>
 
-                          {/* Chunks & Vector Column */}
+                          {/* Chunks Column */}
                           <div className="hidden lg:block w-24">
                             <span className="text-[11px] font-mono text-slate-600 block">
                               {item.chunksCount || 24} 个切片
-                            </span>
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-600">
-                              <CheckCircle2 className="w-2.5 h-2.5" /> 已向量化
                             </span>
                           </div>
 
@@ -3072,48 +3069,39 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                               <Eye className="w-3.5 h-3.5" />
                             </button>
 
-                            {isReviewLock ? (
-                              <button
-                                type="button"
-                                onClick={(e) => {
+                            {/* 编辑按钮：统一规范颜色与图标，不再区分琥珀/蓝色等多种杂色 */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                if (isReviewLock) {
                                   e.stopPropagation();
                                   showToast('该知识条目正在复核审批中');
-                                }}
-                                title="复核审批中"
-                                className="p-1 rounded-lg text-slate-300 hover:text-slate-400 hover:bg-slate-100/50 cursor-not-allowed transition-colors"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-                            ) : hasPendingReview ? (
-                              <button
-                                type="button"
-                                onClick={(e) => {
+                                  return;
+                                }
+                                if (hasPendingReview) {
                                   e.stopPropagation();
                                   showToast(isExpired ? `新版本【${item.pendingVersion || ''}】正在复核中` : `新版本【${item.pendingVersion || ''}】正在复核中`);
-                                }}
-                                title="新版本复核中"
-                                className="p-1 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
-                              >
-                                <Clock className="w-3.5 h-3.5" />
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={(e) => handleOpenEditArticle(item, e)}
-                                title={
-                                  hasPendingEffective
-                                    ? '编辑待生效新版本'
-                                    : hasRejectedReview || isRejectedNeverPub
-                                    ? '编辑并重新提交'
-                                    : isDraft
-                                    ? '编辑草稿'
-                                    : '编辑条目'
+                                  return;
                                 }
-                                className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
+                                handleOpenEditArticle(item, e);
+                              }}
+                              title={
+                                isReviewLock
+                                  ? '复核审批中'
+                                  : hasPendingReview
+                                  ? '新版本复核中'
+                                  : hasPendingEffective
+                                  ? '编辑待生效新版本'
+                                  : hasRejectedReview || isRejectedNeverPub
+                                  ? '编辑并重新提交'
+                                  : isDraft
+                                  ? '编辑草稿'
+                                  : '编辑条目'
+                              }
+                              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
 
                             <button
                               onClick={(e) => handleOpenMoveCategory(item, e)}

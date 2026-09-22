@@ -148,8 +148,40 @@ export interface ChatMessage {
   }[];
   // 报价需求确认卡片数据
   quoteConfirmData?: QuotationRequirementConfirmData;
+  // 报价单缺失字段信息提示卡片数据
+  missingQuoteFieldsData?: MissingQuoteFieldsData;
   // AI 已生成的正式报价单 / 形式发票 (PI) 卡片数据
   generatedQuoteData?: GeneratedQuotationCardData;
+}
+
+// 计价方式类型: 'projection' (按投影计价) | 'disassembly' (按拆板计价)
+export type QuotationCalculationMethod = 'projection' | 'disassembly';
+
+// 报价市场类型: 'domestic' (国内报价，CNY结算，含税/国内物流) | 'overseas' (国外报价，USD/外币结算，FOB/CIF离岸海运)
+export type QuoteMarketType = 'domestic' | 'overseas';
+
+// 报价单缺失必要信息数据卡片 (AI 一次性梳理还差哪些信息)
+export interface MissingQuoteFieldsData {
+  id: string;
+  customerName: string;
+  projectName?: string;
+  missingFields: Array<{
+    key: string;
+    label: string;
+    category: string;
+    description: string;
+    example: string;
+    isCrucial: boolean;
+  }>;
+  providedFields: Array<{
+    key: string;
+    label: string;
+    value: string;
+  }>;
+  detectedCalculationMethod?: QuotationCalculationMethod;
+  detectedMarketType?: QuoteMarketType;
+  isMarketTypeAutoDetected?: boolean;
+  detectedMarketReason?: string;
 }
 
 // 报价单需求确认卡片结构 (由AI从对话/设计图纸/知识库中提取)
@@ -161,6 +193,10 @@ export interface QuotationRequirementConfirmData {
   projectName: string;
   tradeTerm: string;
   currency: 'USD' | 'EUR' | 'CNY';
+  calculationMethod?: QuotationCalculationMethod; // 'projection' | 'disassembly'
+  quoteMarketType?: QuoteMarketType; // 'domestic' | 'overseas'
+  isMarketTypeAutoDetected?: boolean; // 是否由上下文自动识别客户地区
+  detectedMarketReason?: string; // 自动识别依据原因
   designDrawings: Array<{
     name: string;
     size: string;
@@ -169,6 +205,18 @@ export interface QuotationRequirementConfirmData {
     tag?: string;
   }>;
   productItems: Array<{
+    id: string;
+    category: string;
+    name: string;
+    spec: string;
+    qty: number;
+    unit: string;
+    estimatedPrice: number;
+    color?: string;
+    hardware?: string;
+    isCustom?: boolean;
+  }>;
+  disassemblyItems?: Array<{
     id: string;
     category: string;
     name: string;
@@ -196,6 +244,9 @@ export interface GeneratedQuotationCardData {
   projectName: string;
   tradeTerm: string;
   currency: 'USD' | 'EUR' | 'CNY';
+  calculationMethod?: QuotationCalculationMethod; // 'projection' | 'disassembly'
+  calculationMethodLabel?: string;
+  quoteMarketType?: QuoteMarketType; // 'domestic' | 'overseas'
   items: Array<{
     id: string;
     name: string;
@@ -584,7 +635,7 @@ export interface ConfigChangeRecord {
   operatorName: string;
   operatorRole?: string;
   timestamp: string;
-  changeType: 'prompt' | 'model' | 'parameter' | 'status' | 'skills' | 'files' | 'trigger' | 'general';
+  changeType: 'prompt' | 'model' | 'parameter' | 'status' | 'skills' | 'files' | 'trigger' | 'general' | 'rollback';
   changeSummary: string;
   diffDetails?: Array<{
     field: string;
@@ -640,21 +691,7 @@ export interface AgentSkill {
   id: string;
   name: string;
   code: string;
-  category:
-    | '解析与数据'
-    | '通信与同步'
-    | '画像与枚举'
-    | '检索与RAG'
-    | '报价与计价'
-    | '文档与商业'
-    | '风控与合规'
-    | '生命周期'
-    | '知识协同'
-    | '计算与配载'
-    | '工程与图纸'
-    | '合规与质检'
-    | '商务与文案'
-    | '语音与多模态';
+  category?: string;
   description: string;
   version: string;
   status: 'enabled' | 'disabled';
@@ -733,14 +770,18 @@ export interface ContentGenLog {
   status: '完成' | '生成中';
 }
 
-// 6. Product Price Maintenance & BOQ (产品价格维护与BOQ清单计算)
+// 6. Product Price Maintenance & BOQ (产品价格维护与BOQ清单计算 - 国内价格与国外价格双轨制，均以人民币计价，国外价含关税与海运包装成本)
 export interface BOQPriceSpecVariant {
   id: string;
   specCode: string;          // 子规格编码 e.g. CAB-EGGER-E0-18MM
   specName: string;          // 子规格描述 e.g. 18mm / 双饰面耐磨层 / ABS激光封边
   unit?: '投影㎡' | '展开㎡' | '延米' | '个' | '套' | '米';
-  basePriceUSD: number;      // 该规格的外贸基准价 (USD)
-  basePriceRMB: number;      // 该规格的内销折算价 (RMB)
+  domesticPriceRMB: number;  // 🇨🇳 国内指导面价 (RMB) - 含13%税/内销出厂基准
+  overseasPriceRMB: number;  // 🌍 国外出口面价 (RMB) - 已含关税、港杂报关与海运免熏蒸包装
+  basePriceUSD?: number;     // 兼容/参考
+  basePriceRMB: number;      // 兼容国内基准
+  domesticRemarks?: string;  // 国内价格特殊说明 (如含税、质保等)
+  overseasRemarks?: string;  // 国外价格特殊说明 (如已报关税、港杂、免熏蒸木箱包装等)
   wasteRatePercent?: number; // 损耗率
   formulaDesc?: string;      // 专属算价公式说明
   remarks?: string;          // 备注说明
@@ -753,9 +794,13 @@ export interface BOQPriceItem {
   category: '柜体板材' | '定制门板' | '台面石材' | '基础五金' | '功能配件' | '出口包装' | '人工安装';
   spec: string;               // 规格/材质说明 e.g. 18mm/双饰面/E0级/环保认证
   unit: '投影㎡' | '展开㎡' | '延米' | '个' | '套' | '米';
-  currency: 'USD' | 'CNY';
-  basePriceUSD: number;       // 外贸出口基准单价(USD)
-  basePriceRMB: number;       // 内销折算价(RMB)
+  currency?: 'RMB' | 'USD' | 'CNY';
+  domesticPriceRMB: number;   // 🇨🇳 国内指导面价 (RMB) - 含13%专票/出厂
+  overseasPriceRMB: number;   // 🌍 国外出口面价 (RMB) - 包含关税/港杂/海运免熏蒸包装/商检成本，非汇率折算
+  basePriceUSD?: number;      // 兼容/参考
+  basePriceRMB: number;       // 兼容国内基准
+  domesticRemarks?: string;   // 国内价格体系说明 (如内销含13%专票、国内入户安装与标准五金保修)
+  overseasRemarks?: string;   // 国外价格体系说明 (如包含出口关税、港杂报关、ISPM15海运免熏蒸高抗压包装)
   wasteRatePercent: number;   // 损耗率(%) e.g. 8%
   formulaDesc: string;        // 算价公式逻辑说明 e.g. 展开面积 × 单价 × (1 + 损耗率)
   status: '已生效' | '待生效' | '已停用';
@@ -826,13 +871,14 @@ export type NotificationCategory =
   | 'kb_expiry'     // 知识库有效期提醒
   | 'approval'      // 审批类提醒
   | 'marketing_pub' // 运营内容发布情况通知
+  | 'agent_error'   // Agent运行报错
   | 'all';
 
 export type NotificationPriority = 'urgent' | 'high' | 'normal' | 'low';
 
 export interface NotificationItem {
   id: string;
-  category: 'kb_expiry' | 'approval' | 'marketing_pub';
+  category: 'kb_expiry' | 'approval' | 'marketing_pub' | 'agent_error';
   title: string;
   content: string;
   timestamp: string;
@@ -853,6 +899,12 @@ export interface NotificationItem {
     publishStatus?: 'success' | 'failed' | 'scheduled' | 'processing';
     contentTitle?: string;
     viewsCount?: number;
+    // Agent Error fields
+    agentName?: string;
+    agentCode?: string;
+    errorCode?: string;
+    errorDetails?: string;
+    triggerQuery?: string;
   };
 }
 

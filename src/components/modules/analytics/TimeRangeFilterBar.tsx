@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, CalendarRange, Clock, Sparkles, Info } from 'lucide-react';
+import { Calendar, CalendarRange, Clock, Sparkles } from 'lucide-react';
 import {
   TimeFilterState,
   TimeRangeMode,
@@ -44,19 +44,6 @@ export const TimeRangeFilterBar: React.FC<TimeRangeFilterBarProps> = ({ filter, 
 
   return (
     <div className="bg-white rounded-3xl p-4 border border-slate-100 shadow-[0_2px_15px_rgba(0,0,0,0.03)] space-y-3">
-      {/* Launch Note Banner */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-amber-50/70 border border-amber-100/80 rounded-xl text-[11px] text-amber-800">
-        <div className="flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-          <span>
-            <strong>系统上线周期提示：</strong>企业智能体系统于 <strong>2026 年 11 月</strong> 正式上线，已自动屏蔽该日期之前的无效时间范围。
-          </span>
-        </div>
-        <span className="font-mono text-amber-700 bg-amber-100/60 px-2 py-0.5 rounded text-[10px] shrink-0 font-medium">
-          上线起始: 2026-11-01
-        </span>
-      </div>
-
       {/* Top Pills Bar */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 flex-wrap">

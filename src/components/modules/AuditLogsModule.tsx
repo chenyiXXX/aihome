@@ -310,7 +310,7 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8 relative">
+    <div className="flex-1 flex flex-col h-full overflow-hidden px-4 lg:px-6 pb-6 pt-1 relative">
 
       {/* Floating Toast Notification */}
       {toastMessage && (
@@ -433,7 +433,7 @@ export const AuditLogsModule: React.FC<AuditLogsModuleProps> = () => {
       )}
 
       {/* Top Filter & Action Bar */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between py-4 mb-3 shrink-0 gap-4">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between py-1 mb-2.5 shrink-0 gap-4">
         {/* Category Tabs */}
         <div className="bg-white rounded-full p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 flex items-center gap-1">
           {(['操作日志', 'AI 问答日志', '用户登录日志'] as const).map((tab) => {

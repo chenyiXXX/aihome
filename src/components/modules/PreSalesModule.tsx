@@ -237,7 +237,7 @@ export const PreSalesModule: React.FC<PreSalesModuleProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar px-6 lg:px-8 pb-8 space-y-4">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar px-4 lg:px-6 pb-6 pt-1 space-y-4">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-5 right-8 z-50 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-bounce border border-slate-700">

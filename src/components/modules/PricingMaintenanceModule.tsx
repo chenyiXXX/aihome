@@ -23,7 +23,10 @@ import {
   FileText,
   ChevronDown,
   ChevronRight,
-  CornerDownRight
+  CornerDownRight,
+  Bot,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { BOQPriceItem, BOQPricingRule, BOQLineItem, ExchangeRateItem } from '../../types';
 import { initialBOQPriceItems, initialBOQPricingRules, initialExchangeRates } from '../../data/mockData';
@@ -66,12 +69,13 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
     }
   };
 
+  // State: AI Assistant Copilot Collapse / Expand
+  const [isAiAssistantCollapsed, setIsAiAssistantCollapsed] = useState<boolean>(false);
+
   // State: Price Items
   const [priceItems, setPriceItems] = useState<BOQPriceItem[]>(initialBOQPriceItems);
   const [selectedCategory, setSelectedCategory] = useState<string>('全部');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
-  const [unitFilter, setUnitFilter] = useState<string>('全部');
-  const [currencyMode, setCurrencyMode] = useState<'USD' | 'CNY'>('USD');
   const [exchangeRate, setExchangeRate] = useState<number>(7.20);
 
   // State: Expanded multi-spec product IDs for secondary level structure
@@ -151,9 +155,6 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
       if (selectedCategory !== '全部' && item.category !== selectedCategory) {
         return false;
       }
-      if (unitFilter !== '全部' && item.unit !== unitFilter) {
-        return false;
-      }
       if (searchKeyword.trim()) {
         const q = searchKeyword.toLowerCase();
         const matchName = item.name.toLowerCase().includes(q);
@@ -167,7 +168,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
       }
       return true;
     });
-  }, [priceItems, selectedCategory, unitFilter, searchKeyword]);
+  }, [priceItems, selectedCategory, searchKeyword]);
 
   // Pagination for pricing table
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -175,7 +176,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
 
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, unitFilter, searchKeyword]);
+  }, [selectedCategory, searchKeyword]);
 
   const paginatedItems = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -535,40 +536,65 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
       <div className="flex-1 flex gap-3.5 lg:gap-4 overflow-hidden min-h-0">
         
         {/* Left Column: AI Assistant Copilot (左右结构之左侧) */}
-        <PricingCopilot
-          priceItems={priceItems}
-          ratesList={ratesList}
-          onUpdatePriceItems={(newItems) => {
-            setPriceItems(newItems);
-            const nowStr = new Date().toLocaleDateString('zh-CN').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString();
-            setDocLastUpdatedTime(nowStr);
-          }}
-          onUpdateRatesList={(newRates) => {
-            setRatesList(newRates);
-            const usd = newRates.find((r) => r.currencyCode === 'USD');
-            if (usd) {
-              setExchangeRate(usd.systemRate);
-              setPriceItems((prev) =>
-                prev.map((item) => ({
-                  ...item,
-                  basePriceRMB: +(item.basePriceUSD * usd.systemRate).toFixed(2)
-                }))
-              );
-            }
-          }}
-          onSelectTab={handleTabChange}
-          activeTab={activeTab}
-          currentExchangeRate={exchangeRate}
-          onShowToast={showToast}
-        />
+        {!isAiAssistantCollapsed && (
+          <PricingCopilot
+            priceItems={priceItems}
+            ratesList={ratesList}
+            onUpdatePriceItems={(newItems) => {
+              setPriceItems(newItems);
+              const nowStr = new Date().toLocaleDateString('zh-CN').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString();
+              setDocLastUpdatedTime(nowStr);
+            }}
+            onUpdateRatesList={(newRates) => {
+              setRatesList(newRates);
+              const usd = newRates.find((r) => r.currencyCode === 'USD');
+              if (usd) {
+                setExchangeRate(usd.systemRate);
+                setPriceItems((prev) =>
+                  prev.map((item) => ({
+                    ...item,
+                    basePriceRMB: +(item.basePriceUSD * usd.systemRate).toFixed(2)
+                  }))
+                );
+              }
+            }}
+            onSelectTab={handleTabChange}
+            activeTab={activeTab}
+            currentExchangeRate={exchangeRate}
+            onShowToast={showToast}
+            isCollapsed={isAiAssistantCollapsed}
+            onToggleCollapse={() => setIsAiAssistantCollapsed((prev) => !prev)}
+          />
+        )}
 
         {/* Right Column: Two Tabs (面价, 汇率) (左右结构之右侧) */}
         <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         
         {/* Top Header: Tabs & Actions */}
         <div className="flex items-center justify-between py-2 shrink-0">
-          {/* Direct Two Tabs: 面价 | 汇率 */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 shadow-2xs">
+          {/* Left: AI Assistant Toggle & Direct Two Tabs (面价 | 汇率) */}
+          <div className="flex items-center gap-2">
+            {/* Quick Toggle Button for AI Assistant (Icon only) */}
+            <button
+              type="button"
+              id="pricing-ai-assistant-toggle-btn"
+              onClick={() => setIsAiAssistantCollapsed((prev) => !prev)}
+              className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-2xs ${
+                isAiAssistantCollapsed
+                  ? 'bg-red-50 text-[#EA3A20] border-red-200 hover:bg-red-100/80 shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+              title={isAiAssistantCollapsed ? "展开面价 AI 助手" : "收起面价 AI 助手"}
+            >
+              {isAiAssistantCollapsed ? (
+                <PanelLeftOpen className="w-4 h-4 text-[#EA3A20]" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4 text-slate-600" />
+              )}
+            </button>
+
+            {/* Direct Two Tabs: 面价 | 汇率 */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 shadow-2xs">
             <button
               type="button"
               onClick={() => handleTabChange('面价')}
@@ -604,8 +630,9 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
               </span>
             </button>
           </div>
+        </div>
 
-          {/* Right: Actions & Last Updated Time */}
+        {/* Right: Actions & Last Updated Time */}
           <div className="flex items-center gap-3">
             {/* 数据最后更新时间 */}
             <div
@@ -619,13 +646,6 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                 <span className="font-mono font-medium text-slate-700">{docLastUpdatedTime}</span>
               </div>
             </div>
-
-            {activeTab === '汇率' && (
-              <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/70">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>外币汇率由财务中心统一发布并按天锁汇</span>
-              </div>
-            )}
           </div>
         </div>
 
@@ -634,7 +654,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
           <div className="flex-1 flex flex-col min-h-0 space-y-3.5">
           
           {/* Top Filter & Search Controls */}
-          <div className="flex items-center justify-between gap-4 shrink-0 bg-white p-3 rounded-2xl border border-slate-100/90 shadow-2xs">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shrink-0 bg-white p-3 rounded-2xl border border-slate-100/90 shadow-2xs">
             
             {/* Category Pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
@@ -656,9 +676,8 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
               })}
             </div>
 
-            {/* Right Search & Unit Filter */}
+            {/* Right Search & Actions */}
             <div className="flex items-center gap-2.5 shrink-0">
-              
               {/* Expand All / Collapse All Multi-Spec Items */}
               {hasMultiSpecItems && (
                 <button
@@ -672,43 +691,8 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                 </button>
               )}
 
-              {/* Unit Dropdown */}
-              <select
-                value={unitFilter}
-                onChange={(e) => setUnitFilter(e.target.value)}
-                className="h-8 px-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#EA3A20] cursor-pointer"
-              >
-                <option value="全部">全部单位</option>
-                <option value="展开㎡">展开㎡</option>
-                <option value="投影㎡">投影㎡</option>
-                <option value="延米">延米</option>
-                <option value="个">个</option>
-                <option value="套">套</option>
-                <option value="米">米</option>
-              </select>
-
-              {/* Currency Display Mode */}
-              <div className="bg-slate-100 p-0.5 rounded-xl flex items-center gap-0.5 text-xs font-bold">
-                <button
-                  onClick={() => setCurrencyMode('USD')}
-                  className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                    currencyMode === 'USD' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
-                  }`}
-                >
-                  USD ($)
-                </button>
-                <button
-                  onClick={() => setCurrencyMode('CNY')}
-                  className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                    currencyMode === 'CNY' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
-                  }`}
-                >
-                  RMB (¥)
-                </button>
-              </div>
-
               {/* Search Bar */}
-              <div className="relative w-56">
+              <div className="relative w-48 lg:w-56">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
@@ -721,7 +705,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
 
               {/* Export Button */}
               <button
-                onClick={() => alert('已生成并导出最新BOQ单价Excel表格')}
+                onClick={() => alert('已生成并导出最新包含【国内面价(RMB)】与【国外面价(RMB)】的BOQ单价Excel表格')}
                 className="h-8 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
                 title="导出单价表"
               >
@@ -745,12 +729,23 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                     <th className="py-3.5 px-3 font-bold text-slate-900">类别</th>
                     <th className="py-3.5 px-3 font-bold text-slate-900">规格/环保标准</th>
                     <th className="py-3.5 px-3 font-bold text-slate-900 text-center">单位</th>
-                    <th className="py-3.5 px-3 font-bold text-slate-900 text-right">
-                      {currencyMode === 'USD' ? '外贸基准价 (USD)' : '折算基准价 (RMB)'}
+                    
+                    {/* Domestic vs Overseas Price Columns (Both in RMB) */}
+                    <th className="py-3.5 px-3 font-bold text-slate-900 text-right bg-blue-50/40 border-l border-blue-100/60">
+                      <div className="flex items-center justify-end text-blue-900">
+                        <span>国内指导面价 (RMB)</span>
+                      </div>
                     </th>
+                    
+                    <th className="py-3.5 px-3 font-bold text-slate-900 text-right bg-amber-50/40 border-l border-amber-100/60">
+                      <div className="flex items-center justify-end text-amber-900">
+                        <span>国外出口面价 (RMB)</span>
+                      </div>
+                    </th>
+
                     <th className="py-3.5 px-3 font-bold text-slate-900 text-center">损耗率</th>
                     <th className="py-3.5 px-3 font-bold text-slate-900">BOQ核算逻辑与公式</th>
-                    <th className="py-3.5 pr-6 pl-3 font-bold text-slate-900 text-right">文档明细</th>
+                    <th className="py-3.5 pr-6 pl-3 font-bold text-slate-900 text-right">明细</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100/80 text-xs">
@@ -759,35 +754,21 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                     const isExpanded = expandedProductIds.has(item.id);
 
                     // 价格区间计算（若有多规格）
-                    let displayPrice = '';
-                    let subPrice = '';
+                    let displayDomesticPrice = `¥${item.domesticPriceRMB.toFixed(2)}`;
+                    let displayOverseasPrice = `¥${item.overseasPriceRMB.toFixed(2)}`;
                     let hasPriceRange = false;
 
                     if (hasVariants && item.variants && item.variants.length > 0) {
-                      const minUSD = Math.min(...item.variants.map((v) => v.basePriceUSD));
-                      const maxUSD = Math.max(...item.variants.map((v) => v.basePriceUSD));
-                      const minRMB = Math.min(...item.variants.map((v) => v.basePriceRMB));
-                      const maxRMB = Math.max(...item.variants.map((v) => v.basePriceRMB));
+                      const minDom = Math.min(...item.variants.map((v) => v.domesticPriceRMB));
+                      const maxDom = Math.max(...item.variants.map((v) => v.domesticPriceRMB));
+                      const minOver = Math.min(...item.variants.map((v) => v.overseasPriceRMB));
+                      const maxOver = Math.max(...item.variants.map((v) => v.overseasPriceRMB));
 
-                      if (minUSD !== maxUSD) {
+                      if (minDom !== maxDom || minOver !== maxOver) {
                         hasPriceRange = true;
-                        if (currencyMode === 'USD') {
-                          displayPrice = `$${minUSD.toFixed(2)} ~ $${maxUSD.toFixed(2)}`;
-                          subPrice = `≈ ¥${minRMB.toFixed(1)} ~ ¥${maxRMB.toFixed(1)}`;
-                        } else {
-                          displayPrice = `¥${minRMB.toFixed(1)} ~ ¥${maxRMB.toFixed(1)}`;
-                          subPrice = `≈ $${minUSD.toFixed(2)} ~ $${maxUSD.toFixed(2)}`;
-                        }
+                        displayDomesticPrice = `¥${minDom.toFixed(1)} ~ ¥${maxDom.toFixed(1)}`;
+                        displayOverseasPrice = `¥${minOver.toFixed(1)} ~ ¥${maxOver.toFixed(1)}`;
                       }
-                    }
-
-                    if (!hasPriceRange) {
-                      displayPrice = currencyMode === 'USD'
-                        ? `$${item.basePriceUSD.toFixed(2)}`
-                        : `¥${item.basePriceRMB.toFixed(2)}`;
-                      subPrice = currencyMode === 'USD'
-                        ? `≈ ¥${item.basePriceRMB.toFixed(1)}`
-                        : `≈ $${item.basePriceUSD.toFixed(2)}`;
                     }
 
                     return (
@@ -880,7 +861,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                           </td>
 
                           {/* 规格 */}
-                          <td className="py-3 px-3 text-slate-600 max-w-[200px]" title={item.spec}>
+                          <td className="py-3 px-3 text-slate-600 max-w-[180px]" title={item.spec}>
                             <span className="line-clamp-1">{item.spec}</span>
                             {hasVariants && (
                               <span className="text-[10px] text-slate-400 block mt-0.5">
@@ -896,18 +877,27 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                             </span>
                           </td>
 
-                          {/* 单价 */}
-                          <td className="py-3 px-3 text-right">
-                            <div className="font-mono font-bold text-slate-900 text-sm flex items-center justify-end gap-1">
-                              <span>{displayPrice}</span>
+                          {/* 国内指导面价 (RMB) */}
+                          <td className="py-3 px-3 text-right bg-blue-50/20 border-l border-blue-100/50">
+                            <div className="font-mono font-bold text-blue-900 text-sm flex items-center justify-end gap-1">
+                              <span>{displayDomesticPrice}</span>
                               {hasPriceRange && (
-                                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-50 text-amber-700 font-normal">
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-blue-100 text-blue-700 font-normal">
                                   区间
                                 </span>
                               )}
                             </div>
-                            <div className="text-[10px] text-slate-400 font-mono">
-                              {subPrice}
+                          </td>
+
+                          {/* 国外出口面价 (RMB) */}
+                          <td className="py-3 px-3 text-right bg-amber-50/20 border-l border-amber-100/50">
+                            <div className="font-mono font-extrabold text-[#EA3A20] text-sm flex items-center justify-end gap-1">
+                              <span>{displayOverseasPrice}</span>
+                              {hasPriceRange && (
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 font-normal">
+                                  区间
+                                </span>
+                              )}
                             </div>
                           </td>
 
@@ -917,7 +907,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                           </td>
 
                           {/* 公式 */}
-                          <td className="py-3 px-3 text-slate-500 text-[11px] max-w-[220px]">
+                          <td className="py-3 px-3 text-slate-500 text-[11px] max-w-[200px]">
                             <span className="bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded text-slate-600 inline-block font-mono truncate max-w-full" title={item.formulaDesc}>
                               {item.formulaDesc}
                             </span>
@@ -941,12 +931,6 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
 
                         {/* 二级展开规格子行 */}
                         {hasVariants && isExpanded && item.variants!.map((variant, vIdx) => {
-                          const vPriceDisplay = currencyMode === 'USD'
-                            ? `$${variant.basePriceUSD.toFixed(2)}`
-                            : `¥${variant.basePriceRMB.toFixed(2)}`;
-                          const vPriceSub = currencyMode === 'USD'
-                            ? `≈ ¥${variant.basePriceRMB.toFixed(1)}`
-                            : `≈ $${variant.basePriceUSD.toFixed(2)}`;
                           const vUnit = variant.unit || item.unit;
                           const vWaste = variant.wasteRatePercent !== undefined ? variant.wasteRatePercent : item.wasteRatePercent;
                           const vFormula = variant.formulaDesc || item.formulaDesc;
@@ -954,7 +938,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                           return (
                             <tr
                               key={variant.id || `${item.id}-var-${vIdx}`}
-                              className="bg-amber-50/20 hover:bg-amber-50/50 transition-colors border-b border-slate-100/60 text-xs"
+                              className="bg-white hover:bg-slate-50/60 transition-colors border-b border-slate-100/60 text-xs"
                             >
                               {/* 缩进层级点 */}
                               <td className="py-2.5 pl-6 pr-3 text-center">
@@ -967,7 +951,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                               <td className="py-2.5 px-3 font-mono text-slate-700 text-[11px]">
                                 <div className="flex items-center gap-1.5 pl-2">
                                   <CornerDownRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                  <span className="bg-white px-2 py-0.5 rounded border border-slate-200/80 font-bold text-slate-800 shadow-2xs">
+                                  <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-200/80 font-bold text-slate-800 shadow-2xs">
                                     {variant.specCode}
                                   </span>
                                 </div>
@@ -976,7 +960,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                               {/* 二级规格描述 */}
                               <td className="py-2.5 px-3">
                                 <div className="flex items-center gap-1.5 pl-2">
-                                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-100/80 text-amber-800 shrink-0">
+                                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-slate-100 text-slate-700 shrink-0">
                                     规格 {vIdx + 1}
                                   </span>
                                   <span className="font-semibold text-slate-800 text-xs">
@@ -993,7 +977,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                               </td>
 
                               {/* 规格说明 */}
-                              <td className="py-2.5 px-3 text-slate-500 text-[11px] max-w-[200px]" title={variant.specName}>
+                              <td className="py-2.5 px-3 text-slate-500 text-[11px] max-w-[180px]" title={variant.specName}>
                                 <span className="line-clamp-1">{variant.specName}</span>
                               </td>
 
@@ -1004,13 +988,17 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                                 </span>
                               </td>
 
-                              {/* 规格独立价格（高亮显示） */}
-                              <td className="py-2.5 px-3 text-right bg-amber-50/40">
-                                <div className="font-mono font-extrabold text-[#EA3A20] text-sm">
-                                  {vPriceDisplay}
+                              {/* 规格独立国内价 (RMB) */}
+                              <td className="py-2.5 px-3 text-right bg-blue-50/30 border-l border-blue-100/40">
+                                <div className="font-mono font-bold text-blue-900 text-xs">
+                                  ¥{variant.domesticPriceRMB.toFixed(2)}
                                 </div>
-                                <div className="text-[10px] text-slate-400 font-mono">
-                                  {vPriceSub}
+                              </td>
+
+                              {/* 规格独立国外价 (RMB) */}
+                              <td className="py-2.5 px-3 text-right bg-amber-50/40 border-l border-amber-100/40">
+                                <div className="font-mono font-extrabold text-[#EA3A20] text-xs">
+                                  ¥{variant.overseasPriceRMB.toFixed(2)}
                                 </div>
                               </td>
 
@@ -1019,11 +1007,9 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                                 {vWaste}%
                               </td>
 
-                              {/* 公式 */}
-                              <td className="py-2.5 px-3 text-slate-500 text-[11px] max-w-[220px]">
-                                <span className="bg-white/90 border border-slate-200/70 px-2 py-0.5 rounded font-mono text-slate-700 block truncate" title={vFormula}>
-                                  {vFormula}
-                                </span>
+                              {/* 算法公式 */}
+                              <td className="py-2.5 px-3 text-slate-500 text-[10px] max-w-[200px]" title={vFormula}>
+                                <span className="truncate block font-mono">{vFormula}</span>
                               </td>
 
                               {/* 操作明细 */}
@@ -1036,8 +1022,10 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                                     name: `${item.name} (${variant.specName})`,
                                     spec: variant.specName,
                                     unit: vUnit,
-                                    basePriceUSD: variant.basePriceUSD,
-                                    basePriceRMB: variant.basePriceRMB,
+                                    domesticPriceRMB: variant.domesticPriceRMB,
+                                    overseasPriceRMB: variant.overseasPriceRMB,
+                                    basePriceRMB: variant.domesticPriceRMB,
+                                    basePriceUSD: +(variant.overseasPriceRMB / 7.2).toFixed(2),
                                     wasteRatePercent: vWaste,
                                     formulaDesc: vFormula
                                   })}
@@ -1674,19 +1662,42 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                 </div>
               </div>
 
+              {/* 🇨🇳 国内价 vs 🌍 国外价 双轨卡片 (均以人民币计价) */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3.5 bg-blue-50/60 rounded-2xl border border-blue-200/80">
+                  <div className="flex items-center justify-between text-blue-900 mb-1">
+                    <span className="font-bold text-xs flex items-center gap-1">
+                      <span>🇨🇳 国内指导面价</span>
+                    </span>
+                    <span className="text-[10px] bg-blue-100/80 text-blue-700 px-1.5 py-0.5 rounded font-medium">含13%税</span>
+                  </div>
+                  <div className="font-mono font-bold text-blue-900 text-lg">
+                    ¥{(selectedDetailItem.domesticPriceRMB ?? selectedDetailItem.basePriceRMB).toFixed(2)}
+                    <span className="text-xs font-normal text-blue-600 font-sans ml-1">RMB / {selectedDetailItem.unit}</span>
+                  </div>
+                  <div className="text-[10px] text-blue-600 mt-1">
+                    内销指导价 • 增值税发票 • 5年质保
+                  </div>
+                </div>
+
+                <div className="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-200/80">
+                  <div className="flex items-center justify-between text-amber-900 mb-1">
+                    <span className="font-bold text-xs flex items-center gap-1">
+                      <span>🌍 国外出口面价</span>
+                    </span>
+                    <span className="text-[10px] bg-amber-100/80 text-amber-800 px-1.5 py-0.5 rounded font-medium">含关税包装</span>
+                  </div>
+                  <div className="font-mono font-extrabold text-[#EA3A20] text-lg">
+                    ¥{(selectedDetailItem.overseasPriceRMB ?? selectedDetailItem.basePriceRMB * 1.15).toFixed(2)}
+                    <span className="text-xs font-normal text-amber-700 font-sans ml-1">RMB / {selectedDetailItem.unit}</span>
+                  </div>
+                  <div className="text-[10px] text-amber-700 mt-1">
+                    已报关税 • 港杂费 • ISPM15免熏蒸包装 (非汇率折算)
+                  </div>
+                </div>
+              </div>
+
               <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 grid grid-cols-2 gap-2.5">
-                <div>
-                  <span className="text-slate-400 text-[11px] block">外贸基准单价 (USD)</span>
-                  <span className="font-mono font-extrabold text-[#EA3A20] text-base mt-0.5 block">
-                    ${selectedDetailItem.basePriceUSD.toFixed(2)}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[11px] block">折算基准单价 (RMB)</span>
-                  <span className="font-mono font-bold text-slate-800 text-base mt-0.5 block">
-                    ¥{selectedDetailItem.basePriceRMB.toFixed(2)}
-                  </span>
-                </div>
                 <div>
                   <span className="text-slate-400 text-[11px] block">定额损耗率</span>
                   <span className="font-mono font-bold text-slate-700 mt-0.5 block">{selectedDetailItem.wasteRatePercent}%</span>
@@ -1706,18 +1717,18 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
               </div>
 
               {selectedDetailItem.variants && selectedDetailItem.variants.length > 0 && (
-                <div className="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/70 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold text-amber-900">
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-900">
                     <div className="flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-amber-700" />
-                      <span>包含细分规格与定价 ({selectedDetailItem.variants.length})</span>
+                      <Layers className="w-3.5 h-3.5 text-[#EA3A20]" />
+                      <span>包含细分规格与国内外双轨定价 ({selectedDetailItem.variants.length})</span>
                     </div>
                   </div>
                   <div className="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar">
                     {selectedDetailItem.variants.map((v, idx) => (
                       <div
                         key={v.id || idx}
-                        className="bg-white/90 p-2 rounded-xl border border-amber-200/50 flex items-center justify-between text-xs"
+                        className="bg-white p-2.5 rounded-xl border border-slate-200/70 flex items-center justify-between text-xs gap-2"
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
@@ -1725,8 +1736,10 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                           </span>
                           <span className="font-semibold text-slate-800">{v.specName}</span>
                         </div>
-                        <div className="text-right font-mono font-bold text-[#EA3A20]">
-                          ${v.basePriceUSD.toFixed(2)} / {v.unit || selectedDetailItem.unit}
+                        <div className="flex items-center gap-3 font-mono text-xs">
+                          <span className="text-blue-900 font-bold" title="国内面价 (RMB)">¥{(v.domesticPriceRMB ?? v.basePriceRMB).toFixed(2)}</span>
+                          <span className="text-slate-300">|</span>
+                          <span className="text-[#EA3A20] font-extrabold" title="国外面价 (RMB · 含关税包装)">¥{(v.overseasPriceRMB ?? (v.basePriceUSD ? v.basePriceUSD * 7.5 : v.basePriceRMB * 1.15)).toFixed(2)}</span>
                         </div>
                       </div>
                     ))}

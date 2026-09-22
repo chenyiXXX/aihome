@@ -33,7 +33,9 @@ import {
   Paperclip,
   Swords,
   Image as ImageIcon,
-  Folder
+  Folder,
+  Edit3,
+  Check
 } from 'lucide-react';
 import {
   TrainingCourse,
@@ -311,6 +313,53 @@ const initialSessionsList: ChatSession[] = [
         confidence: 0.98
       }
     ]
+  },
+  {
+    id: 'sess-drill',
+    code: 'SESS-105',
+    title: '销售对练 · 欧美大客户价格异议实战攻防',
+    category: 'sales_drill',
+    categoryLabel: '销售对练 · 实战攻防',
+    badgeBg: 'bg-amber-50 text-amber-700 border-amber-200',
+    badgeText: '实战对练',
+    isBuiltin: true,
+    roleTitle: 'AI 刁钻买家 / 采购总监 · 拟真实战对练',
+    roleSubtitle: '全真模拟海外严苛客户，针对价格压制、质量质疑、打样账期与交期索赔开展实战攻防',
+    kbScope: '《海外买家刁钻异议模拟库》/《大客户采购心理画像》/《销冠实战通关标准》',
+    lastMessage: '【AI采购总监】你们的报价比波兰工厂高出20%，如果不能给到15%折扣...',
+    lastTime: '11:15',
+    recommendedPrompts: [
+      '【价格施压】"你们的FOB报价比越南和波兰工厂高20%，不降价我们立即切换供应商。"',
+      '【质量质疑】"我们收到过中国其他工厂的起皮开裂投诉，你们凭什么保证防潮5年？"',
+      '【账期与定金】"首单我们只能付10%订金，见提单副本后付尾款，否则免谈。"',
+      '【交期逼迫】"45天必须到鹿特丹港，延误一天按合同扣款2%，你们敢不敢签？"'
+    ],
+    messages: [
+      {
+        id: 'msg-drill-1',
+        sender: 'user',
+        content: '开启对练：模拟欧美工程总包商采购总监，因报价过高向我施压，请发起挑战。',
+        timestamp: '11:12'
+      },
+      {
+        id: 'msg-drill-2',
+        sender: 'assistant',
+        content: `【AI采购总监·全真对练开启】
+
+*"Hello Franklin. We just reviewed your BOQ for the 45-villa project in California. To be honest, your overall quote is nearly 20% higher than the quotation we received from a Polish supplier, and their lead time is 10 days faster.*
+
+*Our project margin is extremely tight. Unless Pinai can offer at least a 15% price cut across all kitchen and wardrobe units, we cannot proceed with the PO. How do you justify this premium, or what is your best and final offer?"*
+
+---
+🎯 **对练要求**：请运用 **3F 法则** 与 **全生命周期安装成本反差** 进行防守反击，切忌直接同意降价！请直接输入您的应答话术：`,
+        timestamp: '11:15',
+        sources: [
+          { title: "《海外买家刁钻异议模拟库》", code: "KB-DRILL-BUYER-01" },
+          { title: "《大客户采购心理博弈与守价战术》", code: "KB-DRILL-SOP-02" }
+        ],
+        confidence: 0.99
+      }
+    ]
   }
 ];
 
@@ -318,13 +367,44 @@ export const HomeModule: React.FC = () => {
   const [sessions, setSessions] = useState<ChatSession[]>(initialSessionsList);
   const [activeSessionId, setActiveSessionId] = useState<string>('sess-sales');
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'all' | 'training' | 'general'>('all');
+  const [filterCategory, setFilterCategory] = useState<'all' | 'general' | 'sales_drill' | 'training'>('all');
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
   const [previewModalImage, setPreviewModalImage] = useState<{ url: string; name: string } | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Session Title Renaming State
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState<string>('');
+
+  const handleStartRename = (sess: ChatSession, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    // 内部培训的会话标题不能修改，仅允许自定义/通用知识问答会话重命名
+    if (sess.category !== 'general') return;
+    setEditingSessionId(sess.id);
+    setEditingTitle(sess.title);
+  };
+
+  const handleSaveRename = (sessionId: string, e?: React.MouseEvent | React.FormEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
+    const trimmed = editingTitle.trim();
+    if (trimmed) {
+      setSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, title: trimmed } : s))
+      );
+    }
+    setEditingSessionId(null);
+    setEditingTitle('');
+  };
+
+  const handleCancelRename = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setEditingSessionId(null);
+    setEditingTitle('');
+  };
 
   // Knowledge Base scope selection (for general knowledge QA sessions)
   const [isKBDrawerOpen, setIsKBDrawerOpen] = useState(false);
@@ -462,8 +542,16 @@ export const HomeModule: React.FC = () => {
 
     if (!matchesSearch) return false;
 
-    if (filterCategory === 'training' && s.category === 'general') return false;
     if (filterCategory === 'general' && s.category !== 'general') return false;
+    if (filterCategory === 'sales_drill' && s.category !== 'sales_drill') return false;
+    if (
+      filterCategory === 'training' &&
+      s.category !== 'sales_training' &&
+      s.category !== 'ops_training' &&
+      s.category !== 'hr_training'
+    ) {
+      return false;
+    }
 
     return true;
   });
@@ -692,7 +780,7 @@ export const HomeModule: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden p-3 lg:p-4">
+    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden px-4 lg:px-6 pb-6 pt-1 select-none">
       {/* Main Dual-Column Split Workspace: Left List + Right Detail */}
       <div className="flex-1 flex gap-3.5 lg:gap-4 overflow-hidden min-h-0">
         
@@ -722,26 +810,27 @@ export const HomeModule: React.FC = () => {
           </div>
 
           {/* Channel / Category Filter Tabs */}
-          <div className="p-3 pb-2 border-b border-slate-100 bg-white">
-            <div className="bg-slate-100/90 rounded-full p-1 flex items-center gap-1">
+          <div className="p-2.5 pb-2 border-b border-slate-100 bg-white">
+            <div className="bg-slate-100/90 rounded-full p-1 grid grid-cols-4 gap-1">
               {[
                 { key: 'all' as const, label: '全部', count: sessions.length },
-                { key: 'training' as const, label: '内部培训', count: sessions.filter((s) => s.category !== 'general').length },
-                { key: 'general' as const, label: '业务问答', count: sessions.filter((s) => s.category === 'general').length }
+                { key: 'general' as const, label: '业务问答', count: sessions.filter((s) => s.category === 'general').length },
+                { key: 'sales_drill' as const, label: '销售对练', count: sessions.filter((s) => s.category === 'sales_drill').length },
+                { key: 'training' as const, label: '内部培训', count: sessions.filter((s) => s.category === 'sales_training' || s.category === 'ops_training' || s.category === 'hr_training').length }
               ].map((tab) => (
                 <button
                   key={tab.key}
                   type="button"
                   onClick={() => setFilterCategory(tab.key)}
-                  className={`flex-1 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-1.5 px-0.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 min-w-0 ${
                     filterCategory === tab.key
                       ? 'bg-[#EA3A20] text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   }`}
                 >
-                  <span>{tab.label}</span>
+                  <span className="truncate">{tab.label}</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    className={`text-[10px] px-1 py-0.2 rounded-full font-bold shrink-0 ${
                       filterCategory === tab.key ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-600'
                     }`}
                   >
@@ -793,10 +882,62 @@ export const HomeModule: React.FC = () => {
                   >
                     {/* First Line: Title & Time */}
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className={`font-bold text-xs truncate ${isSelected ? 'text-[#0F4A47]' : 'text-slate-900'}`}>
-                        {sess.title}
-                      </span>
-                      <span className="text-[10px] text-slate-400 shrink-0 font-mono">{sess.lastTime}</span>
+                      {editingSessionId === sess.id ? (
+                        <div
+                          className="flex items-center gap-1.5 flex-1 min-w-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="text"
+                            autoFocus
+                            value={editingTitle}
+                            onChange={(e) => setEditingTitle(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveRename(sess.id);
+                              if (e.key === 'Escape') handleCancelRename();
+                            }}
+                            className="h-6 px-2 text-xs font-bold text-slate-800 bg-white border border-[#0F4A47] rounded-md flex-1 min-w-0 focus:outline-none focus:ring-1 focus:ring-[#0F4A47]"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => handleSaveRename(sess.id, e)}
+                            title="保存名称"
+                            className="w-5 h-5 flex items-center justify-center rounded bg-[#0F4A47] text-white hover:bg-[#0c3c39] cursor-pointer shrink-0 transition-colors"
+                          >
+                            <Check className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleCancelRename(e)}
+                            title="取消"
+                            className="w-5 h-5 flex items-center justify-center rounded bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer shrink-0 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <span
+                              className={`font-bold text-xs truncate ${isSelected ? 'text-[#0F4A47]' : 'text-slate-900'}`}
+                              title={sess.title}
+                            >
+                              {sess.title}
+                            </span>
+                            {sess.category === 'general' && (
+                              <button
+                                type="button"
+                                onClick={(e) => handleStartRename(sess, e)}
+                                title="重命名会话"
+                                className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-[#0F4A47] hover:bg-slate-200/60 rounded transition-all cursor-pointer shrink-0"
+                              >
+                                <Edit3 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-400 shrink-0 font-mono">{sess.lastTime}</span>
+                        </>
+                      )}
                     </div>
 
                     {/* Meta Row: Category Badge */}
@@ -835,15 +976,67 @@ export const HomeModule: React.FC = () => {
         
         {/* Right Header: Active Session Title */}
         <div className="px-6 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-sm font-bold text-slate-900">{activeSession.title}</h1>
-            {isTrainingSession ? (
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-[#EA3A20] border border-red-200">
+          <div className="flex items-center gap-2.5 flex-1 min-w-0 mr-4">
+            {editingSessionId === activeSession.id ? (
+              <div className="flex items-center gap-1.5 flex-1 max-w-md">
+                <input
+                  type="text"
+                  autoFocus
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveRename(activeSession.id);
+                    if (e.key === 'Escape') handleCancelRename();
+                  }}
+                  className="h-7 px-2.5 text-sm font-bold text-slate-900 bg-white border border-[#0F4A47] rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-[#0F4A47]"
+                />
+                <button
+                  type="button"
+                  onClick={(e) => handleSaveRename(activeSession.id, e)}
+                  title="保存名称"
+                  className="h-7 px-2.5 rounded-lg bg-[#0F4A47] text-white hover:bg-[#0c3c39] text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>保存</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleCancelRename(e)}
+                  title="取消"
+                  className="h-7 px-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>取消</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 group min-w-0">
+                <h1 className="text-sm font-bold text-slate-900 truncate" title={activeSession.title}>
+                  {activeSession.title}
+                </h1>
+                {!isTrainingSession && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleStartRename(activeSession, e)}
+                    title="重命名当前会话"
+                    className="p-1 text-slate-400 hover:text-[#0F4A47] hover:bg-slate-100 rounded-md transition-all cursor-pointer shrink-0"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
+            {activeSession.category === 'sales_drill' ? (
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 shrink-0">
+                销售对练
+              </span>
+            ) : isTrainingSession ? (
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-[#EA3A20] border border-red-200 shrink-0">
                 内部培训
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                知识问答
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 shrink-0">
+                业务问答
               </span>
             )}
           </div>

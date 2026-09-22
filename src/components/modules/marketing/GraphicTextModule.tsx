@@ -671,7 +671,7 @@ export const GraphicTextModule: React.FC = () => {
           onPreviewArticle={handlePreviewArticle}
         />
       ) : (
-        <div className="flex-1 flex flex-col h-full overflow-hidden p-3 lg:p-4">
+        <div className="flex-1 flex flex-col h-full overflow-hidden px-4 lg:px-6 pb-6 pt-1">
           {/* ========================================================================= */}
           {/* 3-COLUMN MAIN WORKSPACE (左素材库 / 中AI对话微调 / 右手机预览)              */}
           {/* ========================================================================= */}

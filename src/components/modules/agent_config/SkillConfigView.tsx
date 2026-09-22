@@ -22,6 +22,7 @@ import {
   Activity,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   ExternalLink,
   Code,
   FileSpreadsheet,
@@ -40,6 +41,7 @@ import {
   Users,
   Edit3,
   Download,
+  Upload,
   History,
   ArrowRight
 } from 'lucide-react';
@@ -47,6 +49,9 @@ import { AgentSkill, AgentSkillParameter, ConfigChangeRecord } from '../../../ty
 import { AgentBindModal } from './AgentBindModal';
 import { getSkillChangeHistory, formatNow } from '../../../data/configHistoryData';
 import { ConfigHistoryModal } from './ConfigHistoryModal';
+import { SkillFileExplorer } from './SkillFileExplorer';
+import { getCompleteSkillFiles } from '../../../data/skillFilesData';
+import { initialSalesSkills } from '../../../data/salesAgentData';
 
 interface SkillConfigViewProps {
   skills: AgentSkill[];
@@ -104,27 +109,93 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createMode, setCreateMode] = useState<'manual' | 'import' | null>(null);
   
-  // Manual creation form state
+  // Manual creation form state (no category)
   const [newSkillName, setNewSkillName] = useState('');
   const [newSkillCode, setNewSkillCode] = useState('');
-  const [newSkillCategory, setNewSkillCategory] = useState<AgentSkill['category']>('计算与配载');
   const [newSkillDesc, setNewSkillDesc] = useState('');
 
-  const handleDeleteSkill = (id: string, e: React.MouseEvent) => {
+  // File input ref for importing config packages
+  const importPackageInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  // Custom skill deletion reminder state
+  const [skillToDelete, setSkillToDelete] = useState<AgentSkill | null>(null);
+
+  // Restore built-in skill to default settings
+  const handleResetBuiltinSkill = (skill: AgentSkill, e: React.MouseEvent) => {
     e.stopPropagation();
-    const target = skillsList.find((s) => s.id === id);
-    if (target && !target.isCustom) {
-      alert('系统内置 Skill 不允许删除！');
-      return;
-    }
-    if (window.confirm('确定要删除该自定义 Skill 吗？')) {
-      const updated = skillsList.filter((s) => s.id !== id);
+    if (skill.isCustom) return;
+
+    if (
+      window.confirm(
+        `确定要将内置技能「${skill.name}」恢复为系统出厂初始设置吗？\n\n提示：将重置所有自定义修改的源码文件、业务参数及调用规则。`
+      )
+    ) {
+      const defaultSkill = initialSalesSkills.find((s) => s.code === skill.code || s.id === skill.id);
+      const resetFiles = getCompleteSkillFiles(defaultSkill || skill);
+      const resetSkill: AgentSkill = defaultSkill
+        ? {
+            ...defaultSkill,
+            files: resetFiles
+          }
+        : {
+            ...skill,
+            files: resetFiles
+          };
+
+      // Add a history record for reset
+      const resetRecord: ConfigChangeRecord = {
+        id: `HIST-SK-RESET-${Date.now()}`,
+        targetId: skill.id,
+        targetType: 'skill',
+        targetName: skill.name,
+        operatorName: 'Chen Yi (陈总)',
+        operatorRole: '超级管理员',
+        timestamp: formatNow(),
+        changeType: 'rollback',
+        changeSummary: '恢复系统出厂初始设置（重置源码文件与参数配置）',
+        diffDetails: [
+          {
+            field: '配置恢复',
+            before: '自定义修改配置及源码',
+            after: '系统出厂初始默认版本'
+          }
+        ]
+      };
+
+      const currentHistory = getSkillChangeHistory(skill);
+      resetSkill.changeHistory = [resetRecord, ...currentHistory];
+
+      const updated = skillsList.map((s) => (s.id === skill.id ? resetSkill : s));
       setSkillsList(updated);
       if (onUpdateSkills) onUpdateSkills(updated);
-      if (editingSkill?.id === id) {
-        setEditingSkill(null);
+      if (editingSkill?.id === skill.id) {
+        setEditingSkill(resetSkill);
       }
+      alert(`已成功将内置技能「${skill.name}」恢复为系统初始设置！`);
     }
+  };
+
+  // Open deletion modal for custom skills
+  const handleDeleteCustomSkillClick = (skill: AgentSkill, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!skill.isCustom) {
+      alert('系统内置 Skill 不允许删除，仅支持「恢复初始设置」！');
+      return;
+    }
+    setSkillToDelete(skill);
+  };
+
+  // Confirm delete custom skill
+  const handleConfirmDeleteSkill = () => {
+    if (!skillToDelete) return;
+    const targetId = skillToDelete.id;
+    const updated = skillsList.filter((s) => s.id !== targetId);
+    setSkillsList(updated);
+    if (onUpdateSkills) onUpdateSkills(updated);
+    if (editingSkill?.id === targetId) {
+      setEditingSkill(null);
+    }
+    setSkillToDelete(null);
   };
 
   // Agent Binding Modal state
@@ -133,24 +204,7 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
 
   // Ensure every skill has files array
   const getSkillFiles = (skill: AgentSkill) => {
-    if (skill.files && skill.files.length > 0) return skill.files;
-    return [
-      {
-        name: 'SKILL.md',
-        content: `# ${skill.name}\n\n${skill.description}\n\n## 触发唤起\n- 触发类型: ${skill.triggerType}\n- 触发关键词: ${skill.triggerKeywords.join(', ')}\n\n## 算力说明\n提供专业外贸定制家具智能服务，支持实时高并发推理与流式下发。`,
-        isMain: true
-      },
-      {
-        name: 'config.json',
-        content: JSON.stringify(skill.parameters, null, 2),
-        isMain: false
-      },
-      {
-        name: 'handler.ts',
-        content: `// ${skill.code} execution logic\nexport async function executeSkill(input: any) {\n  console.log('Running ${skill.code}', input);\n  return { status: 'success', data: input };\n}`,
-        isMain: false
-      }
-    ];
+    return getCompleteSkillFiles(skill);
   };
 
   // Toggle skill on/off
@@ -396,7 +450,6 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
       id: `skill-custom-${Date.now()}`,
       name: newSkillName.trim(),
       code: newSkillCode.trim().toLowerCase().replace(/\s+/g, '_'),
-      category: newSkillCategory,
       description: newSkillDesc.trim() || '自定义外贸定制算力与业务扩展技能',
       version: 'v1.0.0',
       status: 'enabled',
@@ -527,6 +580,76 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+  };
+
+  const handleImportPackageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingSkill) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        // Check if JSON configuration package
+        if (file.name.endsWith('.json') || file.name.endsWith('.skill')) {
+          try {
+            const parsed = JSON.parse(text);
+            if (parsed && typeof parsed === 'object') {
+              const mergedFiles = parsed.files && Array.isArray(parsed.files)
+                ? parsed.files
+                : editingSkill.files;
+
+              const updatedSkill: AgentSkill = {
+                ...editingSkill,
+                name: parsed.name || editingSkill.name,
+                description: parsed.description || editingSkill.description,
+                triggerType: parsed.triggerType || editingSkill.triggerType,
+                triggerKeywords: parsed.triggerKeywords || editingSkill.triggerKeywords,
+                parameters: parsed.parameters || editingSkill.parameters,
+                version: parsed.version || editingSkill.version,
+                files: mergedFiles
+              };
+
+              setEditingSkill(updatedSkill);
+              const updatedList = skillsList.map((s) => (s.id === updatedSkill.id ? updatedSkill : s));
+              setSkillsList(updatedList);
+              if (onUpdateSkills) onUpdateSkills(updatedList);
+
+              alert(`配置包导入成功！已从本地「${file.name}」导入配置与 ${mergedFiles ? mergedFiles.length : 0} 个文件。`);
+              return;
+            }
+          } catch (jsonErr) {
+            // fallback to single file import below
+          }
+        }
+
+        // Single file import into current skill files
+        const currentFiles = getSkillFiles(editingSkill);
+        const existingIdx = currentFiles.findIndex((f) => f.name === file.name);
+        let nextFiles;
+        if (existingIdx !== -1) {
+          nextFiles = currentFiles.map((f, idx) => (idx === existingIdx ? { ...f, content: text } : f));
+        } else {
+          nextFiles = [...currentFiles, { name: file.name, content: text, isMain: file.name === 'SKILL.md' }];
+        }
+
+        const updatedSkill: AgentSkill = {
+          ...editingSkill,
+          files: nextFiles
+        };
+        setEditingSkill(updatedSkill);
+        const updatedList = skillsList.map((s) => (s.id === updatedSkill.id ? updatedSkill : s));
+        setSkillsList(updatedList);
+        if (onUpdateSkills) onUpdateSkills(updatedList);
+
+        alert(`文件「${file.name}」已成功导入到当前 Skill 中！`);
+      } catch (err) {
+        alert('导入失败，请检查文件格式是否有效。');
+      } finally {
+        if (e.target) e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
   };
 
   const downloadFileContent = (fileName: string, content: string) => {
@@ -675,6 +798,14 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
           </div>
 
           <div className="flex items-center gap-2">
+            <input
+              type="file"
+              ref={importPackageInputRef}
+              onChange={handleImportPackageFile}
+              accept=".json,.skill,.zip,.txt,.md"
+              className="hidden"
+            />
+
             <button
               type="button"
               onClick={() => handleExportSkillConfig(editingSkill)}
@@ -683,6 +814,16 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
               <span>导出配置包</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => importPackageInputRef.current?.click()}
+              className="h-8 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+              title="从本地选择文件导入配置包"
+            >
+              <Upload className="w-3.5 h-3.5 text-slate-500" />
+              <span>导入配置包</span>
             </button>
 
             <button
@@ -746,123 +887,16 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
         )}
 
         {activeSkillTab === 'files' && (
-          /* Files Editing Layout matching Image 2 */
-          <div className="flex-1 flex min-h-0 overflow-hidden">
-            {/* Left Sidebar: File Tree */}
-            <div className="w-72 border-r border-slate-200/80 bg-slate-50/50 flex flex-col p-4 shrink-0 overflow-y-auto space-y-4">
-              <div className="space-y-1">
-                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">主文件</div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedFileName(mainFile.name)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    selectedFileName === mainFile.name
-                      ? 'bg-[#EA3A20] text-white shadow-xs'
-                      : 'text-slate-700 hover:bg-slate-200/60'
-                  }`}
-                >
-                  <FileCode className="w-4 h-4" />
-                  <span className="truncate">{mainFile.name}</span>
-                </button>
-              </div>
-
-              <div className="space-y-1 pt-2">
-                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">
-                  附属文件 ({subFiles.length})
-                </div>
-                {subFiles.map((file) => (
-                  <div
-                    key={file.name}
-                    className={`group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-all ${
-                      selectedFileName === file.name
-                        ? 'bg-[#EA3A20] text-white shadow-xs font-bold'
-                        : 'text-slate-700 hover:bg-slate-200/60'
-                    }`}
-                    onClick={() => setSelectedFileName(file.name)}
-                  >
-                    <div className="flex items-center gap-2.5 truncate">
-                      <FileText className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{file.name}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (subFiles.length <= 1) return;
-                        const newFiles = files.filter((f) => f.name !== file.name);
-                        const updated = { ...editingSkill, files: newFiles };
-                        setEditingSkill(updated);
-                        setSkillsList(skillsList.map((s) => (s.id === updated.id ? updated : s)));
-                        if (selectedFileName === file.name) setSelectedFileName(mainFile.name);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 hover:text-red-200 transition-opacity p-1"
-                      title="删除文件"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newFileName = `module_${Date.now().toString().slice(-4)}.ts`;
-                    const newFiles = [...files, { name: newFileName, content: `// New file source\n`, isMain: false }];
-                    const updated = { ...editingSkill, files: newFiles };
-                    setEditingSkill(updated);
-                    setSkillsList(skillsList.map((s) => (s.id === updated.id ? updated : s)));
-                    setSelectedFileName(newFileName);
-                  }}
-                  className="w-full py-2 px-3 rounded-xl border border-dashed border-slate-300 hover:border-[#EA3A20] hover:text-[#EA3A20] text-slate-600 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-white"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+ 新建文件</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Right Main Area: File Editor matching Image 2 */}
-            <div className="flex-1 flex flex-col bg-white min-w-0">
-              <div className="px-6 py-3 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/30">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-slate-800">
-                  <FileCode className="w-4 h-4 text-[#EA3A20]" />
-                  <span>{selectedFile.name}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (selectedFile.isMain) return;
-                    const newFiles = files.filter((f) => f.name !== selectedFile.name);
-                    const updated = { ...editingSkill, files: newFiles };
-                    setEditingSkill(updated);
-                    setSkillsList(skillsList.map((s) => (s.id === updated.id ? updated : s)));
-                    setSelectedFileName(mainFile.name);
-                  }}
-                  className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-                  title="删除当前文件"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="flex-1 p-6 overflow-y-auto">
-                <textarea
-                  value={selectedFile.content}
-                  onChange={(e) => {
-                    const newContent = e.target.value;
-                    const newFiles = files.map((f) => (f.name === selectedFile.name ? { ...f, content: newContent } : f));
-                    const updated = { ...editingSkill, files: newFiles };
-                    setEditingSkill(updated);
-                    setSkillsList(skillsList.map((s) => (s.id === updated.id ? updated : s)));
-                  }}
-                  className="w-full h-full bg-slate-900 text-slate-100 font-mono text-xs p-5 rounded-2xl border border-slate-800 leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#EA3A20] resize-none custom-scrollbar shadow-inner"
-                  placeholder="在此编写或修改文件内容..."
-                />
-              </div>
-            </div>
-          </div>
+          <SkillFileExplorer
+            files={files}
+            skillName={editingSkill.name}
+            skillCode={editingSkill.code}
+            onUpdateFiles={(updatedFiles) => {
+              const updated = { ...editingSkill, files: updatedFiles };
+              setEditingSkill(updated);
+              setSkillsList(skillsList.map((s) => (s.id === updated.id ? updated : s)));
+            }}
+          />
         )}
 
         {activeSkillTab === 'history' && (
@@ -1056,7 +1090,7 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-3.5 px-6">技能名称与标识</th>
+                <th className="py-3.5 px-6">技能名称</th>
                 <th className="py-3.5 px-4">版本号</th>
                 <th className="py-3.5 px-4">关联智能体</th>
                 <th className="py-3.5 px-4">状态</th>
@@ -1065,7 +1099,6 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredSkills.map((skill) => {
-                const Icon = getSkillIcon(skill.iconName);
                 const isEnabled = skill.status === 'enabled';
 
                 return (
@@ -1078,29 +1111,19 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
                     className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                   >
                     <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-[#EA3A20]/10 text-[#EA3A20] flex items-center justify-center shrink-0">
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 group-hover:text-[#EA3A20] transition-colors">
-                              {skill.name}
-                            </span>
-                            {skill.isCustom ? (
-                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-50 text-purple-700 border border-purple-200">
-                                自定义
-                              </span>
-                            ) : (
-                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                                系统内置
-                              </span>
-                            )}
-                          </div>
-                          <span className="font-mono text-slate-400 text-[11px] block mt-0.5">
-                            {skill.code}
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 group-hover:text-[#EA3A20] transition-colors">
+                          {skill.name}
+                        </span>
+                        {skill.isCustom ? (
+                          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                            自定义
                           </span>
-                        </div>
+                        ) : (
+                          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                            系统内置
+                          </span>
+                        )}
                       </div>
                     </td>
 
@@ -1159,16 +1182,27 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
                             setEditingSkill(skill);
                             setActiveSkillTab('files');
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1 transition-colors"
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
                         >
                           <Edit3 className="w-2.5 h-2.5" />
                           <span>编辑</span>
                         </button>
-                        {skill.isCustom && (
+
+                        {!skill.isCustom ? (
                           <button
                             type="button"
-                            onClick={(e) => handleDeleteSkill(skill.id, e)}
-                            className="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[11px] flex items-center gap-1 transition-colors"
+                            onClick={(e) => handleResetBuiltinSkill(skill, e)}
+                            className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-[11px] flex items-center gap-1 transition-colors border border-amber-200/60 cursor-pointer"
+                            title="恢复为系统出厂初始设置"
+                          >
+                            <RotateCcw className="w-2.5 h-2.5 text-amber-600" />
+                            <span>恢复初始设置</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteCustomSkillClick(skill, e)}
+                            className="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
                             title="删除自定义技能"
                           >
                             <Trash2 className="w-2.5 h-2.5" />
@@ -1285,33 +1319,15 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">所属分类</label>
-                      <select
-                        value={newSkillCategory}
-                        onChange={(e) => setNewSkillCategory(e.target.value as any)}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                      >
-                        <option value="计算与配载">计算与配载</option>
-                        <option value="工程与图纸">工程与图纸</option>
-                        <option value="合规与质检">合规与质检</option>
-                        <option value="商务与文案">商务与文案</option>
-                        <option value="语音与多模态">语音与多模态</option>
-                        <option value="报价与计价">报价与计价</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">功能简述</label>
-                      <input
-                        type="text"
-                        placeholder="一句话简述技能用途"
-                        value={newSkillDesc}
-                        onChange={(e) => setNewSkillDesc(e.target.value)}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                      />
-                    </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">功能简述</label>
+                    <input
+                      type="text"
+                      placeholder="一句话简述技能用途（例如：外贸业务智能算力与定制化处理逻辑）"
+                      value={newSkillDesc}
+                      onChange={(e) => setNewSkillDesc(e.target.value)}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
+                    />
                   </div>
 
                   <div className="pt-3 flex justify-end gap-2">
@@ -1366,6 +1382,77 @@ export const SkillConfigView = React.forwardRef<SkillConfigViewHandle, SkillConf
       )}
 
 
+
+      {/* Custom Skill Deletion Warning Modal */}
+      {skillToDelete && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 flex items-start gap-3 bg-red-50/40">
+              <div className="w-10 h-10 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-slate-900">删除自定义技能确认</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  技能名称：<span className="font-bold text-slate-800">{skillToDelete.name}</span> ({skillToDelete.code})
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Body with Agent mounting reminders */}
+            <div className="p-6 space-y-4 text-xs">
+              {skillToDelete.associatedAgents && skillToDelete.associatedAgents.length > 0 ? (
+                <div className="p-3.5 bg-amber-50 border border-amber-200/80 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-1.5 text-amber-900 font-bold">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>该技能当前正挂载在以下智能体上：</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {skillToDelete.associatedAgents.map((agName, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[11px]"
+                      >
+                        {agName}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-amber-800 pt-1 leading-relaxed">
+                    ⚠️ 注意：删除此自定义技能后，上述 <strong>{skillToDelete.associatedAgents.length}</strong> 个智能体将自动解除对该技能的依赖，且无法再调用其功能。
+                  </p>
+                </div>
+              ) : (
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-600 leading-relaxed">
+                  该技能当前暂未挂载在任何智能体上。确认删除后，相关配置和源码文件将永久清除。
+                </div>
+              )}
+
+              <p className="text-slate-600 font-medium">
+                确定要删除自定义技能「<strong>{skillToDelete.name}</strong>」吗？此操作不可撤销。
+              </p>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setSkillToDelete(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteSkill}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs active:scale-95"
+              >
+                确认删除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Agent Binding Modal */}
       {bindingSkill && (

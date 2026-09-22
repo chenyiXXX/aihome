@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { ModuleType } from '../../types';
 import { BrandLogo } from '../common/BrandLogo';
+import { isModuleAllowedForRole } from '../../config/rolePermissions';
 
 interface PrimarySidebarProps {
   activeModule: ModuleType;
@@ -23,13 +24,15 @@ interface PrimarySidebarProps {
   onSelectModule: (module: ModuleType, targetSubView?: string) => void;
   onSelectSubView: (subView: string) => void;
   unreadInquiriesCount?: number;
+  currentUserRole?: string;
 }
 
 export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
   activeModule,
   subView,
   onSelectModule,
-  onSelectSubView
+  onSelectSubView,
+  currentUserRole = '超级管理员'
 }) => {
   // Sidebar collapsed state (true = icon-only mode, false = expanded 256px mode)
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -190,6 +193,10 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
     }
   ];
 
+  const filteredNavItems = navItems.filter((item) =>
+    isModuleAllowedForRole(item.id, currentUserRole)
+  );
+
   return (
     <aside
       className={`bg-white text-slate-700 flex flex-col h-full shrink-0 select-none border-r border-slate-100/90 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 z-30 ${
@@ -228,7 +235,7 @@ export const PrimarySidebar: React.FC<PrimarySidebarProps> = ({
           isCollapsed ? 'space-y-2 px-2' : 'space-y-1'
         }`}
       >
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const Icon = item.icon;
           const isActiveModule = activeModule === item.id;
           const hasSubViews = item.subViews && item.subViews.length > 0;

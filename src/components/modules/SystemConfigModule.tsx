@@ -38,10 +38,10 @@ export const SystemConfigModule: React.FC<SystemConfigModuleProps> = ({
   }, [subView]);
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
+    <div className="flex-1 flex flex-col h-full overflow-hidden px-4 lg:px-6 pb-6 pt-1">
       {/* Top Header Bar */}
       {!(activeTab === 'Skill 配置' && isEditingSkill) && (
-        <div className="flex items-center justify-between py-3 mb-2 shrink-0 border-b border-slate-200/80">
+        <div className="flex items-center justify-between py-1 mb-2 shrink-0 border-b border-slate-200/80">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-bold text-slate-900">
               {activeTab}

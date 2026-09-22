@@ -166,7 +166,7 @@ export const MarketingModule: React.FC<MarketingModuleProps> = ({ videoClips, po
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pt-6 pb-8">
+    <div className="flex-1 flex flex-col h-full overflow-hidden px-4 lg:px-6 pb-6 pt-1">
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {activeTab === '发布审核' && (

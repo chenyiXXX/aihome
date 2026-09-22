@@ -684,7 +684,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
   const selectedDeptName = getDeptNameById(selectedDeptId, initialOrgTree) || '全部员工';
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden px-8 pb-8">
+    <div className="flex-1 flex flex-col h-full overflow-hidden px-4 lg:px-6 pb-6 pt-1">
       
       {/* Toast Notification */}
       {syncToast && (
@@ -703,7 +703,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       )}
 
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between py-3 mb-2 shrink-0">
+      <div className="flex items-center justify-between py-1 mb-2 shrink-0">
         <div className="flex items-center gap-3">
           <h2 className="text-base font-bold text-slate-900">
             {isRoleView ? '角色配置' : '员工列表'}

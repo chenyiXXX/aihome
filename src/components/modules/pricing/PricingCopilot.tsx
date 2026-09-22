@@ -17,7 +17,12 @@ import {
   Lock,
   UserCheck,
   Building2,
-  FileText
+  FileText,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ChevronLeft,
+  ChevronRight,
+  MessageSquare
 } from 'lucide-react';
 import { BOQPriceItem, ExchangeRateItem } from '../../../types';
 
@@ -45,6 +50,8 @@ interface PricingCopilotProps {
   activeTab: '面价' | '汇率';
   currentExchangeRate: number;
   onShowToast: (msg: string) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export const PricingCopilot: React.FC<PricingCopilotProps> = ({
@@ -55,7 +62,9 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
   onSelectTab,
   activeTab,
   currentExchangeRate,
-  onShowToast
+  onShowToast,
+  isCollapsed = false,
+  onToggleCollapse
 }) => {
   // Demo Role Toggle: 'admin' | 'staff'
   const [userRole, setUserRole] = useState<'admin' | 'staff'>('admin');
@@ -72,7 +81,7 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
     {
       id: 'msg-welcome-1',
       sender: 'ai',
-      text: '您好！我是【面价与汇率智能专家助手】。已深度挂载企业外贸定制部件面价库（共 42 项）与财务外汇结算牌价中枢（7 大主流币种）。\n\n您可随时向我咨询任何产品的 FOB 美金单价、材料工艺加价或外币结算汇率。',
+      text: '您好！我是【面价与汇率智能专家助手】。已深度挂载企业定制部件面价库（共 42 项，支持国内/国外双轨人民币计价）与财务外汇结算牌价中枢（7 大主流币种）。\n\n📌 **价格体系提醒**：产品面价分为【国内价】与【国外价】，**两者均以人民币(RMB)计价**。国外价格已报含出口关税、港杂报关与海运免熏蒸包装等，属于独立加成定价，非汇率换算。您可随时向我咨询任何部件的国内外人民币面价或财务外汇牌价。',
       timestamp: '刚刚',
       type: 'text'
     }
@@ -90,9 +99,9 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
 
   // Quick prompt suggestions
   const quickPrompts = [
-    { label: '爱格板柜体美金单价', query: '爱格板柜体的美金单价是多少？含五金吗？' },
+    { label: '爱格板国内外人民币面价', query: '爱格板柜体的国内价和国外价分别是多少？国外价包含哪些费用？' },
     { label: '美元与欧元结算汇率', query: '请问当前美金和欧元的基准汇率与最终核算结算汇率是多少？' },
-    { label: '百隆阻尼铰链报价', query: '百隆铰链的最新报价是多少？损耗率如何计取？' },
+    { label: '百隆阻尼铰链国内外价格', query: '百隆铰链的国内指导价与国外出口价是多少？' },
     { label: '英镑锁汇与安全缓冲', query: '英镑当前锁定的汇率是多少？有加安全缓冲吗？' }
   ];
 
@@ -211,12 +220,12 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
         const listDesc = top3
           .map(
             (item, i) =>
-              `${i + 1}. **${item.name}** (${item.code})\n   - 规格：${item.spec}\n   - **美金 FOB 单价**：**$${item.basePriceUSD.toFixed(2)} USD / ${item.unit}**\n   - **折合人民币单价**：**¥${item.basePriceRMB.toFixed(2)} RMB**\n   - 生产损耗率：${item.wasteRatePercent}%`
+              `${i + 1}. **${item.name}** (${item.code})\n   - 规格/标准：${item.spec}\n   - **🇨🇳 国内指导面价**：**¥${(item.domesticPriceRMB ?? item.basePriceRMB).toFixed(2)} RMB / ${item.unit}** (含13%增值税专票)\n   - **🌍 国外出口面价**：**¥${(item.overseasPriceRMB ?? (item.basePriceRMB * 1.15)).toFixed(2)} RMB / ${item.unit}** (已含出口关税、港杂报关与ISPM15海运免熏蒸包装)\n   - 生产损耗率：${item.wasteRatePercent}%\n   - 核算公式：\`${item.formulaDesc}\``
           )
           .join('\n\n');
 
         return {
-          text: `📋 **根据品爱官方最新面价库，为您查询到以下定额标准**：\n\n${listDesc}\n\n💡 **核价提示**：以上单价为工厂标准出厂定额，包含出口标准防潮包装。若需批量工程折扣，系统会在销售助手生成 PI 时根据工程柜体总量自动阶梯折算。`,
+          text: `📋 **根据企业最新定额库，为您查询到以下【国内面价 / 国外面价】双轨人民币定额标准**：\n\n${listDesc}\n\n💡 **价格体系说明**：\n- **国内面价 (RMB)**：适用于内销工程、国内专卖店样板与含税出厂交付；\n- **国外面价 (RMB)**：已核算出口关税、港杂费与海运免熏蒸包装，属于独立成本加成定价，**非汇率折算**。右侧表格支持【双轨对照】、【国内面价】、【国外面价】一键视图切换。`,
           suggestedTab: '面价'
         };
       }
@@ -224,7 +233,7 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
 
     // Default fallback helpful response
     return {
-      text: `🤖 **面价与汇率查询助手为您解答**：\n\n根据系统最新外贸定额库配置：\n- **当前基准结汇汇率**：**${currentExchangeRate.toFixed(2)} USD/CNY**\n- **当前有效物料定额**：共收录 **${priceItems.length}** 项标准部件（涵盖柜体、门板、五金、涂装等）\n\n您可直接提问，例如：\n- *“爱格板 W980 柜身板单价多少？”*\n- *“百隆顶配阻尼铰链多少钱一副？”*\n- *“当前英镑对人民币锁汇是多少？”*\n\n${userRole === 'admin' ? '✨ 您是管理员角色，也可以直接点击下方按钮上传最新的面价或汇率 Excel 表格进行一键同步覆盖。' : '🔒 提示：您当前为普通员工，已开启快速单价与多币种即时查询通道。'}`,
+      text: `🤖 **面价与汇率查询助手为您解答**：\n\n根据系统最新定额库配置：\n- **计价体系**：产品面价统一分为【国内价】与【国外价】（**两者均为人民币 RMB 计价**，国外价已含关税与海运包装）\n- **当前有效物料定额**：共收录 **${priceItems.length}** 项标准定制部件\n- **财务外汇中枢**：挂载 **${ratesList.length}** 个主流币种实时牌价与安全锁汇系数\n\n您可直接提问，例如：\n- *“爱格板 W980 柜身板国内价和国外价各是多少？”*\n- *“百隆顶配阻尼铰链的国外价包含什么费用？”*\n- *“当前英镑对人民币锁汇是多少？”*\n\n${userRole === 'admin' ? '✨ 您是管理员角色，也可以直接点击下方按钮上传最新的面价或汇率 Excel 表格进行一键同步覆盖。' : '🔒 提示：您当前为普通员工，已开启快速单价与多币种即时查询通道。'}`,
       suggestedTab: activeTab
     };
   };
@@ -272,12 +281,14 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
         // Update price items: slightly bump or refresh items to show real change
         const updated = priceItems.map((item, idx) => {
           if (idx < 4) {
-            // Apply slight price optimization
-            const newUSD = +(item.basePriceUSD * 1.02).toFixed(2);
+            const newDom = +(item.domesticPriceRMB * 1.02).toFixed(2);
+            const newOver = +(item.overseasPriceRMB * 1.02).toFixed(2);
             return {
               ...item,
-              basePriceUSD: newUSD,
-              basePriceRMB: +(newUSD * currentExchangeRate).toFixed(2),
+              domesticPriceRMB: newDom,
+              overseasPriceRMB: newOver,
+              basePriceRMB: newDom,
+              basePriceUSD: +(newOver / currentExchangeRate).toFixed(2),
               updatedAt: new Date().toLocaleDateString('zh-CN').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString()
             };
           }
@@ -286,12 +297,12 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
 
         onUpdatePriceItems(updated);
         onSelectTab('面价');
-        onShowToast(`已成功通过 AI 解析《${fileName}》，并自动更新 4 项产品面价！`);
+        onShowToast(`已成功通过 AI 解析《${fileName}》，并自动更新 4 项产品国内与国外人民币面价！`);
 
         const aiSuccessMsg: PricingChatMessage = {
           id: `success-${Date.now()}`,
           sender: 'ai',
-          text: `🎉 **面价文件智能解析并更新成功！**\n\nAI 已完成对《${fileName}》的字段映射与数值校验：\n- **有效字段**：物料编码、规格、FOB 美金单价、损耗率\n- **更新状态**：已自动将最新的 **4 项** 部件单价同步更新入库，右侧【面价列表】已实时呈现最新生效数值。\n- **生效时间**：${new Date().toLocaleString()}\n- **审计日志**：已记录管理员操作记录并通知销售助手智能体。`,
+          text: `🎉 **面价文件智能解析并更新成功！**\n\nAI 已完成对《${fileName}》的字段映射与数值校验：\n- **有效字段**：物料编码、规格、国内指导面价(RMB)、国外出口面价(含关税包装 RMB)、损耗率\n- **更新状态**：已自动将最新的 **4 项** 部件单价同步更新入库，右侧【面价列表】已实时呈现最新生效数值。\n- **生效时间**：${new Date().toLocaleString()}\n- **审计日志**：已记录管理员操作记录并通知销售助手智能体。`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           type: 'file_upload_success',
           fileMeta: {
@@ -300,10 +311,10 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
             targetType: 'price',
             updatedCount: 4,
             details: [
-              'BOQ-CAB-001 爱格板标准柜身板 (18mm) FOB单价微调至最新出厂价',
+              'BOQ-CAB-001 爱格板标准柜身板 (18mm) 国内价与国外价同步更新',
               'BOQ-CAB-002 桉木多层实木防潮板单价更新',
               'BOQ-DOOR-001 激光封边双饰面板单价校准',
-              'BOQ-HDW-001 百隆Blum快装阻尼铰链更新汇率折算'
+              'BOQ-HDW-001 百隆Blum快装阻尼铰链更新出厂与关税包装价'
             ]
           }
         };
@@ -390,8 +401,16 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
     }
   };
 
+  // Collapsed Sidebar View (completely hidden when collapsed)
+  if (isCollapsed) {
+    return null;
+  }
+
   return (
-    <div className="w-[380px] xl:w-[410px] shrink-0 bg-white rounded-3xl border border-slate-200/80 shadow-[0_4px_25px_rgba(0,0,0,0.03)] flex flex-col h-full overflow-hidden select-none">
+    <div 
+      id="pricing-copilot-expanded-panel"
+      className="w-[380px] xl:w-[410px] shrink-0 bg-white rounded-3xl border border-slate-200/80 shadow-[0_4px_25px_rgba(0,0,0,0.03)] flex flex-col h-full overflow-hidden select-none transition-all duration-300"
+    >
       {/* Hidden File Input */}
       <input
         type="file"
@@ -632,7 +651,7 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
                   handleSendMessage();
                 }
               }}
-              placeholder={userRole === 'admin' ? "问价格、查汇率，或说'帮我更新面价'..." : "咨询任何产品美金单价、材料工艺或结算汇率..."}
+              placeholder={userRole === 'admin' ? "问国内/国外价、查汇率，或说'帮我更新面价'..." : "咨询任何产品国内/国外人民币单价、工艺加价或外汇结算牌价..."}
               className="w-full h-9 pl-3 pr-8 rounded-xl bg-slate-50 border border-slate-200/90 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#EA3A20] focus:ring-1 focus:ring-red-200 transition-all"
             />
             {inputText && (

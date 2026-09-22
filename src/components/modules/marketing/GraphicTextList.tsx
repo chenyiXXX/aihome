@@ -198,13 +198,13 @@ export const GraphicTextList: React.FC<GraphicTextListProps> = ({
   ];
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-y-auto custom-scrollbar p-5 lg:p-7">
-      <div className="max-w-[1600px] w-full mx-auto space-y-5">
+    <div className="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-y-auto custom-scrollbar px-4 lg:px-6 pb-6 pt-1">
+      <div className="max-w-[1600px] w-full mx-auto space-y-4">
         
         {/* ===================================================================== */}
         {/* 1. Header: Simplified Title & Action Button                           */}
         {/* ===================================================================== */}
-        <div className="flex items-center justify-between gap-4 pt-1">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <h1 className="text-lg font-bold text-slate-900 tracking-tight">图文生成</h1>
             <span className="text-xs text-slate-400 font-medium">（共 {stats.activeTotal} 篇）</span>

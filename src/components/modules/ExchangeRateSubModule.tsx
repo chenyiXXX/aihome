@@ -182,11 +182,11 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
   };
 
   return (
-    <div className={`flex-1 flex flex-col h-full overflow-hidden ${hideHeader ? 'min-h-0' : 'px-8 pb-8'}`}>
+    <div className={`flex-1 flex flex-col h-full overflow-hidden ${hideHeader ? 'min-h-0' : 'px-4 lg:px-6 pb-6 pt-1'}`}>
       
       {/* Top Header */}
       {!hideHeader && (
-        <div className="flex items-center justify-between py-3 shrink-0">
+        <div className="flex items-center justify-between py-1 mb-2 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold shadow-xs">
               <DollarSign className="w-4.5 h-4.5" />
@@ -278,82 +278,32 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
                   <th className="py-3 px-4">币种代号</th>
                   <th className="py-3 px-3">币种全称</th>
                   <th className="py-3 px-3 text-right">文档基准汇率 (CNY)</th>
-                  <th className="py-3 px-3 text-right">市场实时参考</th>
                   <th className="py-3 px-3 text-center">安全缓冲</th>
-                  <th className="py-3 px-3 text-right">核算结算汇率</th>
-                  <th className="py-3 px-3 text-center">源文档位置</th>
-                  <th className="py-3 px-3">数据最新更新时间</th>
-                  <th className="py-3 px-3 text-center">状态</th>
-                  <th className="py-3 pr-4 pl-3 text-right">操作</th>
+                  <th className="py-3 pr-4 pl-3 text-right">核算结算汇率</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
                 {paginatedRates.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3 px-4 font-bold text-slate-900">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">{item.flag}</span>
-                        <span className="font-mono font-bold text-slate-800">{item.currencyCode}</span>
-                        {item.currencyCode === 'USD' && (
-                          <span className="px-1.5 py-0.2 rounded bg-red-50 text-[#EA3A20] text-[9px] font-bold">主基准</span>
-                        )}
-                      </div>
+                      <span className="font-mono font-bold text-slate-800">{item.currencyCode}</span>
                     </td>
-                    <td className="py-3 px-3 text-slate-600 font-medium">
-                      {item.currencyName}
+                    <td className="py-3 px-3 text-slate-700 font-medium">
+                      {item.currencyName.replace(/\s*[（(].*?[）)]/g, '')}
                     </td>
                     <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 text-sm">
                       ¥{item.systemRate.toFixed(4)}
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      <div className="font-mono text-slate-600 font-medium">
-                        ¥{item.marketRate.toFixed(4)}
-                      </div>
-                      <div className={`text-[10px] font-mono ${item.changeRate24h >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                        {item.changeRate24h >= 0 ? '+' : ''}{item.changeRate24h}%
-                      </div>
                     </td>
                     <td className="py-3 px-3 text-center">
                       <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-mono font-semibold text-[11px]">
                         +{item.bufferPercent}%
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-right">
+                    <td className="py-3 pr-4 pl-3 text-right">
                       <div className="font-mono font-bold text-emerald-700 text-sm">
                         ¥{item.settlementRate.toFixed(4)}
                       </div>
                       <div className="text-[10px] text-slate-400">BOQ核算价</div>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-700 font-mono rounded text-[11px] border border-blue-100">
-                        {item.docCell}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-slate-600 text-[11px]">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-slate-400 shrink-0" />
-                        <span>{item.lastUpdated}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
-                        item.status === '已锁定'
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      }`}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span>从文档同步</span>
-                      </span>
-                    </td>
-                    <td className="py-3 pr-4 pl-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedDocItem(item)}
-                        className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
-                        title="查看源文档映射明细"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
                     </td>
                   </tr>
                 ))}
@@ -362,7 +312,7 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
           </div>
 
           {/* Bottom Table Footer with Pagination */}
-          <div className="mt-2 space-y-2">
+          <div className="mt-2">
             <Pagination
               currentPage={currentPage}
               totalItems={filteredRates.length}
@@ -375,18 +325,6 @@ export const ExchangeRateSubModule: React.FC<ExchangeRateSubModuleProps> = ({
               }}
               itemUnit="个币种"
             />
-            <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
-              <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                <span>数据源文档：<strong className="text-slate-800">{documentSourceInfo.docName}</strong></span>
-                <span>•</span>
-                <span>当前共读取 <strong className="text-slate-800">{ratesList.length}</strong> 个结算币种汇率</span>
-              </div>
-              <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                <Info className="w-3.5 h-3.5" />
-                <span>如需调整基准汇率或锁汇政策，请直接在集团财务中心的指定文档中维护，保存后本系统自动同步</span>
-              </div>
-            </div>
           </div>
         </div>
 

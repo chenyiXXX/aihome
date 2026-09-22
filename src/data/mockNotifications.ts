@@ -331,5 +331,83 @@ export const initialNotifications: NotificationItem[] = [
       publishPlatforms: ['YouTube', 'Instagram'],
       contentTitle: '伦敦肯辛顿独栋别墅全案实景'
     }
+  },
+
+  // ================= 4. Agent 运行报错 (agent_error) =================
+  {
+    id: 'notif-agent-err-01',
+    category: 'agent_error',
+    title: '【运行报错】报价商务智能体 BOQ 算价超时告警',
+    content: '【报价商务智能体 (quotation_commercial_agent)】在执行复杂非标异型中岛柜算价任务时发生底层模型调用超时 (Gemini API 504 Gateway Timeout)，未能在规定 15s 内完成结构分解与计价。系统已自动启用备用降级计算规则并通知专员复核。',
+    timestamp: '2026-09-17 12:45',
+    isRead: false,
+    priority: 'urgent',
+    targetModule: 'sys_config',
+    targetSubView: 'Agent 配置',
+    actionText: '排查智能体配置',
+    actionPath: '/system/agent',
+    meta: {
+      agentName: '报价商务智能体',
+      agentCode: 'quotation_commercial_agent',
+      errorCode: 'TIMEOUT_504',
+      errorDetails: 'Gemini 2.5 Flash API 调用超时 (>15000ms)，触发降级规则'
+    }
+  },
+  {
+    id: 'notif-agent-err-02',
+    category: 'agent_error',
+    title: '【运行报错】前置处理智能体小语种分词解析异常',
+    content: '【前置处理智能体 (pre_processing_agent)】在解析阿联酋买家阿拉伯语与英语混合的非标五金询盘时，多语种提取模块触发字符编码截断异常 (ERR_UNICODE_DECODE)，已降级至人工待办池。',
+    timestamp: '2026-09-17 10:20',
+    isRead: false,
+    priority: 'high',
+    targetModule: 'sys_config',
+    targetSubView: 'Agent 配置',
+    actionText: '查看异常日志',
+    actionPath: '/system/agent',
+    meta: {
+      agentName: '前置处理智能体',
+      agentCode: 'pre_processing_agent',
+      errorCode: 'ERR_UNICODE_DECODE',
+      errorDetails: 'Arabic/English mixed token segmentation failed'
+    }
+  },
+  {
+    id: 'notif-agent-err-03',
+    category: 'agent_error',
+    title: '【风控阻断】质检合规智能体风控拦截熔断',
+    content: '【质检合规智能体 (qc_compliance_agent)】检测到外贸询盘草稿中包含禁止对外承诺的敏感加急交付条款（如“无图纸10天极速海外交付”），已触发一级风控拦截阻断并记录审计日志。',
+    timestamp: '2026-09-16 16:15',
+    isRead: false,
+    priority: 'urgent',
+    targetModule: 'audit_logs',
+    targetSubView: '智能体调用日志',
+    actionText: '查看审计日志',
+    actionPath: '/audit',
+    meta: {
+      agentName: '质检合规智能体',
+      agentCode: 'qc_compliance_agent',
+      errorCode: 'GUARDRAIL_BLOCKED',
+      errorDetails: 'Blocked sensitive SLA promise clause'
+    }
+  },
+  {
+    id: 'notif-agent-err-04',
+    category: 'agent_error',
+    title: '【运行告警】意图分发智能体 Token 阈值接近上限',
+    content: '【意图分发智能体 (intent_dispatcher_agent)】在处理附带 12 个历史会话轮次的超长询盘上下文时，Prompt 长度达到预设上下文记忆窗口的 94% (7,680 / 8,192 Tokens)，建议开启上下文滚动摘要压缩。',
+    timestamp: '2026-09-16 11:30',
+    isRead: true,
+    priority: 'normal',
+    targetModule: 'sys_config',
+    targetSubView: 'Agent 配置',
+    actionText: '调整记忆参数',
+    actionPath: '/system/agent',
+    meta: {
+      agentName: '意图分发智能体',
+      agentCode: 'intent_dispatcher_agent',
+      errorCode: 'TOKEN_LIMIT_NEAR',
+      errorDetails: 'Prompt tokens 7,680 / 8,192 (94%)'
+    }
   }
 ];

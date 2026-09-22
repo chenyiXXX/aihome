@@ -10,6 +10,7 @@ import {
   Layers,
   ArrowRight
 } from 'lucide-react';
+import { MOCK_ROLE_ACCOUNTS, UserRoleProfile } from '../../config/rolePermissions';
 
 interface LoginPageProps {
   onLoginSuccess: (userProfile?: { name: string; role: string; avatar: string; department?: string }) => void;
@@ -18,33 +19,9 @@ interface LoginPageProps {
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [scanStatus, setScanStatus] = useState<'waiting' | 'scanned' | 'success' | 'expired'>('waiting');
   const [countdown, setCountdown] = useState(60);
-  const [selectedRole, setSelectedRole] = useState({
-    name: 'Franklin Jr',
-    role: '超级管理员 (Superadmin)',
-    department: '智能数字化中心',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-  });
+  const [selectedRole, setSelectedRole] = useState<UserRoleProfile>(MOCK_ROLE_ACCOUNTS[0]);
 
-  const mockAccounts = [
-    {
-      name: 'Franklin Jr',
-      role: '超级管理员',
-      department: '智能数字化中心',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-    },
-    {
-      name: 'Sophia Wang',
-      role: '外贸运营主管',
-      department: '海外业务事业部',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80'
-    },
-    {
-      name: '陈工',
-      role: 'BOQ审核员',
-      department: '定制工程造价部',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-    }
-  ];
+  const mockAccounts = MOCK_ROLE_ACCOUNTS;
 
   useEffect(() => {
     if (scanStatus !== 'waiting') return;
@@ -363,7 +340,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             )}
 
             {/* Role Switcher */}
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-center gap-2">
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-center gap-1.5 flex-wrap">
               {mockAccounts.map((acc, idx) => (
                 <button
                   key={idx}
@@ -372,7 +349,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                     setSelectedRole(acc);
                     setScanStatus('scanned');
                   }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer border ${
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer border ${
                     selectedRole.name === acc.name
                       ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
                       : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
