@@ -5,15 +5,11 @@ import {
   Check,
   Eye,
   AlertCircle,
-  Database,
-  CheckCheck,
-  RotateCcw,
   Sparkles
 } from 'lucide-react';
 import {
   RoleConfig,
   RoleMenuPermission,
-  MenuDataScope,
   DataPermissionConfig,
   OperationPermissionsConfig
 } from '../../../types';
@@ -26,12 +22,6 @@ interface RolePermissionModalProps {
   allDepts: string[];
   isNewRole?: boolean;
 }
-
-const DATA_SCOPE_OPTIONS: { key: MenuDataScope; label: string; desc: string }[] = [
-  { key: 'all', label: '全部数据', desc: '全公司所有数据' },
-  { key: 'dept_and_sub', label: '所属部门及其子部门的数据', desc: '本部门及下属子部门数据' },
-  { key: 'self_only', label: '自己创建的数据', desc: '仅本人创建/负责的数据' }
-];
 
 export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
   isOpen,
@@ -91,20 +81,17 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
       setDescription(role.description);
       setNameError('');
       
-      // Ensure all modules exist in permissions with proper dataScope defaults
       const initialPerms = availableModules.map((mod) => {
         const found = role.permissions?.find((p) => p.module === mod || (mod === '日志与审计' && p.module === '日志审计'));
         if (found) {
           return {
             ...found,
-            module: mod,
-            dataScope: found.dataScope || (role.id === 'ROLE-ADMIN' ? 'all' : 'dept_and_sub')
+            module: mod
           };
         }
         return {
           module: mod,
           view: false,
-          dataScope: 'dept_and_sub' as MenuDataScope,
           edit: false,
           delete: false,
           export: false
@@ -138,45 +125,13 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
     setPermissions((prev) =>
       prev.map((p) => {
         if (p.module === moduleName) {
-          const nextView = !p.view;
           return {
             ...p,
-            view: nextView,
-            dataScope: p.dataScope || 'dept_and_sub'
+            view: !p.view
           };
         }
         return p;
       })
-    );
-  };
-
-  // Change data scope for a module (三选一单选)
-  const handleDataScopeChange = (moduleName: string, scope: MenuDataScope) => {
-    setPermissions((prev) =>
-      prev.map((p) => {
-        if (p.module === moduleName) {
-          return { ...p, dataScope: scope };
-        }
-        return p;
-      })
-    );
-  };
-
-  // Select all modules
-  const toggleAllModules = (enableAll: boolean) => {
-    setPermissions((prev) =>
-      prev.map((p) => ({
-        ...p,
-        view: enableAll,
-        dataScope: p.dataScope || 'dept_and_sub'
-      }))
-    );
-  };
-
-  // Batch change data scope for all enabled modules
-  const handleBatchSetDataScope = (scope: MenuDataScope) => {
-    setPermissions((prev) =>
-      prev.map((p) => (p.view ? { ...p, dataScope: scope } : p))
     );
   };
 
@@ -201,7 +156,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-      <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="px-7 py-4.5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-red-50/20 via-white to-slate-50">
@@ -234,7 +189,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-7 space-y-6 custom-scrollbar text-xs">
+        <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar text-xs">
           
           {/* Basic Info Form */}
           <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-100 space-y-3.5">
@@ -280,85 +235,32 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
             </div>
           </div>
 
-          {/* MENU & DATA SCOPE PERMISSIONS */}
-          <div className="space-y-3.5">
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50/60 p-3 rounded-2xl border border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-800 text-sm">功能菜单权限与数据范围配置</span>
-                <span className="text-slate-400 text-xs font-mono">
-                  (已启用 {enabledCount} / {permissions.length} 个模块)
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {/* Quick Select All / Unselect All */}
-                <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-2 py-1 rounded-xl shadow-2xs">
-                  <button
-                    type="button"
-                    onClick={() => toggleAllModules(true)}
-                    className="px-2.5 py-0.5 rounded-lg text-xs font-bold text-[#EA3A20] hover:bg-red-50 cursor-pointer transition-colors"
-                  >
-                    全选开启
-                  </button>
-                  <span className="text-slate-200">|</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleAllModules(false)}
-                    className="px-2.5 py-0.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 cursor-pointer transition-colors"
-                  >
-                    全部关闭
-                  </button>
-                </div>
-
-                {/* Batch Set Data Scope for Enabled Modules */}
-                {enabledCount > 0 && (
-                  <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
-                    <span className="text-[11px] text-slate-500 font-medium">批量设为:</span>
-                    <div className="flex items-center gap-1">
-                      {DATA_SCOPE_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.key}
-                          type="button"
-                          onClick={() => handleBatchSetDataScope(opt.key)}
-                          className="px-2 py-0.5 bg-white hover:bg-slate-100 border border-slate-200/80 rounded-lg text-[11px] text-slate-700 font-medium cursor-pointer transition-colors"
-                          title={`将已开启的 ${enabledCount} 个模块统一设置为「${opt.label}」`}
-                        >
-                          {opt.label === '所属部门及其子部门的数据' ? '所属部门及子部门' : opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+          {/* MENU PERMISSIONS */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3 bg-slate-50/60 px-4 py-2.5 rounded-2xl border border-slate-100">
+              <span className="font-bold text-slate-800 text-sm">功能菜单权限配置</span>
+              <span className="text-slate-500 text-xs font-mono">
+                已启用 <strong className="text-[#EA3A20]">{enabledCount}</strong> / {permissions.length} 个模块
+              </span>
             </div>
 
-            {/* Menu & Data Scope Table */}
+            {/* Menu Table */}
             <div className="border border-slate-200/80 rounded-2xl overflow-hidden shadow-2xs bg-white">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100 text-slate-700 font-bold text-[11px]">
-                    <th className="py-3 px-5 w-44">功能模块</th>
-                    <th className="py-3 px-4 w-28 text-center">
-                      <span className="inline-flex items-center justify-center gap-1">
+                    <th className="py-3 px-5">功能模块</th>
+                    <th className="py-3 px-5 w-32 text-center">
+                      <span className="inline-flex items-center justify-center gap-1.5">
                         <Eye className="w-3.5 h-3.5 text-slate-400" />
                         <span>查看权限</span>
                       </span>
-                    </th>
-                    <th className="py-3 px-5">
-                      <div className="flex items-center gap-2">
-                        <Database className="w-3.5 h-3.5 text-[#EA3A20]" />
-                        <span>查看权限的数据范围 (三选一单选)</span>
-                        <span className="text-[10px] font-normal text-slate-400">
-                          - 勾选查看权限后生效
-                        </span>
-                      </div>
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {permissions.map((perm) => {
                     const isViewEnabled = perm.view;
-                    const currentScope: MenuDataScope = perm.dataScope || 'dept_and_sub';
 
                     return (
                       <tr
@@ -368,8 +270,8 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                         }`}
                       >
                         {/* 功能模块名称 */}
-                        <td className="py-3.5 px-5 font-bold text-slate-900">
-                          <div className="flex items-center gap-2">
+                        <td className="py-3 px-5 font-bold text-slate-900">
+                          <div className="flex items-center gap-2.5">
                             <span
                               className={`w-2 h-2 rounded-full transition-colors ${
                                 isViewEnabled ? 'bg-[#EA3A20]' : 'bg-slate-300'
@@ -382,7 +284,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                         </td>
 
                         {/* 查看权限 Checkbox */}
-                        <td className="py-3.5 px-4 text-center">
+                        <td className="py-3 px-5 text-center">
                           <label className="inline-flex items-center justify-center cursor-pointer p-1 rounded-lg hover:bg-slate-100 transition-colors">
                             <input
                               type="checkbox"
@@ -391,47 +293,6 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
                               className="rounded border-slate-300 text-[#EA3A20] focus:ring-[#EA3A20] w-4 h-4 cursor-pointer"
                             />
                           </label>
-                        </td>
-
-                        {/* 查看权限的数据范围：三选一单选 (全部数据 / 所属部门及其子部门的数据 / 自己创建的数据) */}
-                        <td className="py-3.5 px-5">
-                          {isViewEnabled ? (
-                            <div className="flex flex-wrap items-center gap-2">
-                              {DATA_SCOPE_OPTIONS.map((opt) => {
-                                const isSelected = currentScope === opt.key;
-                                return (
-                                  <label
-                                    key={opt.key}
-                                    onClick={() => handleDataScopeChange(perm.module, opt.key)}
-                                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs cursor-pointer transition-all ${
-                                      isSelected
-                                        ? 'bg-red-50/90 border-[#EA3A20]/60 text-[#EA3A20] font-bold shadow-2xs ring-1 ring-[#EA3A20]/20'
-                                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
-                                    }`}
-                                    title={opt.desc}
-                                  >
-                                    <span
-                                      className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-all ${
-                                        isSelected
-                                          ? 'border-[#EA3A20] bg-[#EA3A20]'
-                                          : 'border-slate-300 bg-white'
-                                      }`}
-                                    >
-                                      {isSelected && (
-                                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                                      )}
-                                    </span>
-                                    <span>{opt.label}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-slate-400 text-xs py-1 select-none">
-                              <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                              <span className="text-slate-400">未勾选查看权限（勾选左侧开启后可选择数据范围）</span>
-                            </div>
-                          )}
                         </td>
                       </tr>
                     );
@@ -447,7 +308,7 @@ export const RolePermissionModal: React.FC<RolePermissionModalProps> = ({
         <div className="px-7 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="text-xs text-slate-500 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-[#EA3A20]" />
-            <span>已为角色配置 <strong>{enabledCount}</strong> 项功能菜单及其对应的数据可见范围</span>
+            <span>已为角色配置 <strong>{enabledCount}</strong> 项功能菜单</span>
           </div>
           <div className="flex items-center gap-2.5">
             <button

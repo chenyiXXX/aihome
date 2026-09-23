@@ -1565,25 +1565,14 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                               {role.permissions
                                 .filter((p) => p.view)
                                 .slice(0, 6)
-                                .map((perm) => {
-                                  const scopeLabel =
-                                    perm.dataScope === 'all'
-                                      ? '全部数据'
-                                      : perm.dataScope === 'self_only'
-                                      ? '仅本人'
-                                      : '本部门及子部门';
-
-                                  return (
-                                    <span
-                                      key={perm.module}
-                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200/60"
-                                      title={`${perm.module} (数据范围: ${scopeLabel})`}
-                                    >
-                                      <span>{perm.module}</span>
-                                      <span className="text-[9px] text-slate-400 font-mono">({scopeLabel})</span>
-                                    </span>
-                                  );
-                                })}
+                                .map((perm) => (
+                                  <span
+                                    key={perm.module}
+                                    className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200/60"
+                                  >
+                                    {perm.module}
+                                  </span>
+                                ))}
                               {role.permissions.filter((p) => p.view).length > 6 && (
                                 <span className="px-1.5 py-0.5 rounded-md text-[10px] font-medium text-slate-400 bg-slate-50 border border-slate-200/50">
                                   +{role.permissions.filter((p) => p.view).length - 6}

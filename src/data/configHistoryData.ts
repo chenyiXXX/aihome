@@ -1,7 +1,7 @@
 import { ConfigChangeRecord, SalesAgentItem, AgentSkill } from '../types';
 
 /**
- * 默认预设的智能体修改历史记录 (展示真实的历史演进轨迹)
+ * 默认预设的智能体修改历史记录 (严格对应 Agent 实际配置项：Prompt、挂载Skill、单次Token)
  */
 export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
   'agent-pre-process': [
@@ -13,11 +13,10 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       operatorName: 'Chen Yi (陈总)',
       operatorRole: '超级管理员',
       timestamp: '2026-09-17 10:15:24',
-      changeType: 'parameter',
-      changeSummary: '微调拼写纠偏置信度阈值与开启全渠道多语种映射',
+      changeType: 'prompt',
+      changeSummary: '优化系统核心指令，增强全渠道多语种买家进线意图纠偏',
       diffDetails: [
-        { field: '拼写容错纠偏置信度阈值', before: '0.80', after: '0.85' },
-        { field: '多语种自动翻译映射', before: '关闭 (false)', after: '启用 (true)' }
+        { field: '系统核心指令 (System Prompt)', before: '基础进线买家接待与拼写校验', after: '强化全渠道进线多语种识别与外贸专有名词/缩写容错纠偏' }
       ]
     },
     {
@@ -29,10 +28,9 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       operatorRole: '外贸主管',
       timestamp: '2026-09-14 16:40:02',
       changeType: 'skills',
-      changeSummary: '挂载客户画像标签枚举Skill并优化买家情绪判别规则',
+      changeSummary: '挂载客户画像标签枚举Skill组件',
       diffDetails: [
-        { field: '挂载技能 (attachedSkills)', before: 'chat_stream_sync', after: 'chat_stream_sync, customer_tagging_enum' },
-        { field: '买家情绪急迫度警报门槛', before: '4级 (高度焦虑急迫)', after: '3级 (中度急迫及以上)' }
+        { field: '挂载技能清单 (attachedSkills)', before: 'chat_stream_sync', after: 'chat_stream_sync, customer_tagging_enum' }
       ]
     },
     {
@@ -43,12 +41,10 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       operatorName: '李工',
       operatorRole: '系统架构师',
       timestamp: '2026-09-10 09:20:15',
-      changeType: 'model',
-      changeSummary: '底座调度模型升级为 Gemini 2.5 Flash',
+      changeType: 'parameter',
+      changeSummary: '调大单次最大输出 Token 上限',
       diffDetails: [
-        { field: '调度底座模型', before: 'gemini-1.5-flash', after: 'gemini-2.5-flash' },
-        { field: '上下文记忆轮数', before: '10 轮', after: '15 轮' },
-        { field: '推理温度 (Temperature)', before: '0.30', after: '0.20' }
+        { field: '最大单次 Token', before: '2048', after: '4096' }
       ]
     }
   ],
@@ -65,8 +61,7 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       changeType: 'prompt',
       changeSummary: '更新意图分发规则，增加对复合图纸审阅与打样意图的流水线拆解',
       diffDetails: [
-        { field: '系统提示词 (Prompt)', before: '意图四分类：材质/报价/谈判/售后', after: '新增复合意图自动拆分：图纸CAD深化 + BOQ预核价两步串联分派' },
-        { field: '多意图复合识别开关', before: '关闭 (false)', after: '开启 (true)' }
+        { field: '系统核心指令 (System Prompt)', before: '意图四分类：材质/报价/谈判/售后', after: '新增复合意图自动拆分：图纸CAD深化 + BOQ预核价两步串联分派' }
       ]
     },
     {
@@ -77,11 +72,10 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       operatorName: 'Sophia Wang',
       operatorRole: '外贸主管',
       timestamp: '2026-09-12 11:30:45',
-      changeType: 'parameter',
-      changeSummary: '提升意图识别置信度底线至 0.78，减少模糊分发',
+      changeType: 'skills',
+      changeSummary: '挂载合规校验与风控拦截 Skill',
       diffDetails: [
-        { field: '意图识别置信度底线', before: '0.70', after: '0.78' },
-        { field: '挂载技能 (attachedSkills)', before: 'customer_tagging_enum', after: 'customer_tagging_enum, compliance_regex_guardrail' }
+        { field: '挂载技能清单 (attachedSkills)', before: 'customer_tagging_enum', after: 'customer_tagging_enum, compliance_regex_guardrail' }
       ]
     }
   ],
@@ -98,8 +92,7 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       changeType: 'prompt',
       changeSummary: '补充欧标 EN 13986 与美标 CARB P2 板材环保合规比对知识库问答准则',
       diffDetails: [
-        { field: '系统提示词 (Prompt)', before: '重点涵盖 E0 / F4星标准与油漆工艺', after: '增加加州 CARB Phase 2、TSCA Title VI 认证标准与爱格板饰面工艺解答规范' },
-        { field: '推理温度 (Temperature)', before: '0.25', after: '0.15' }
+        { field: '系统核心指令 (System Prompt)', before: '重点涵盖 E0 / F4星标准与油漆工艺', after: '增加加州 CARB Phase 2、TSCA Title VI 认证标准与爱格板饰面工艺解答规范' }
       ]
     },
     {
@@ -110,11 +103,10 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       operatorName: 'Chen Yi (陈总)',
       operatorRole: '超级管理员',
       timestamp: '2026-09-13 17:10:00',
-      changeType: 'model',
-      changeSummary: '升级底座推理模型至 Gemini 2.5 Pro，大幅提升复杂工艺推理深度',
+      changeType: 'parameter',
+      changeSummary: '扩展单次最大输出 Token 数量以满足工程长文本解答',
       diffDetails: [
-        { field: '调度底座模型', before: 'gemini-2.5-flash', after: 'gemini-2.5-pro' },
-        { field: '最大输出 Tokens', before: '4096', after: '8192' }
+        { field: '最大单次 Token', before: '4096', after: '8192' }
       ]
     }
   ],
@@ -131,8 +123,7 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       changeType: 'skills',
       changeSummary: '挂载最新版海运排柜算法 Skill 与 FOB/CIF 计价引擎',
       diffDetails: [
-        { field: '挂载技能 (attachedSkills)', before: 'fob_cif_pricing_engine', after: 'fob_cif_pricing_engine, container_cbm_calc' },
-        { field: '默认出货起运港口', before: '深圳盐田港 (Yantian)', after: '宁波北仑港 / 深圳盐田 (智能比选)' }
+        { field: '挂载技能清单 (attachedSkills)', before: 'fob_cif_pricing_engine', after: 'fob_cif_pricing_engine, container_cbm_calc' }
       ]
     },
     {
@@ -143,11 +134,10 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       operatorName: 'Alex Schmidt',
       operatorRole: '销售业务员',
       timestamp: '2026-09-11 13:15:20',
-      changeType: 'parameter',
-      changeSummary: '调整工程批量折扣门槛阶梯与汇率安全缓冲余量',
+      changeType: 'prompt',
+      changeSummary: '优化工程批量折扣阶梯指引与国际商会 Incoterms 条款说明',
       diffDetails: [
-        { field: '汇率波动风险缓冲比率', before: '1.5%', after: '2.0%' },
-        { field: '五金配件默认配置品牌', before: '国产 DTC 阻尼', after: '百隆 (Blum) 阻尼铰链与导轨' }
+        { field: '系统核心指令 (System Prompt)', before: '标准 FOB 核价模版', after: '强化阶梯批量折扣与国际商会 Incoterms 规则指引' }
       ]
     }
   ],
@@ -164,7 +154,7 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       changeType: 'prompt',
       changeSummary: '优化欧洲工程买家催促签板与降价谈判博弈策略提示词',
       diffDetails: [
-        { field: '系统提示词 (Prompt)', before: '通用外贸跟进话术模版', after: '引入 SPIC 谈判策略：锁定样品打样确认周期，阶梯式让步附加质保条款' }
+        { field: '系统核心指令 (System Prompt)', before: '通用外贸跟进话术模版', after: '引入 SPIC 谈判策略：锁定样品打样确认周期，阶梯式让步附加质保条款' }
       ]
     }
   ],
@@ -178,11 +168,10 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       operatorName: 'Chen Yi (陈总)',
       operatorRole: '超级管理员',
       timestamp: '2026-09-15 11:20:00',
-      changeType: 'parameter',
-      changeSummary: '启用 FSC 森林认证与软包阻燃标准检测门禁',
+      changeType: 'prompt',
+      changeSummary: '加入 FSC 森林认证与欧美阻燃标准 (BS 5852 / TB 117) 拦截准则',
       diffDetails: [
-        { field: '强制 FSC 产销监管链校验', before: '可选 (false)', after: '强制拦截 (true)' },
-        { field: '英标 BS 5852 / 美标 TB117 阻燃校验', before: '提示警告', after: '高危阻断' }
+        { field: '系统核心指令 (System Prompt)', before: '常规产品品质标准审核', after: '加入 FSC 森林认证与欧美阻燃标准 (BS 5852 / TB 117) 拦截准则' }
       ]
     }
   ],
@@ -199,7 +188,7 @@ export const defaultAgentHistoryMap: Record<string, ConfigChangeRecord[]> = {
       changeType: 'prompt',
       changeSummary: '更新国际海运集装箱受潮霉变与五金件海损索赔取证指引',
       diffDetails: [
-        { field: '系统提示词 (Prompt)', before: '基础售后故障排除', after: '指导买家提供理赔4张必拍照片：集装箱封条、外箱唛头、破损局部与批号标签' }
+        { field: '系统核心指令 (System Prompt)', before: '基础售后故障排除', after: '指导买家提供理赔4张必拍照片：集装箱封条、外箱唛头、破损局部与批号标签' }
       ]
     }
   ]
@@ -359,11 +348,11 @@ export function getAgentChangeHistory(agent: SalesAgentItem): ConfigChangeRecord
       operatorRole: '系统内置',
       timestamp: '2026-09-01 00:00:00',
       changeType: 'general',
-      changeSummary: '初始化内置智能体基础配置及标准参数',
+      changeSummary: '初始化内置智能体系统核心指令、Token上限及挂载技能',
       diffDetails: [
-        { field: '状态', before: '新建', after: agent.status === 'active' ? '启用 (active)' : '停用 (inactive)' },
-        { field: '调度底座模型', before: '未设定', after: agent.geminiModel },
-        { field: '挂载技能数量', before: '0 项', after: `${agent.attachedSkillCodes.length} 项技能` }
+        { field: '系统核心指令 (System Prompt)', before: '未设定', after: '已初始化内置指令' },
+        { field: '最大单次 Token', before: '未设定', after: `${agent.maxOutputTokens || 2048}` },
+        { field: '挂载技能清单 (attachedSkills)', before: '0 项', after: `${agent.attachedSkillCodes.length} 项技能` }
       ]
     }
   ];
