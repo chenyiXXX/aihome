@@ -73,8 +73,30 @@ import { ArticlePermissionsTab } from './knowledge/ArticlePermissionsTab';
 import { ArticleDetailDrawer } from './knowledge/ArticleDetailDrawer';
 import { ArticleReviewSubView } from './knowledge/ArticleReviewSubView';
 import { Pagination } from '../common/Pagination';
+import { DeptTreeSelect } from '../common/DeptTreeSelect';
 
 // 预设配置选项 (用于知识条目新建/编辑配置)
+export const PRESET_DEPARTMENTS = [
+  '产品中心',
+  '设计部',
+  '产品管理部',
+  '研究所',
+  '市场部',
+  '制造中心',
+  '装配车间',
+  '供应链部',
+  '流程与质量',
+  '品质控制部',
+  '流程体系部',
+  '人力行政',
+  '招聘与培训组',
+  '行政综合组',
+  '信息部',
+  '售后服务部',
+  '财务部',
+  '全公司/全员'
+];
+
 export const PRESET_ROLES = [
   '外贸销售岗',
   '内容推广岗',
@@ -214,9 +236,11 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const [modalParentNode, setModalParentNode] = useState<KBCategory | null>(null);
   const [newCatName, setNewCatName] = useState('');
   const [newCatCode, setNewCatCode] = useState('');
-  const [newCatRoles, setNewCatRoles] = useState<string[]>(['全员通用']);
-  const [isNewCatRolesDropdownOpen, setIsNewCatRolesDropdownOpen] = useState(false);
-  const [newCatCustomRoleInput, setNewCatCustomRoleInput] = useState('');
+  const [newCatManagementDept, setNewCatManagementDept] = useState('产品中心');
+  const [isNewCatManagementDropdownOpen, setIsNewCatManagementDropdownOpen] = useState(false);
+  const [newCatViewableDepts, setNewCatViewableDepts] = useState<string[]>(['全公司/全员']);
+  const [isNewCatViewableDropdownOpen, setIsNewCatViewableDropdownOpen] = useState(false);
+  const [newCatCustomViewableDeptInput, setNewCatCustomViewableDeptInput] = useState('');
   const [newCatRequireReview, setNewCatRequireReview] = useState<boolean>(false);
   const [newCatReviewTriggers, setNewCatReviewTriggers] = useState<{ onUpload: boolean; onEdit: boolean; onDelete: boolean }>({
     onUpload: true,
@@ -228,9 +252,11 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   const [editingCatNode, setEditingCatNode] = useState<KBCategory | null>(null);
   const [editCatName, setEditCatName] = useState('');
   const [editCatCode, setEditCatCode] = useState('');
-  const [editCatRoles, setEditCatRoles] = useState<string[]>([]);
-  const [isEditCatRolesDropdownOpen, setIsEditCatRolesDropdownOpen] = useState(false);
-  const [editCatCustomRoleInput, setEditCatCustomRoleInput] = useState('');
+  const [editCatManagementDept, setEditCatManagementDept] = useState('产品中心');
+  const [isEditCatManagementDropdownOpen, setIsEditCatManagementDropdownOpen] = useState(false);
+  const [editCatViewableDepts, setEditCatViewableDepts] = useState<string[]>([]);
+  const [isEditCatViewableDropdownOpen, setIsEditCatViewableDropdownOpen] = useState(false);
+  const [editCatCustomViewableDeptInput, setEditCatCustomViewableDeptInput] = useState('');
   const [editCatRequireReview, setEditCatRequireReview] = useState<boolean>(false);
   const [editCatReviewTriggers, setEditCatReviewTriggers] = useState<{ onUpload: boolean; onEdit: boolean; onDelete: boolean }>({
     onUpload: true,
@@ -241,13 +267,13 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
   // 分类管理同级拖动排序状态
   const [draggedCatInfo, setDraggedCatInfo] = useState<{ id: string; name: string; parentId: string | null } | null>(null);
   const [dragOverCatInfo, setDragOverCatInfo] = useState<{ id: string; position: 'before' | 'after' } | null>(null);
-  // 分类适用角色展开查看所有浮层状态
-  const [activeRolesPopoverNode, setActiveRolesPopoverNode] = useState<KBCategory | null>(null);
+  // 分类可查看部门展开查看所有浮层状态
+  const [activeDeptsPopoverNode, setActiveDeptsPopoverNode] = useState<KBCategory | null>(null);
 
-  // 点击外部自动关闭适用角色全览浮层
+  // 点击外部自动关闭可查看部门全览浮层
   useEffect(() => {
     const handleOutsideClick = () => {
-      setActiveRolesPopoverNode(null);
+      setActiveDeptsPopoverNode(null);
     };
     window.addEventListener('click', handleOutsideClick);
     return () => window.removeEventListener('click', handleOutsideClick);
@@ -1762,9 +1788,15 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setModalParentNode(parentNode);
     setNewCatName('');
     setNewCatCode(parentNode ? `${parentNode.code}-SUB` : 'KB-CAT-NEW');
-    setNewCatRoles(parentNode?.applicableRoles && parentNode.applicableRoles.length > 0 ? [...parentNode.applicableRoles] : ['全员通用']);
-    setIsNewCatRolesDropdownOpen(false);
-    setNewCatCustomRoleInput('');
+    setNewCatManagementDept(parentNode?.managementDept || '产品中心');
+    setIsNewCatManagementDropdownOpen(false);
+    setNewCatViewableDepts(
+      parentNode?.viewableDepts && parentNode.viewableDepts.length > 0
+        ? [...parentNode.viewableDepts]
+        : (parentNode?.applicableRoles && parentNode.applicableRoles.length > 0 ? [...parentNode.applicableRoles] : ['全公司/全员'])
+    );
+    setIsNewCatViewableDropdownOpen(false);
+    setNewCatCustomViewableDeptInput('');
     setNewCatRequireReview(false);
     setNewCatReviewTriggers({ onUpload: true, onEdit: true, onDelete: true });
     setIsAddCatModalOpen(true);
@@ -1780,7 +1812,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
       id: `CAT-CUSTOM-${Date.now()}`,
       name: newCatName.trim(),
       code: newCatCode.trim() || `KB-CAT-${Date.now().toString().slice(-4)}`,
-      applicableRoles: newCatRoles.length > 0 ? newCatRoles : ['全员通用'],
+      managementDept: newCatManagementDept || '产品中心',
+      viewableDepts: newCatViewableDepts.length > 0 ? newCatViewableDepts : ['全公司/全员'],
+      applicableRoles: newCatViewableDepts.length > 0 ? newCatViewableDepts : ['全公司/全员'],
       itemCount: 0,
       isBuiltin: false,
       requireReview: newCatRequireReview,
@@ -1822,9 +1856,15 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
     setEditingCatNode(node);
     setEditCatName(node.name);
     setEditCatCode(node.code);
-    setEditCatRoles(node.applicableRoles && node.applicableRoles.length > 0 ? [...node.applicableRoles] : ['全员通用']);
-    setIsEditCatRolesDropdownOpen(false);
-    setEditCatCustomRoleInput('');
+    setEditCatManagementDept(node.managementDept || '产品中心');
+    setIsEditCatManagementDropdownOpen(false);
+    setEditCatViewableDepts(
+      node.viewableDepts && node.viewableDepts.length > 0
+        ? [...node.viewableDepts]
+        : (node.applicableRoles && node.applicableRoles.length > 0 ? [...node.applicableRoles] : ['全公司/全员'])
+    );
+    setIsEditCatViewableDropdownOpen(false);
+    setEditCatCustomViewableDeptInput('');
     setEditCatRequireReview(Boolean(node.requireReview));
     setEditCatReviewTriggers({
       onUpload: node.reviewTriggers?.onUpload ?? true,
@@ -1844,7 +1884,9 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
             ...item,
             name: editCatName.trim(),
             code: editCatCode.trim() || item.code,
-            applicableRoles: editCatRoles.length > 0 ? editCatRoles : ['全员通用'],
+            managementDept: editCatManagementDept || '产品中心',
+            viewableDepts: editCatViewableDepts.length > 0 ? editCatViewableDepts : ['全公司/全员'],
+            applicableRoles: editCatViewableDepts.length > 0 ? editCatViewableDepts : ['全公司/全员'],
             requireReview: editCatRequireReview,
             reviewTriggers: editCatRequireReview ? editCatReviewTriggers : undefined
           };
@@ -2166,116 +2208,117 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
             </div>
           </div>
 
-          {/* Right: Applicable Roles (with view-all popover), Code, Count & CRUD Actions */}
+          {/* Right: Management Dept, Viewable Depts (with view-all popover), Code, Count & CRUD Actions */}
           <div className="flex items-center gap-4 shrink-0">
-            {/* 适用角色展示区（可点击展开查看全部） */}
+            {/* 知识库管理部门 (普通文字展示) */}
+            <span
+              className="text-xs text-slate-600 shrink-0 w-28 truncate hidden sm:inline-block"
+              title={`管理部门：${node.managementDept || '产品中心'}`}
+            >
+              {node.managementDept || '产品中心'}
+            </span>
+
+            {/* 可查看部门展示区（多选，可点击展开查看全部） */}
             <div className="relative hidden lg:block">
-              <div
-                onClick={(e) => {
-                  if (node.applicableRoles && node.applicableRoles.length > 0) {
-                    e.stopPropagation();
-                    setActiveRolesPopoverNode(activeRolesPopoverNode?.id === node.id ? null : node);
-                  }
-                }}
-                title={
-                  node.applicableRoles && node.applicableRoles.length > 0
-                    ? `适用角色：${node.applicableRoles.join('、')}（点击查看全部）`
-                    : '全员通用'
-                }
-                className="flex items-center gap-1 w-44 overflow-hidden text-ellipsis flex-wrap cursor-pointer group/roles py-0.5 rounded-lg hover:bg-slate-100/70 transition-colors"
-              >
-                {node.applicableRoles && node.applicableRoles.length > 0 ? (
+              {(() => {
+                const depts = (node.viewableDepts && node.viewableDepts.length > 0)
+                  ? node.viewableDepts
+                  : (node.applicableRoles && node.applicableRoles.length > 0 ? node.applicableRoles : ['全公司/全员']);
+                return (
                   <>
-                    {node.applicableRoles.slice(0, 2).map((role) => (
-                      <span
-                        key={role}
-                        className="text-[10px] text-blue-700 bg-blue-50 group-hover/roles:bg-blue-100/70 border border-blue-200/70 px-1.5 py-0.5 rounded font-medium shrink-0 transition-colors"
-                      >
-                        {role}
-                      </span>
-                    ))}
-                    {node.applicableRoles.length > 2 && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
+                    <div
+                      onClick={(e) => {
+                        if (depts && depts.length > 0) {
                           e.stopPropagation();
-                          setActiveRolesPopoverNode(activeRolesPopoverNode?.id === node.id ? null : node);
-                        }}
-                        className="text-[9px] text-[#EA3A20] bg-red-50 hover:bg-red-100 border border-red-200/80 px-1.5 py-0.5 rounded font-bold transition-colors shrink-0 shadow-2xs cursor-pointer flex items-center gap-0.5"
+                          setActiveDeptsPopoverNode(activeDeptsPopoverNode?.id === node.id ? null : node);
+                        }
+                      }}
+                      title={`可查看部门：${depts.join('、')}（点击查看全部）`}
+                      className="flex items-center gap-1 w-44 overflow-hidden text-ellipsis flex-wrap cursor-pointer group/depts py-0.5 rounded-lg hover:bg-slate-100/70 transition-colors"
+                    >
+                      {depts.slice(0, 2).map((dept) => (
+                        <span
+                          key={dept}
+                          className="text-[10px] text-blue-700 bg-blue-50 group-hover/depts:bg-blue-100/70 border border-blue-200/70 px-1.5 py-0.5 rounded font-medium shrink-0 transition-colors"
+                        >
+                          {dept}
+                        </span>
+                      ))}
+                      {depts.length > 2 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveDeptsPopoverNode(activeDeptsPopoverNode?.id === node.id ? null : node);
+                          }}
+                          className="text-[9px] text-[#EA3A20] bg-red-50 hover:bg-red-100 border border-red-200/80 px-1.5 py-0.5 rounded font-bold transition-colors shrink-0 shadow-2xs cursor-pointer flex items-center gap-0.5"
+                        >
+                          +{depts.length - 2}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Popover Card for Viewing All Viewable Depts */}
+                    {activeDeptsPopoverNode?.id === node.id && (
+                      <div
+                        className="absolute right-0 top-full mt-1.5 z-50 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-3.5 min-w-[260px] max-w-[340px] animate-in fade-in zoom-in-95 duration-150"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        +{node.applicableRoles.length - 2}
-                      </button>
+                        <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+                          <div className="flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-[#EA3A20]" />
+                            <span className="text-xs font-bold text-slate-800">
+                              【{node.name}】可查看部门
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              共 {depts.length} 个
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveDeptsPopoverNode(null);
+                              }}
+                              className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-0.5 custom-scrollbar">
+                          {depts.map((dept) => (
+                            <span
+                              key={dept}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200/70 rounded-lg text-xs font-medium"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                              {dept}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                          <span className="text-slate-400">分类下知识继承此部门查看权限</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDeptsPopoverNode(null);
+                              handleOpenEditCatModal(node, e);
+                            }}
+                            className="text-[#EA3A20] hover:underline font-bold cursor-pointer"
+                          >
+                            去编辑
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </>
-                ) : (
-                  <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded font-medium">
-                    全员通用
-                  </span>
-                )}
-              </div>
-
-              {/* Popover Card for Viewing All Roles */}
-              {activeRolesPopoverNode?.id === node.id && (
-                <div
-                  className="absolute right-0 top-full mt-1.5 z-50 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-3.5 min-w-[260px] max-w-[340px] animate-in fade-in zoom-in-95 duration-150"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-[#EA3A20]" />
-                      <span className="text-xs font-bold text-slate-800">
-                        【{node.name}】适用角色
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        共 {node.applicableRoles?.length || 0} 个
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveRolesPopoverNode(null);
-                        }}
-                        className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-0.5 custom-scrollbar">
-                    {node.applicableRoles && node.applicableRoles.length > 0 ? (
-                      node.applicableRoles.map((role) => (
-                        <span
-                          key={role}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200/70 rounded-lg text-xs font-medium"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                          {role}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-slate-400">全员通用</span>
-                    )}
-                  </div>
-
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">分类下知识继承此角色权限</span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveRolesPopoverNode(null);
-                        handleOpenEditCatModal(node, e);
-                      }}
-                      className="text-[#EA3A20] hover:underline font-bold cursor-pointer"
-                    >
-                      去编辑
-                    </button>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             <span className="font-mono text-[11px] text-slate-400 hidden sm:inline-block w-28 truncate">
@@ -3173,7 +3216,8 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
               <div className="shrink-0 flex items-center justify-between text-[11px] font-semibold text-slate-400 pb-2 border-b border-slate-100 px-3">
                 <span>分类名称与层级</span>
                 <div className="flex items-center gap-4 sm:gap-6">
-                  <span className="hidden lg:inline-block w-44 text-left">适用角色</span>
+                  <span className="hidden sm:inline-block w-28 text-left">知识库管理部门</span>
+                  <span className="hidden lg:inline-block w-44 text-left">可查看部门</span>
                   <span className="hidden sm:inline-block w-28 text-left">编码</span>
                   <span className="min-w-14 text-center">关联知识</span>
                   <span className="w-28 text-right">操作</span>
@@ -4079,168 +4123,61 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700 block">分类唯一编码 (Code)</label>
-                  <input
-                    type="text"
-                    placeholder="例如：KB-PROD-BATH"
-                    value={newCatCode}
-                    onChange={(e) => setNewCatCode(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20]"
-                  />
-                  <p className="text-[11px] text-slate-400">用于系统或外部 API 对接的唯一标识码，留空自动生成</p>
-                </div>
-
-                {/* 适用角色配置 */}
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between">
-                    <label className="font-bold text-slate-700 flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-slate-500" />
-                      <span>适用角色</span>
-                      <span className="text-slate-400 font-normal text-[11px]">
-                        ({newCatRoles.length} 个已选)
-                      </span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (newCatRoles.includes('全员通用')) {
-                          setNewCatRoles(PRESET_ROLES.filter((r) => r !== '全员通用'));
-                        } else {
-                          setNewCatRoles(['全员通用']);
-                        }
-                      }}
-                      className="text-[11px] text-[#EA3A20] hover:underline font-medium cursor-pointer"
-                    >
-                      {newCatRoles.includes('全员通用') ? '细化指定角色' : '快速设为全员'}
-                    </button>
-                  </div>
-
-                  {/* Selected Roles Chips */}
-                  <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 min-h-[42px] items-center">
-                    {newCatRoles.length === 0 ? (
-                      <span className="text-slate-400 text-xs pl-1">未设置适用角色（默认全员可见）</span>
-                    ) : (
-                      newCatRoles.map((role) => (
-                        <span
-                          key={role}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-medium shadow-2xs"
-                        >
-                          <span>{role}</span>
-                          <button
-                            type="button"
-                            onClick={() => setNewCatRoles(newCatRoles.filter((r) => r !== role))}
-                            className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Dropdown for role selection & custom role adding */}
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsNewCatRolesDropdownOpen(!isNewCatRolesDropdownOpen)}
-                      className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 text-xs font-medium cursor-pointer shadow-2xs transition-colors"
-                    >
-                      <span className="text-slate-500">点击展开可选角色列表与自定义输入...</span>
-                      <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isNewCatRolesDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {isNewCatRolesDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-white border border-slate-200 rounded-xl shadow-lg p-2.5 space-y-2 animate-in fade-in">
-                        <div className="flex flex-wrap gap-1.5">
-                          {PRESET_ROLES.map((role) => {
-                            const isSelected = newCatRoles.includes(role);
-                            return (
-                              <button
-                                key={role}
-                                type="button"
-                                onClick={() => {
-                                  if (role === '全员通用') {
-                                    setNewCatRoles(['全员通用']);
-                                  } else {
-                                    const withoutAll = newCatRoles.filter((r) => r !== '全员通用');
-                                    if (isSelected) {
-                                      setNewCatRoles(withoutAll.filter((r) => r !== role));
-                                    } else {
-                                      setNewCatRoles([...withoutAll, role]);
-                                    }
-                                  }
-                                }}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1 border ${
-                                  isSelected
-                                    ? 'bg-red-50 border-[#EA3A20] text-[#EA3A20] font-bold'
-                                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                                }`}
-                              >
-                                {isSelected && <Check className="w-3 h-3 text-[#EA3A20]" />}
-                                <span>{role}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        {/* Custom Role Input */}
-                        <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5">
-                          <input
-                            type="text"
-                            placeholder="输入其他角色名称..."
-                            value={newCatCustomRoleInput}
-                            onChange={(e) => setNewCatCustomRoleInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                const val = newCatCustomRoleInput.trim();
-                                if (val && !newCatRoles.includes(val)) {
-                                  setNewCatRoles([...newCatRoles.filter((r) => r !== '全员通用'), val]);
-                                  setNewCatCustomRoleInput('');
-                                }
-                              }
-                            }}
-                            className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const val = newCatCustomRoleInput.trim();
-                              if (val && !newCatRoles.includes(val)) {
-                                setNewCatRoles([...newCatRoles.filter((r) => r !== '全员通用'), val]);
-                                setNewCatCustomRoleInput('');
-                              }
-                            }}
-                            className="px-2.5 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-medium hover:bg-slate-900 cursor-pointer"
-                          >
-                            添加
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    该分类下的知识将默认继承所选角色的查阅权限
-                  </p>
-                </div>
-
-                {/* 平台管理员复核策略配置 */}
-                <div className="pt-3 border-t border-slate-100">
-                  <div className="flex items-center justify-between gap-3 p-3 bg-amber-50/60 rounded-xl border border-amber-200/70">
-                    <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
-                      <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>开启平台管理员复核</span>
+                {/* 知识库管理部门配置 (组织结构树单选) */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="font-bold text-slate-700 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-purple-600" />
+                      <span>知识库管理部门</span>
+                      <span className="text-red-500 font-bold">*</span>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                      <input
-                        type="checkbox"
-                        checked={newCatRequireReview}
-                        onChange={(e) => setNewCatRequireReview(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
-                    </label>
+                  </label>
+                  <DeptTreeSelect
+                    value={newCatManagementDept}
+                    onChange={(val) => setNewCatManagementDept(val)}
+                    multiple={false}
+                    themeColor="purple"
+                    placeholder="请选择知识库管理部门..."
+                  />
+                </div>
+
+                {/* 可查看部门配置 (组织结构树多选) */}
+                <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                  <label className="font-bold text-slate-700 flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-blue-600" />
+                    <span>可查看部门</span>
+                  </label>
+                  <DeptTreeSelect
+                    value={newCatViewableDepts}
+                    onChange={(val) => setNewCatViewableDepts(val)}
+                    multiple={true}
+                    allowAll={true}
+                    themeColor="blue"
+                    placeholder="请选择可查看部门（支持多选）..."
+                  />
+                </div>
+
+                {/* 管理部门负责人复审策略配置 */}
+                <div className="pt-3 border-t border-slate-100">
+                  <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/70 space-y-1.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>开启管理部门负责人复审</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={newCatRequireReview}
+                          onChange={(e) => setNewCatRequireReview(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                      </label>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed pl-5.5">
+                      如果开启该功能，员工在该知识库分类下需要新发布/更新发布知识条目时，都需要管理知识库的部门负责人审核，通过才能成功发布。
+                    </p>
                   </div>
                 </div>
               </div>
@@ -4309,166 +4246,61 @@ export const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700 block">分类唯一编码 (Code)</label>
-                  <input
-                    type="text"
-                    value={editCatCode}
-                    onChange={(e) => setEditCatCode(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-[#EA3A20]"
+                {/* 知识库管理部门配置 (组织结构树单选) */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="font-bold text-slate-700 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-purple-600" />
+                      <span>知识库管理部门</span>
+                      <span className="text-red-500 font-bold">*</span>
+                    </div>
+                  </label>
+                  <DeptTreeSelect
+                    value={editCatManagementDept}
+                    onChange={(val) => setEditCatManagementDept(val)}
+                    multiple={false}
+                    themeColor="purple"
+                    placeholder="请选择知识库管理部门..."
                   />
                 </div>
 
-                {/* 适用角色配置 */}
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between">
-                    <label className="font-bold text-slate-700 flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-slate-500" />
-                      <span>适用角色</span>
-                      <span className="text-slate-400 font-normal text-[11px]">
-                        ({editCatRoles.length} 个已选)
-                      </span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (editCatRoles.includes('全员通用')) {
-                          setEditCatRoles(PRESET_ROLES.filter((r) => r !== '全员通用'));
-                        } else {
-                          setEditCatRoles(['全员通用']);
-                        }
-                      }}
-                      className="text-[11px] text-[#EA3A20] hover:underline font-medium cursor-pointer"
-                    >
-                      {editCatRoles.includes('全员通用') ? '细化指定角色' : '快速设为全员'}
-                    </button>
-                  </div>
-
-                  {/* Selected Roles Chips */}
-                  <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 min-h-[42px] items-center">
-                    {editCatRoles.length === 0 ? (
-                      <span className="text-slate-400 text-xs pl-1">未设置适用角色（默认全员可见）</span>
-                    ) : (
-                      editCatRoles.map((role) => (
-                        <span
-                          key={role}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-medium shadow-2xs"
-                        >
-                          <span>{role}</span>
-                          <button
-                            type="button"
-                            onClick={() => setEditCatRoles(editCatRoles.filter((r) => r !== role))}
-                            className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Dropdown for role selection & custom role adding */}
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsEditCatRolesDropdownOpen(!isEditCatRolesDropdownOpen)}
-                      className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 text-xs font-medium cursor-pointer shadow-2xs transition-colors"
-                    >
-                      <span className="text-slate-500">点击展开可选角色列表与自定义输入...</span>
-                      <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isEditCatRolesDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {isEditCatRolesDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-white border border-slate-200 rounded-xl shadow-lg p-2.5 space-y-2 animate-in fade-in">
-                        <div className="flex flex-wrap gap-1.5">
-                          {PRESET_ROLES.map((role) => {
-                            const isSelected = editCatRoles.includes(role);
-                            return (
-                              <button
-                                key={role}
-                                type="button"
-                                onClick={() => {
-                                  if (role === '全员通用') {
-                                    setEditCatRoles(['全员通用']);
-                                  } else {
-                                    const withoutAll = editCatRoles.filter((r) => r !== '全员通用');
-                                    if (isSelected) {
-                                      setEditCatRoles(withoutAll.filter((r) => r !== role));
-                                    } else {
-                                      setEditCatRoles([...withoutAll, role]);
-                                    }
-                                  }
-                                }}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1 border ${
-                                  isSelected
-                                    ? 'bg-red-50 border-[#EA3A20] text-[#EA3A20] font-bold'
-                                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                                }`}
-                              >
-                                {isSelected && <Check className="w-3 h-3 text-[#EA3A20]" />}
-                                <span>{role}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        {/* Custom Role Input */}
-                        <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5">
-                          <input
-                            type="text"
-                            placeholder="输入其他角色名称..."
-                            value={editCatCustomRoleInput}
-                            onChange={(e) => setEditCatCustomRoleInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                const val = editCatCustomRoleInput.trim();
-                                if (val && !editCatRoles.includes(val)) {
-                                  setEditCatRoles([...editCatRoles.filter((r) => r !== '全员通用'), val]);
-                                  setEditCatCustomRoleInput('');
-                                }
-                              }
-                            }}
-                            className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#EA3A20]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const val = editCatCustomRoleInput.trim();
-                              if (val && !editCatRoles.includes(val)) {
-                                setEditCatRoles([...editCatRoles.filter((r) => r !== '全员通用'), val]);
-                                setEditCatCustomRoleInput('');
-                              }
-                            }}
-                            className="px-2.5 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-medium hover:bg-slate-900 cursor-pointer"
-                          >
-                            添加
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    该分类下的知识将默认继承所选角色的查阅权限
-                  </p>
+                {/* 可查看部门配置 (组织结构树多选) */}
+                <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                  <label className="font-bold text-slate-700 flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-blue-600" />
+                    <span>可查看部门</span>
+                  </label>
+                  <DeptTreeSelect
+                    value={editCatViewableDepts}
+                    onChange={(val) => setEditCatViewableDepts(val)}
+                    multiple={true}
+                    allowAll={true}
+                    themeColor="blue"
+                    placeholder="请选择可查看部门（支持多选）..."
+                  />
                 </div>
 
-                {/* 平台管理员复核策略配置 */}
+                {/* 管理部门负责人复审策略配置 */}
                 <div className="pt-3 border-t border-slate-100">
-                  <div className="flex items-center justify-between gap-3 p-3 bg-amber-50/60 rounded-xl border border-amber-200/70">
-                    <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
-                      <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>开启平台管理员复核</span>
+                  <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/70 space-y-1.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>开启管理部门负责人复审</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={editCatRequireReview}
+                          onChange={(e) => setEditCatRequireReview(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                      </label>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                      <input
-                        type="checkbox"
-                        checked={editCatRequireReview}
-                        onChange={(e) => setEditCatRequireReview(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
-                    </label>
+                    <p className="text-[11px] text-slate-500 leading-relaxed pl-5.5">
+                      如果开启该功能，员工在该知识库分类下需要新发布/更新发布知识条目时，都需要管理知识库的部门负责人审核，通过才能成功发布。
+                    </p>
                   </div>
                 </div>
               </div>

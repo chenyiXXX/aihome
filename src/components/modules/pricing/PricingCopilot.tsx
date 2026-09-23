@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   Bot,
   Send,
@@ -22,7 +24,10 @@ import {
   PanelLeftOpen,
   ChevronLeft,
   ChevronRight,
-  MessageSquare
+  MessageSquare,
+  User,
+  Copy,
+  BookOpen
 } from 'lucide-react';
 import { BOQPriceItem, ExchangeRateItem } from '../../../types';
 
@@ -75,13 +80,21 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingUploadType, setPendingUploadType] = useState<'price' | 'exchange_rate' | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyText = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    onShowToast('已成功复制回答内容至剪贴板');
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   // Chat message history
   const [messages, setMessages] = useState<PricingChatMessage[]>([
     {
       id: 'msg-welcome-1',
       sender: 'ai',
-      text: '您好！我是【面价与汇率智能专家助手】。已深度挂载企业定制部件面价库（共 42 项，支持国内/国外双轨人民币计价）与财务外汇结算牌价中枢（7 大主流币种）。\n\n📌 **价格体系提醒**：产品面价分为【国内价】与【国外价】，**两者均以人民币(RMB)计价**。国外价格已报含出口关税、港杂报关与海运免熏蒸包装等，属于独立加成定价，非汇率换算。您可随时向我咨询任何部件的国内外人民币面价或财务外汇牌价。',
+      text: '您好！我是【面价与汇率智能专家助手】。已深度挂载企业定制部件面价库（共 42 项，全球统一以人民币 RMB 计价，支持 S级/G级 价格系数核算）与财务外汇结算牌价中枢（7 大主流币种）。\n\n📌 **面价体系说明**：\n- **全球统一面价 (RMB)**：全球统一出厂基准定价（以人民币计价）。\n- **S级客户价格系数**：标准折扣系数（如 0.90 / 9折）。\n- **G级客户价格系数**：战略大宗折扣系数（如 0.75 / 75折）。\n您可随时向我咨询任何定制部件的全球统一面价、S/G级核算价格或财务外汇牌价。',
       timestamp: '刚刚',
       type: 'text'
     }
@@ -99,9 +112,9 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
 
   // Quick prompt suggestions
   const quickPrompts = [
-    { label: '爱格板国内外人民币面价', query: '爱格板柜体的国内价和国外价分别是多少？国外价包含哪些费用？' },
+    { label: '爱格板全球面价与S/G级折扣', query: '爱格板柜体的全球统一面价是多少？S级和G级的价格系数与折后结算价是多少？' },
+    { label: '百隆阻尼铰链S级与G级价格', query: '百隆铰链的全球统一面价与S级、G级系数价格分别是多少？' },
     { label: '美元与欧元结算汇率', query: '请问当前美金和欧元的基准汇率与最终核算结算汇率是多少？' },
-    { label: '百隆阻尼铰链国内外价格', query: '百隆铰链的国内指导价与国外出口价是多少？' },
     { label: '英镑锁汇与安全缓冲', query: '英镑当前锁定的汇率是多少？有加安全缓冲吗？' }
   ];
 
@@ -201,6 +214,9 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
       q.includes('烤漆') ||
       q.includes('价格') ||
       q.includes('面价') ||
+      q.includes('系数') ||
+      q.includes('s级') ||
+      q.includes('g级') ||
       q.includes('单价')
     ) {
       // Find matching items from priceItems
@@ -218,14 +234,25 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
       if (matched.length > 0) {
         const top3 = matched.slice(0, 3);
         const listDesc = top3
-          .map(
-            (item, i) =>
-              `${i + 1}. **${item.name}** (${item.code})\n   - 规格/标准：${item.spec}\n   - **🇨🇳 国内指导面价**：**¥${(item.domesticPriceRMB ?? item.basePriceRMB).toFixed(2)} RMB / ${item.unit}** (含13%增值税专票)\n   - **🌍 国外出口面价**：**¥${(item.overseasPriceRMB ?? (item.basePriceRMB * 1.15)).toFixed(2)} RMB / ${item.unit}** (已含出口关税、港杂报关与ISPM15海运免熏蒸包装)\n   - 生产损耗率：${item.wasteRatePercent}%\n   - 核算公式：\`${item.formulaDesc}\``
-          )
+          .map((item, i) => {
+            const unifiedPrice = item.unifiedPriceRMB ?? item.basePriceRMB;
+            const sFactorRange = item.sGradeFactorRange
+              ? `${item.sGradeFactorRange[0].toFixed(2)} ~ ${item.sGradeFactorRange[1].toFixed(2)}`
+              : item.sGradeFactorMin && item.sGradeFactorMax
+              ? `${item.sGradeFactorMin.toFixed(2)} ~ ${item.sGradeFactorMax.toFixed(2)}`
+              : '0.85 ~ 0.92';
+            const gFactorRange = item.gGradeFactorRange
+              ? `${item.gGradeFactorRange[0].toFixed(2)} ~ ${item.gGradeFactorRange[1].toFixed(2)}`
+              : item.gGradeFactorMin && item.gGradeFactorMax
+              ? `${item.gGradeFactorMin.toFixed(2)} ~ ${item.gGradeFactorMax.toFixed(2)}`
+              : '0.70 ~ 0.80';
+
+            return `${i + 1}. **${item.name}** (${item.code})\n   - 规格/环保：${item.spec}\n   - **🌐 全球统一价格**：**¥${unifiedPrice.toFixed(2)} RMB / ${item.unit}**\n   - **⭐ S级价格系数范围**：\`${sFactorRange}\` (标准签约渠道授权区间)\n   - **💎 G级价格系数范围**：\`${gFactorRange}\` (战略大宗集采特批区间)\n   - 定额损耗率：${item.wasteRatePercent}%\n   - BOQ核算公式：\`${item.formulaDesc}\``;
+          })
           .join('\n\n');
 
         return {
-          text: `📋 **根据企业最新定额库，为您查询到以下【国内面价 / 国外面价】双轨人民币定额标准**：\n\n${listDesc}\n\n💡 **价格体系说明**：\n- **国内面价 (RMB)**：适用于内销工程、国内专卖店样板与含税出厂交付；\n- **国外面价 (RMB)**：已核算出口关税、港杂费与海运免熏蒸包装，属于独立成本加成定价，**非汇率折算**。右侧表格支持【双轨对照】、【国内面价】、【国外面价】一键视图切换。`,
+          text: `📋 **根据企业最新面价定额库，为您查询到以下【全球统一价格 (RMB)】及 S级/G级价格系数范围**：\n\n${listDesc}\n\n💡 **价格体系与系数说明**：\n- **全球统一价格**：所有市场统一的人民币基准价格；\n- **S级价格系数范围**：标准渠道/签约客户执行系数区间 (例如 \`0.85 ~ 0.92\`，即 85折 ~ 92折)；\n- **G级价格系数范围**：战略大客户/大宗集采执行系数区间 (例如 \`0.70 ~ 0.80\`，即 70折 ~ 80折)。`,
           suggestedTab: '面价'
         };
       }
@@ -233,7 +260,7 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
 
     // Default fallback helpful response
     return {
-      text: `🤖 **面价与汇率查询助手为您解答**：\n\n根据系统最新定额库配置：\n- **计价体系**：产品面价统一分为【国内价】与【国外价】（**两者均为人民币 RMB 计价**，国外价已含关税与海运包装）\n- **当前有效物料定额**：共收录 **${priceItems.length}** 项标准定制部件\n- **财务外汇中枢**：挂载 **${ratesList.length}** 个主流币种实时牌价与安全锁汇系数\n\n您可直接提问，例如：\n- *“爱格板 W980 柜身板国内价和国外价各是多少？”*\n- *“百隆顶配阻尼铰链的国外价包含什么费用？”*\n- *“当前英镑对人民币锁汇是多少？”*\n\n${userRole === 'admin' ? '✨ 您是管理员角色，也可以直接点击下方按钮上传最新的面价或汇率 Excel 表格进行一键同步覆盖。' : '🔒 提示：您当前为普通员工，已开启快速单价与多币种即时查询通道。'}`,
+      text: `🤖 **面价与汇率查询助手为您解答**：\n\n根据系统最新定额库配置：\n- **计价体系**：全球统一面价（**人民币 RMB 计价**），支持 **S级** 与 **G级** 价格系数差异化核算结算\n- **当前有效物料定额**：共收录 **${priceItems.length}** 项标准定制部件\n- **财务外汇中枢**：挂载 **${ratesList.length}** 个主流币种实时牌价与安全锁汇系数\n\n您可直接提问，例如：\n- *“爱格板 W980 柜身板全球统一面价和S级/G级折后价是多少？”*\n- *“百隆顶配阻尼铰链的S级和G级价格系数分别是多少？”*\n- *“当前美元和欧元的结算汇率是多少？”*\n\n${userRole === 'admin' ? '✨ 您是管理员角色，也可以直接点击下方按钮上传最新的面价或汇率 Excel 表格进行一键同步覆盖。' : '🔒 提示：您当前为普通员工，已开启快速单价与多币种即时查询通道。'}`,
       suggestedTab: activeTab
     };
   };
@@ -281,14 +308,21 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
         // Update price items: slightly bump or refresh items to show real change
         const updated = priceItems.map((item, idx) => {
           if (idx < 4) {
-            const newDom = +(item.domesticPriceRMB * 1.02).toFixed(2);
-            const newOver = +(item.overseasPriceRMB * 1.02).toFixed(2);
+            const newPrice = +( (item.unifiedPriceRMB ?? item.basePriceRMB) * 1.02 ).toFixed(2);
+            const sFactor = item.sGradeFactor ?? 0.90;
+            const gFactor = item.gGradeFactor ?? 0.75;
+            const newSPrice = +(newPrice * sFactor).toFixed(2);
+            const newGPrice = +(newPrice * gFactor).toFixed(2);
             return {
               ...item,
-              domesticPriceRMB: newDom,
-              overseasPriceRMB: newOver,
-              basePriceRMB: newDom,
-              basePriceUSD: +(newOver / currentExchangeRate).toFixed(2),
+              unifiedPriceRMB: newPrice,
+              basePriceRMB: newPrice,
+              sGradeFactor: sFactor,
+              sGradePriceRMB: newSPrice,
+              gGradeFactor: gFactor,
+              gGradePriceRMB: newGPrice,
+              domesticPriceRMB: newPrice,
+              overseasPriceRMB: newSPrice,
               updatedAt: new Date().toLocaleDateString('zh-CN').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString()
             };
           }
@@ -297,12 +331,12 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
 
         onUpdatePriceItems(updated);
         onSelectTab('面价');
-        onShowToast(`已成功通过 AI 解析《${fileName}》，并自动更新 4 项产品国内与国外人民币面价！`);
+        onShowToast(`已成功通过 AI 解析《${fileName}》，并自动更新 4 项产品的全球统一面价与S/G级系数！`);
 
         const aiSuccessMsg: PricingChatMessage = {
           id: `success-${Date.now()}`,
           sender: 'ai',
-          text: `🎉 **面价文件智能解析并更新成功！**\n\nAI 已完成对《${fileName}》的字段映射与数值校验：\n- **有效字段**：物料编码、规格、国内指导面价(RMB)、国外出口面价(含关税包装 RMB)、损耗率\n- **更新状态**：已自动将最新的 **4 项** 部件单价同步更新入库，右侧【面价列表】已实时呈现最新生效数值。\n- **生效时间**：${new Date().toLocaleString()}\n- **审计日志**：已记录管理员操作记录并通知销售助手智能体。`,
+          text: `🎉 **面价文件智能解析并更新成功！**\n\nAI 已完成对《${fileName}》的字段映射与数值校验：\n- **有效字段**：物料编码、部件名称、规格、全球统一面价(RMB)、S级价格系数(0.90)、G级价格系数(0.75)、损耗率\n- **更新状态**：已自动将最新的 **4 项** 部件单价同步更新入库，右侧【面价列表】已实时呈现最新生效数值。\n- **生效时间**：${new Date().toLocaleString()}\n- **审计日志**：已记录管理员操作记录并通知销售助手智能体。`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           type: 'file_upload_success',
           fileMeta: {
@@ -311,15 +345,14 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
             targetType: 'price',
             updatedCount: 4,
             details: [
-              'BOQ-CAB-001 爱格板标准柜身板 (18mm) 国内价与国外价同步更新',
-              'BOQ-CAB-002 桉木多层实木防潮板单价更新',
-              'BOQ-DOOR-001 激光封边双饰面板单价校准',
-              'BOQ-HDW-001 百隆Blum快装阻尼铰链更新出厂与关税包装价'
+              'BOQ-CAB-001 爱格板标准柜身板 (18mm) 全球统一面价与S/G级系数同步更新',
+              'BOQ-CAB-002 桉木多层实木防潮板全球面价更新',
+              'BOQ-DOOR-001 PET肤感柜门单价与系数校准',
+              'BOQ-HARD-001 百隆Blum快装阻尼铰链更新全球面价'
             ]
           }
         };
         setMessages((prev) => [...prev, aiSuccessMsg]);
-
       } else {
         // Update exchange rates
         const nowFormatted = new Date().toLocaleDateString('zh-CN').replace(/\//g, '-') + ' ' + new Date().toLocaleTimeString();
@@ -424,12 +457,12 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
       <div className="p-3.5 border-b border-slate-100 bg-gradient-to-b from-slate-50/80 to-white shrink-0">
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-red-50 text-[#EA3A20] flex items-center justify-center font-bold shadow-2xs">
-              <Bot className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#EA3A20] to-[#ff6b4a] text-white flex items-center justify-center font-bold shadow-xs">
+              <Sparkles className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-slate-900">面价汇率 AI 助手</span>
+                <span className="text-xs font-bold text-slate-900">面价汇率 AI 智能助手</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               </div>
               <p className="text-[10px] text-slate-400">智能问答 • 文件变动自动更新</p>
@@ -491,84 +524,139 @@ export const PricingCopilot: React.FC<PricingCopilotProps> = ({
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-3.5 space-y-3">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
-          >
-            <div className="flex items-center gap-1.5 mb-1 text-[10px] text-slate-400 px-1">
-              <span>{msg.sender === 'user' ? (userRole === 'admin' ? '我 (管理员)' : '我 (员工)') : 'AI 助手'}</span>
-              <span>•</span>
-              <span>{msg.timestamp}</span>
-            </div>
-
-            {/* Message Body */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+        {messages.map((msg) => {
+          const isUser = msg.sender === 'user';
+          return (
             <div
-              className={`max-w-[92%] rounded-2xl p-3 text-xs leading-relaxed ${
-                msg.sender === 'user'
-                  ? 'bg-[#EA3A20] text-white rounded-tr-xs shadow-xs'
-                  : 'bg-slate-50 text-slate-800 border border-slate-200/70 rounded-tl-xs shadow-2xs'
-              }`}
+              key={msg.id}
+              className={`flex gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}
             >
-              {/* File upload success card */}
-              {msg.type === 'file_upload_success' && msg.fileMeta ? (
-                <div className="space-y-2.5">
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-slate-900 text-xs">
-                        已自动更新至右侧【{msg.fileMeta.targetType === 'price' ? '面价' : '汇率'}】列表
-                      </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
-                        <FileSpreadsheet className="w-3 h-3 text-emerald-600" />
-                        <span className="font-mono">{msg.fileMeta.fileName}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Details pill */}
-                  <div className="bg-white p-2 rounded-xl border border-slate-200/70 space-y-1">
-                    <div className="text-[10px] font-bold text-slate-600">更新详情摘要：</div>
-                    {msg.fileMeta.details.map((d, idx) => (
-                      <div key={idx} className="text-[10px] text-slate-600 flex items-start gap-1">
-                        <span className="text-emerald-500 font-bold">•</span>
-                        <span>{d}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => onSelectTab(msg.fileMeta?.targetType === 'price' ? '面价' : '汇率')}
-                    className="w-full py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-bold border border-emerald-200 flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <span>立即在右侧查看【{msg.fileMeta.targetType === 'price' ? '面价' : '汇率'}】</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
+              {/* Assistant Avatar */}
+              {!isUser && (
+                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#EA3A20] to-[#ff6b4a] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                  <Sparkles className="w-3.5 h-3.5" />
                 </div>
-              ) : msg.type === 'file_upload_rejected' ? (
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-amber-700 font-bold text-xs">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-                    <span>无上传权限</span>
-                  </div>
-                  <p className="text-slate-700">{msg.text}</p>
+              )}
+
+              {/* Message Content & Metadata */}
+              <div className={`max-w-[85%] space-y-1.5 ${isUser ? 'items-end' : 'items-start'}`}>
+                <div className={`flex items-center gap-1.5 px-1 text-[10px] text-slate-400 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                  <span className="font-bold text-slate-700">
+                    {isUser ? (userRole === 'admin' ? '我 (管理员)' : '我 (员工)') : '面价汇率助手'}
+                  </span>
+                  <span>•</span>
+                  <span className="font-mono">{msg.timestamp}</span>
                 </div>
-              ) : (
-                <div className="whitespace-pre-wrap">{msg.text}</div>
+
+                {/* Message Bubble */}
+                <div
+                  className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
+                    isUser
+                      ? 'bg-[#EA3A20] text-white rounded-tr-xs font-normal shadow-xs'
+                      : 'bg-slate-50 text-slate-800 border border-slate-200/80 rounded-tl-xs shadow-2xs'
+                  }`}
+                >
+                  {/* File upload success card */}
+                  {msg.type === 'file_upload_success' && msg.fileMeta ? (
+                    <div className="space-y-2.5">
+                      <div className="flex items-start gap-2">
+                        <div className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900 text-xs">
+                            已自动更新至右侧【{msg.fileMeta.targetType === 'price' ? '面价' : '汇率'}】列表
+                          </div>
+                          <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                            <FileSpreadsheet className="w-3 h-3 text-emerald-600" />
+                            <span className="font-mono">{msg.fileMeta.fileName}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Details pill */}
+                      <div className="bg-white p-2 rounded-xl border border-slate-200/70 space-y-1">
+                        <div className="text-[10px] font-bold text-slate-600">更新详情摘要：</div>
+                        {msg.fileMeta.details.map((d, idx) => (
+                          <div key={idx} className="text-[10px] text-slate-600 flex items-start gap-1">
+                            <span className="text-emerald-500 font-bold">•</span>
+                            <span>{d}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => onSelectTab(msg.fileMeta?.targetType === 'price' ? '面价' : '汇率')}
+                        className="w-full py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-bold border border-emerald-200 flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <span>立即在右侧查看【{msg.fileMeta.targetType === 'price' ? '面价' : '汇率'}】</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : msg.type === 'file_upload_rejected' ? (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-amber-700 font-bold text-xs">
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                        <span>无上传权限</span>
+                      </div>
+                      <p className="text-slate-700">{msg.text}</p>
+                    </div>
+                  ) : isUser ? (
+                    <div className="whitespace-pre-wrap">{msg.text}</div>
+                  ) : (
+                    <div className="text-xs leading-relaxed [&>p]:mb-2 last:[&>p]:mb-0 [&>ul]:list-disc [&>ul]:ml-4 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:ml-4 [&>ol]:mb-2 [&>strong]:font-bold [&>a]:text-indigo-600 [&>a]:underline">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                    </div>
+                  )}
+                </div>
+
+                {/* Assistant message copy action */}
+                {!isUser && msg.type !== 'file_upload_success' && (
+                  <div className="flex items-center justify-end px-1 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText(msg.id, msg.text)}
+                      className="text-[10px] text-slate-400 hover:text-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
+                      title="复制回答内容"
+                    >
+                      {copiedId === msg.id ? (
+                        <span className="text-emerald-600 font-bold flex items-center gap-0.5">
+                          <CheckCircle2 className="w-2.5 h-2.5" />
+                          已复制
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-0.5">
+                          <Copy className="w-2.5 h-2.5" />
+                          复制
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* User Avatar */}
+              {isUser && (
+                <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200 mt-0.5 font-bold text-xs">
+                  <User className="w-3.5 h-3.5 text-slate-600" />
+                </div>
               )}
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Thinking Indicator */}
         {isThinking && (
-          <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 border border-slate-200/60 rounded-xl px-3 py-2 w-fit">
-            <Sparkles className="w-3.5 h-3.5 text-[#EA3A20] animate-spin" />
-            <span>AI 正在查询计算或解析文件中...</span>
+          <div className="flex gap-2.5 justify-start">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#EA3A20] to-[#ff6b4a] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+              <Sparkles className="w-3.5 h-3.5 animate-spin" />
+            </div>
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-xs p-3 shadow-2xs flex items-center gap-2 text-xs text-slate-600 font-medium">
+              <div className="w-3.5 h-3.5 border-2 border-[#EA3A20] border-t-transparent rounded-full animate-spin" />
+              <span>AI 正在查询计算或解析文件中...</span>
+            </div>
           </div>
         )}
 

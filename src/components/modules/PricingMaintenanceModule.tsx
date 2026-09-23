@@ -78,6 +78,36 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [exchangeRate, setExchangeRate] = useState<number>(7.20);
 
+  // Helper: Format price coefficient range (S/G级 价格系数范围 e.g. "0.85 ~ 0.92")
+  const formatFactorRange = (
+    factor?: number,
+    min?: number,
+    max?: number,
+    range?: [number, number],
+    type: 'S' | 'G' = 'S'
+  ): string => {
+    if (range && Array.isArray(range) && range.length === 2) {
+      return `${range[0].toFixed(2)} ~ ${range[1].toFixed(2)}`;
+    }
+    if (min !== undefined && max !== undefined) {
+      return min === max ? min.toFixed(2) : `${min.toFixed(2)} ~ ${max.toFixed(2)}`;
+    }
+    if (min !== undefined) return `≥ ${min.toFixed(2)}`;
+    if (max !== undefined) return `≤ ${max.toFixed(2)}`;
+    if (factor !== undefined) {
+      if (type === 'S') {
+        const minVal = Math.max(0.70, +(factor - 0.05).toFixed(2));
+        const maxVal = Math.min(1.00, +(factor + 0.02).toFixed(2));
+        return `${minVal.toFixed(2)} ~ ${maxVal.toFixed(2)}`;
+      } else {
+        const minVal = Math.max(0.60, +(factor - 0.05).toFixed(2));
+        const maxVal = Math.min(0.90, +(factor + 0.05).toFixed(2));
+        return `${minVal.toFixed(2)} ~ ${maxVal.toFixed(2)}`;
+      }
+    }
+    return type === 'S' ? '0.85 ~ 0.92' : '0.70 ~ 0.80';
+  };
+
   // State: Expanded multi-spec product IDs for secondary level structure
   const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(
     new Set(['BOQ-CAB-001', 'BOQ-DOOR-001'])
@@ -705,7 +735,7 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
 
               {/* Export Button */}
               <button
-                onClick={() => alert('已生成并导出最新包含【国内面价(RMB)】与【国外面价(RMB)】的BOQ单价Excel表格')}
+                onClick={() => alert('已生成并导出最新包含【全球统一面价(RMB)】与【S级/G级价格系数】的BOQ单价Excel表格')}
                 className="h-8 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
                 title="导出单价表"
               >
@@ -730,16 +760,22 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                     <th className="py-3.5 px-3 font-bold text-slate-900">规格/环保标准</th>
                     <th className="py-3.5 px-3 font-bold text-slate-900 text-center">单位</th>
                     
-                    {/* Domestic vs Overseas Price Columns (Both in RMB) */}
-                    <th className="py-3.5 px-3 font-bold text-slate-900 text-right bg-blue-50/40 border-l border-blue-100/60">
-                      <div className="flex items-center justify-end text-blue-900">
-                        <span>国内指导面价 (RMB)</span>
+                    {/* Unified Base Price & S/G Grade Price Coefficients */}
+                    <th className="py-3.5 px-3 font-bold text-slate-900 text-right bg-slate-100/60 border-l border-slate-200/80">
+                      <div className="flex items-center justify-end text-slate-800 gap-1">
+                        <span>全球统一价格 (RMB)</span>
                       </div>
                     </th>
                     
-                    <th className="py-3.5 px-3 font-bold text-slate-900 text-right bg-amber-50/40 border-l border-amber-100/60">
-                      <div className="flex items-center justify-end text-amber-900">
-                        <span>国外出口面价 (RMB)</span>
+                    <th className="py-3.5 px-3 font-bold text-slate-900 text-center bg-blue-50/40 border-l border-blue-100/60">
+                      <div className="flex items-center justify-center text-blue-900 gap-1">
+                        <span>S级价格系数范围</span>
+                      </div>
+                    </th>
+
+                    <th className="py-3.5 px-3 font-bold text-slate-900 text-center bg-amber-50/40 border-l border-amber-100/60">
+                      <div className="flex items-center justify-center text-amber-900 gap-1">
+                        <span>G级价格系数范围</span>
                       </div>
                     </th>
 
@@ -753,21 +789,22 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                     const hasVariants = Boolean(item.variants && item.variants.length > 0);
                     const isExpanded = expandedProductIds.has(item.id);
 
+                    const unifiedPrice = item.unifiedPriceRMB ?? item.basePriceRMB;
+                    const sFactorRange = formatFactorRange(item.sGradeFactor, item.sGradeFactorMin, item.sGradeFactorMax, item.sGradeFactorRange, 'S');
+                    const gFactorRange = formatFactorRange(item.gGradeFactor, item.gGradeFactorMin, item.gGradeFactorMax, item.gGradeFactorRange, 'G');
+
                     // 价格区间计算（若有多规格）
-                    let displayDomesticPrice = `¥${item.domesticPriceRMB.toFixed(2)}`;
-                    let displayOverseasPrice = `¥${item.overseasPriceRMB.toFixed(2)}`;
+                    let displayUnifiedPrice = `¥${unifiedPrice.toFixed(2)}`;
                     let hasPriceRange = false;
 
                     if (hasVariants && item.variants && item.variants.length > 0) {
-                      const minDom = Math.min(...item.variants.map((v) => v.domesticPriceRMB));
-                      const maxDom = Math.max(...item.variants.map((v) => v.domesticPriceRMB));
-                      const minOver = Math.min(...item.variants.map((v) => v.overseasPriceRMB));
-                      const maxOver = Math.max(...item.variants.map((v) => v.overseasPriceRMB));
+                      const allUnified = item.variants.map((v) => v.unifiedPriceRMB ?? v.basePriceRMB);
+                      const minU = Math.min(...allUnified);
+                      const maxU = Math.max(...allUnified);
 
-                      if (minDom !== maxDom || minOver !== maxOver) {
+                      if (minU !== maxU) {
                         hasPriceRange = true;
-                        displayDomesticPrice = `¥${minDom.toFixed(1)} ~ ¥${maxDom.toFixed(1)}`;
-                        displayOverseasPrice = `¥${minOver.toFixed(1)} ~ ¥${maxOver.toFixed(1)}`;
+                        displayUnifiedPrice = `¥${minU.toFixed(1)} ~ ¥${maxU.toFixed(1)}`;
                       }
                     }
 
@@ -877,27 +914,33 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                             </span>
                           </td>
 
-                          {/* 国内指导面价 (RMB) */}
-                          <td className="py-3 px-3 text-right bg-blue-50/20 border-l border-blue-100/50">
-                            <div className="font-mono font-bold text-blue-900 text-sm flex items-center justify-end gap-1">
-                              <span>{displayDomesticPrice}</span>
+                          {/* 🌐 全球统一价格 (RMB) */}
+                          <td className="py-3 px-3 text-right bg-slate-50/40 border-l border-slate-200/60">
+                            <div className="font-mono font-bold text-slate-900 text-sm flex items-center justify-end gap-1">
+                              <span>{displayUnifiedPrice}</span>
                               {hasPriceRange && (
-                                <span className="text-[9px] px-1 py-0.2 rounded bg-blue-100 text-blue-700 font-normal">
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-slate-200 text-slate-700 font-normal">
                                   区间
                                 </span>
                               )}
                             </div>
                           </td>
 
-                          {/* 国外出口面价 (RMB) */}
-                          <td className="py-3 px-3 text-right bg-amber-50/20 border-l border-amber-100/50">
-                            <div className="font-mono font-extrabold text-[#EA3A20] text-sm flex items-center justify-end gap-1">
-                              <span>{displayOverseasPrice}</span>
-                              {hasPriceRange && (
-                                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 font-normal">
-                                  区间
-                                </span>
-                              )}
+                          {/* ⭐ S级价格系数范围 */}
+                          <td className="py-3 px-3 text-center bg-blue-50/20 border-l border-blue-100/50">
+                            <div className="flex items-center justify-center">
+                              <span className="font-mono font-bold text-blue-800 bg-blue-50 border border-blue-200/80 px-2.5 py-0.5 rounded-md text-xs whitespace-nowrap">
+                                {sFactorRange}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* 💎 G级价格系数范围 */}
+                          <td className="py-3 px-3 text-center bg-amber-50/20 border-l border-amber-100/50">
+                            <div className="flex items-center justify-center">
+                              <span className="font-mono font-bold text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 rounded-md text-xs whitespace-nowrap">
+                                {gFactorRange}
+                              </span>
                             </div>
                           </td>
 
@@ -934,6 +977,9 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                           const vUnit = variant.unit || item.unit;
                           const vWaste = variant.wasteRatePercent !== undefined ? variant.wasteRatePercent : item.wasteRatePercent;
                           const vFormula = variant.formulaDesc || item.formulaDesc;
+                          const vUnifiedPrice = variant.unifiedPriceRMB ?? variant.basePriceRMB;
+                          const vSFactorRange = formatFactorRange(variant.sGradeFactor ?? item.sGradeFactor, variant.sGradeFactorMin ?? item.sGradeFactorMin, variant.sGradeFactorMax ?? item.sGradeFactorMax, variant.sGradeFactorRange ?? item.sGradeFactorRange, 'S');
+                          const vGFactorRange = formatFactorRange(variant.gGradeFactor ?? item.gGradeFactor, variant.gGradeFactorMin ?? item.gGradeFactorMin, variant.gGradeFactorMax ?? item.gGradeFactorMax, variant.gGradeFactorRange ?? item.gGradeFactorRange, 'G');
 
                           return (
                             <tr
@@ -988,17 +1034,28 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                                 </span>
                               </td>
 
-                              {/* 规格独立国内价 (RMB) */}
-                              <td className="py-2.5 px-3 text-right bg-blue-50/30 border-l border-blue-100/40">
-                                <div className="font-mono font-bold text-blue-900 text-xs">
-                                  ¥{variant.domesticPriceRMB.toFixed(2)}
+                              {/* 规格全球统一价格 (RMB) */}
+                              <td className="py-2.5 px-3 text-right bg-slate-50/30 border-l border-slate-200/50">
+                                <div className="font-mono font-bold text-slate-800 text-xs">
+                                  ¥{vUnifiedPrice.toFixed(2)}
                                 </div>
                               </td>
 
-                              {/* 规格独立国外价 (RMB) */}
-                              <td className="py-2.5 px-3 text-right bg-amber-50/40 border-l border-amber-100/40">
-                                <div className="font-mono font-extrabold text-[#EA3A20] text-xs">
-                                  ¥{variant.overseasPriceRMB.toFixed(2)}
+                              {/* 规格S级价格系数范围 */}
+                              <td className="py-2.5 px-3 text-center bg-blue-50/30 border-l border-blue-100/40">
+                                <div className="flex items-center justify-center">
+                                  <span className="font-mono font-bold text-blue-800 bg-blue-50/80 border border-blue-100 px-2 py-0.5 rounded text-[11px] whitespace-nowrap">
+                                    {vSFactorRange}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* 规格G级价格系数范围 */}
+                              <td className="py-2.5 px-3 text-center bg-amber-50/40 border-l border-amber-100/40">
+                                <div className="flex items-center justify-center">
+                                  <span className="font-mono font-bold text-amber-800 bg-amber-50/80 border border-amber-100 px-2 py-0.5 rounded text-[11px] whitespace-nowrap">
+                                    {vGFactorRange}
+                                  </span>
                                 </div>
                               </td>
 
@@ -1022,10 +1079,15 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                                     name: `${item.name} (${variant.specName})`,
                                     spec: variant.specName,
                                     unit: vUnit,
-                                    domesticPriceRMB: variant.domesticPriceRMB,
-                                    overseasPriceRMB: variant.overseasPriceRMB,
-                                    basePriceRMB: variant.domesticPriceRMB,
-                                    basePriceUSD: +(variant.overseasPriceRMB / 7.2).toFixed(2),
+                                    unifiedPriceRMB: vUnifiedPrice,
+                                    basePriceRMB: vUnifiedPrice,
+                                    sGradeFactor: vSFactor,
+                                    sGradePriceRMB: vSPrice,
+                                    gGradeFactor: vGFactor,
+                                    gGradePriceRMB: vGPrice,
+                                    domesticPriceRMB: vUnifiedPrice,
+                                    overseasPriceRMB: vSPrice,
+                                    basePriceUSD: +(vSPrice / 7.2).toFixed(2),
                                     wasteRatePercent: vWaste,
                                     formulaDesc: vFormula
                                   })}
@@ -1662,37 +1724,62 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                 </div>
               </div>
 
-              {/* 🇨🇳 国内价 vs 🌍 国外价 双轨卡片 (均以人民币计价) */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3.5 bg-blue-50/60 rounded-2xl border border-blue-200/80">
-                  <div className="flex items-center justify-between text-blue-900 mb-1">
-                    <span className="font-bold text-xs flex items-center gap-1">
-                      <span>🇨🇳 国内指导面价</span>
+              {/* 🌐 全球统一价格 (RMB) 与 ⭐ S级 / 💎 G级 价格系数范围 */}
+              <div className="grid grid-cols-3 gap-2.5">
+                <div className="p-3 bg-slate-100/70 rounded-2xl border border-slate-200">
+                  <div className="flex items-center justify-between text-slate-800 mb-1">
+                    <span className="font-bold text-[11px] flex items-center gap-1">
+                      <span>🌐 全球统一价格</span>
                     </span>
-                    <span className="text-[10px] bg-blue-100/80 text-blue-700 px-1.5 py-0.5 rounded font-medium">含13%税</span>
+                    <span className="text-[9px] bg-slate-200/80 text-slate-700 px-1.5 py-0.2 rounded font-medium">基准</span>
                   </div>
-                  <div className="font-mono font-bold text-blue-900 text-lg">
-                    ¥{(selectedDetailItem.domesticPriceRMB ?? selectedDetailItem.basePriceRMB).toFixed(2)}
-                    <span className="text-xs font-normal text-blue-600 font-sans ml-1">RMB / {selectedDetailItem.unit}</span>
+                  <div className="font-mono font-bold text-slate-900 text-base">
+                    ¥{(selectedDetailItem.unifiedPriceRMB ?? selectedDetailItem.basePriceRMB).toFixed(2)}
                   </div>
-                  <div className="text-[10px] text-blue-600 mt-1">
-                    内销指导价 • 增值税发票 • 5年质保
+                  <div className="text-[10px] text-slate-500 mt-1 truncate">
+                    RMB / {selectedDetailItem.unit}
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-200/80">
-                  <div className="flex items-center justify-between text-amber-900 mb-1">
-                    <span className="font-bold text-xs flex items-center gap-1">
-                      <span>🌍 国外出口面价</span>
+                <div className="p-3 bg-blue-50/60 rounded-2xl border border-blue-200/80">
+                  <div className="flex items-center justify-between text-blue-900 mb-1">
+                    <span className="font-bold text-[11px] flex items-center gap-1">
+                      <span>⭐ S级价格系数范围</span>
                     </span>
-                    <span className="text-[10px] bg-amber-100/80 text-amber-800 px-1.5 py-0.5 rounded font-medium">含关税包装</span>
+                    <span className="text-[9px] bg-blue-100/80 text-blue-700 px-1.5 py-0.2 rounded font-medium">标准渠道</span>
                   </div>
-                  <div className="font-mono font-extrabold text-[#EA3A20] text-lg">
-                    ¥{(selectedDetailItem.overseasPriceRMB ?? selectedDetailItem.basePriceRMB * 1.15).toFixed(2)}
-                    <span className="text-xs font-normal text-amber-700 font-sans ml-1">RMB / {selectedDetailItem.unit}</span>
+                  <div className="font-mono font-bold text-blue-900 text-sm whitespace-nowrap">
+                    {formatFactorRange(
+                      selectedDetailItem.sGradeFactor,
+                      selectedDetailItem.sGradeFactorMin,
+                      selectedDetailItem.sGradeFactorMax,
+                      selectedDetailItem.sGradeFactorRange,
+                      'S'
+                    )}
                   </div>
-                  <div className="text-[10px] text-amber-700 mt-1">
-                    已报关税 • 港杂费 • ISPM15免熏蒸包装 (非汇率折算)
+                  <div className="text-[10px] text-blue-600 mt-1 truncate">
+                    标准签约渠道授权区间
+                  </div>
+                </div>
+
+                <div className="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/80">
+                  <div className="flex items-center justify-between text-amber-900 mb-1">
+                    <span className="font-bold text-[11px] flex items-center gap-1">
+                      <span>💎 G级价格系数范围</span>
+                    </span>
+                    <span className="text-[9px] bg-amber-100/80 text-amber-800 px-1.5 py-0.2 rounded font-medium">战略集采</span>
+                  </div>
+                  <div className="font-mono font-extrabold text-[#EA3A20] text-sm whitespace-nowrap">
+                    {formatFactorRange(
+                      selectedDetailItem.gGradeFactor,
+                      selectedDetailItem.gGradeFactorMin,
+                      selectedDetailItem.gGradeFactorMax,
+                      selectedDetailItem.gGradeFactorRange,
+                      'G'
+                    )}
+                  </div>
+                  <div className="text-[10px] text-amber-700 mt-1 truncate">
+                    大宗集采特批区间
                   </div>
                 </div>
               </div>
@@ -1721,28 +1808,48 @@ export const PricingMaintenanceModule: React.FC<PricingMaintenanceModuleProps> =
                   <div className="flex items-center justify-between text-xs font-bold text-slate-900">
                     <div className="flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5 text-[#EA3A20]" />
-                      <span>包含细分规格与国内外双轨定价 ({selectedDetailItem.variants.length})</span>
+                      <span>包含细分规格与S/G级价格系数范围 ({selectedDetailItem.variants.length})</span>
                     </div>
                   </div>
                   <div className="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar">
-                    {selectedDetailItem.variants.map((v, idx) => (
-                      <div
-                        key={v.id || idx}
-                        className="bg-white p-2.5 rounded-xl border border-slate-200/70 flex items-center justify-between text-xs gap-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
-                            {v.specCode}
-                          </span>
-                          <span className="font-semibold text-slate-800">{v.specName}</span>
+                    {selectedDetailItem.variants.map((v, idx) => {
+                      const vUnified = v.unifiedPriceRMB ?? v.basePriceRMB;
+                      const vSFactorRange = formatFactorRange(
+                        v.sGradeFactor ?? selectedDetailItem.sGradeFactor,
+                        v.sGradeFactorMin ?? selectedDetailItem.sGradeFactorMin,
+                        v.sGradeFactorMax ?? selectedDetailItem.sGradeFactorMax,
+                        v.sGradeFactorRange ?? selectedDetailItem.sGradeFactorRange,
+                        'S'
+                      );
+                      const vGFactorRange = formatFactorRange(
+                        v.gGradeFactor ?? selectedDetailItem.gGradeFactor,
+                        v.gGradeFactorMin ?? selectedDetailItem.gGradeFactorMin,
+                        v.gGradeFactorMax ?? selectedDetailItem.gGradeFactorMax,
+                        v.gGradeFactorRange ?? selectedDetailItem.gGradeFactorRange,
+                        'G'
+                      );
+
+                      return (
+                        <div
+                          key={v.id || idx}
+                          className="bg-white p-2.5 rounded-xl border border-slate-200/70 flex items-center justify-between text-xs gap-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                              {v.specCode}
+                            </span>
+                            <span className="font-semibold text-slate-800">{v.specName}</span>
+                          </div>
+                          <div className="flex items-center gap-2 font-mono text-[11px]">
+                            <span className="text-slate-700 font-bold" title="全球统一价格 (RMB)">统一 ¥{vUnified.toFixed(2)}</span>
+                            <span className="text-slate-300">|</span>
+                            <span className="text-blue-800 font-bold" title="S级价格系数范围">S级系数 {vSFactorRange}</span>
+                            <span className="text-slate-300">|</span>
+                            <span className="text-amber-800 font-bold" title="G级价格系数范围">G级系数 {vGFactorRange}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 font-mono text-xs">
-                          <span className="text-blue-900 font-bold" title="国内面价 (RMB)">¥{(v.domesticPriceRMB ?? v.basePriceRMB).toFixed(2)}</span>
-                          <span className="text-slate-300">|</span>
-                          <span className="text-[#EA3A20] font-extrabold" title="国外面价 (RMB · 含关税包装)">¥{(v.overseasPriceRMB ?? (v.basePriceUSD ? v.basePriceUSD * 7.5 : v.basePriceRMB * 1.15)).toFixed(2)}</span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

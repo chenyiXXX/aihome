@@ -136,7 +136,7 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
     setTimeout(() => setSyncToast(null), 3000);
   };
 
-  // Create new role (Only configure menu permissions)
+  // Create new role (Only configure menu permissions & data scopes)
   const handleCreateNewRole = () => {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newRole: RoleConfig = {
@@ -145,15 +145,16 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
       description: '',
       userCount: 0,
       permissions: [
-        { module: '知识问答', view: true, edit: false, delete: false, export: false },
-        { module: '售前询盘', view: true, edit: false, delete: false, export: false },
-        { module: '销售助手', view: true, edit: false, delete: false, export: false },
-        { module: '运营助手', view: false, edit: false, delete: false, export: false },
-        { module: '知识库管理', view: true, edit: false, delete: false, export: false },
-        { module: '数据统计', view: false, edit: false, delete: false, export: false },
-        { module: '员工权限', view: false, edit: false, delete: false, export: false },
-        { module: '系统配置', view: false, edit: false, delete: false, export: false },
-        { module: '日志审计', view: false, edit: false, delete: false, export: false }
+        { module: '知识问答', view: true, dataScope: 'dept_and_sub', edit: false, delete: false, export: false },
+        { module: '售前询盘', view: true, dataScope: 'dept_and_sub', edit: false, delete: false, export: false },
+        { module: '销售助手', view: true, dataScope: 'dept_and_sub', edit: false, delete: false, export: false },
+        { module: '运营助手', view: false, dataScope: 'dept_and_sub', edit: false, delete: false, export: false },
+        { module: '知识库管理', view: true, dataScope: 'dept_and_sub', edit: false, delete: false, export: false },
+        { module: '面价汇率', view: true, dataScope: 'all', edit: false, delete: false, export: false },
+        { module: '数据统计', view: false, dataScope: 'dept_and_sub', edit: false, delete: false, export: false },
+        { module: '员工权限', view: false, dataScope: 'dept_and_sub', edit: false, delete: false, export: false },
+        { module: '智能体基础设置', view: false, dataScope: 'all', edit: false, delete: false, export: false },
+        { module: '日志与审计', view: false, dataScope: 'dept_and_sub', edit: false, delete: false, export: false }
       ],
       dataPermission: {
         scope: 'self_only',
@@ -1560,21 +1561,32 @@ export const StaffModule: React.FC<StaffModuleProps> = ({
                                 {menuCount === totalMenu ? '全部菜单开放' : `已配置 ${menuCount} 项菜单`}
                               </span>
                             </div>
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap gap-1.5">
                               {role.permissions
                                 .filter((p) => p.view)
-                                .slice(0, 5)
-                                .map((perm) => (
-                                  <span
-                                    key={perm.module}
-                                    className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200/50"
-                                  >
-                                    {perm.module}
-                                  </span>
-                                ))}
-                              {role.permissions.filter((p) => p.view).length > 5 && (
-                                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-medium text-slate-400 bg-slate-50">
-                                  +{role.permissions.filter((p) => p.view).length - 5}
+                                .slice(0, 6)
+                                .map((perm) => {
+                                  const scopeLabel =
+                                    perm.dataScope === 'all'
+                                      ? '全部数据'
+                                      : perm.dataScope === 'self_only'
+                                      ? '仅本人'
+                                      : '本部门及子部门';
+
+                                  return (
+                                    <span
+                                      key={perm.module}
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200/60"
+                                      title={`${perm.module} (数据范围: ${scopeLabel})`}
+                                    >
+                                      <span>{perm.module}</span>
+                                      <span className="text-[9px] text-slate-400 font-mono">({scopeLabel})</span>
+                                    </span>
+                                  );
+                                })}
+                              {role.permissions.filter((p) => p.view).length > 6 && (
+                                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-medium text-slate-400 bg-slate-50 border border-slate-200/50">
+                                  +{role.permissions.filter((p) => p.view).length - 6}
                                 </span>
                               )}
                             </div>

@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   X,
-  Bot,
   Check,
-  Zap,
   CheckSquare,
-  Square,
-  ShieldCheck,
-  Cpu,
-  Layers,
-  Coins,
-  Target,
-  Wrench,
-  Sparkles
+  Square
 } from 'lucide-react';
-import { AgentSkill, SalesAgentItem } from '../../../types';
+import { AgentSkill } from '../../../types';
 import { initialSalesAgents } from '../../../data/salesAgentData';
 
 interface AgentBindModalProps {
@@ -59,27 +50,6 @@ export const AgentBindModal: React.FC<AgentBindModalProps> = ({
     onClose();
   };
 
-  const getAgentIcon = (code: string) => {
-    switch (code) {
-      case 'pre_processing_agent':
-        return Sparkles;
-      case 'intent_dispatcher_agent':
-        return Cpu;
-      case 'knowledge_expert_agent':
-        return Layers;
-      case 'quotation_commercial_agent':
-        return Coins;
-      case 'sales_strategy_agent':
-        return Target;
-      case 'qc_compliance_agent':
-        return ShieldCheck;
-      case 'aftersales_troubleshooting_agent':
-        return Wrench;
-      default:
-        return Bot;
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div
@@ -88,23 +58,10 @@ export const AgentBindModal: React.FC<AgentBindModalProps> = ({
       >
         {/* Modal Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-4 bg-linear-to-r from-slate-50 via-white to-amber-50/40">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold shadow-xs">
-              <Bot className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-bold text-slate-900">
-                  为【{skill.name}】挂载到智能体
-                </h3>
-                <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold">
-                  {skill.code}
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                选择哪些外贸销售智能体装备并可调用此 Skill 算法能力
-              </p>
-            </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">
+              【{skill.name}】挂载到智能体
+            </h3>
           </div>
 
           <button
@@ -149,7 +106,6 @@ export const AgentBindModal: React.FC<AgentBindModalProps> = ({
         <div className="p-4 space-y-2.5 max-h-[60vh] overflow-y-auto custom-scrollbar">
           {initialSalesAgents.map((agent) => {
             const isSelected = selectedAgentNames.includes(agent.name);
-            const Icon = getAgentIcon(agent.code);
 
             return (
               <div
@@ -172,26 +128,13 @@ export const AgentBindModal: React.FC<AgentBindModalProps> = ({
                     <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                   </div>
 
-                  <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 text-slate-700">
-                    <Icon className="w-4 h-4" />
-                  </div>
-
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-xs font-bold text-slate-900 truncate">{agent.name}</h4>
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">
-                        {agent.code}
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 font-bold">
-                        {agent.category}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 truncate mt-0.5">{agent.role}</p>
+                    <h4 className="text-xs font-bold text-slate-900 truncate">{agent.name}</h4>
                   </div>
                 </div>
 
                 <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                  className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${
                     isSelected
                       ? 'bg-amber-100 text-amber-900 border border-amber-300'
                       : 'bg-slate-100 text-slate-400'

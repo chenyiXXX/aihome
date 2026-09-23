@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   Send,
   Sparkles,
@@ -52,12 +54,21 @@ import {
   SelectedKBArticleItem
 } from './home/KnowledgeBaseSelectorDrawer';
 
+export interface ChatCitation {
+  id?: string;
+  title: string;
+  code?: string;
+  version?: string;
+  category?: string;
+  excerpt?: string;
+}
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'assistant';
   content: string;
   timestamp: string;
-  sources?: Array<{ title: string; code: string }>;
+  sources?: ChatCitation[];
   confidence?: number;
   attachments?: Array<{
     id: string;
@@ -138,8 +149,22 @@ const initialSessionsList: ChatSession[] = [
 **行动建议**：顺势提出寄送实物对比样板盒（含切面色卡与封边试块），并预约 15 分钟 Zoom 远程方案投屏，锁定买家决策层。`,
         timestamp: '10:45',
         sources: [
-          { title: "《面对中东与欧美高净值客户的异议化解与心理博弈》", code: "KB-TRAIN-SALES-01" },
-          { title: "《外贸定制大单全流程跟进与风控交付SOP手册》", code: "KB-TRAIN-SOP-01" }
+          {
+            id: 'kb-sales-01',
+            title: '《面对中东与欧美高净值客户的异议化解与心理博弈》',
+            code: 'KB-TRAIN-SALES-01',
+            version: 'v2.2',
+            category: '商务谈判实战',
+            excerpt: '3F法则核心在于先共情理解客户对预算把控的专业度，再引用成熟欧美总包商从众共鸣，最后通过德国豪迈激光封边零胶缝、进口百隆20万次开合质保与ISTA 3A防损包装计算全生命周期成本反差。'
+          },
+          {
+            id: 'kb-sales-02',
+            title: '《外贸定制大单全流程跟进与风控交付SOP手册》',
+            code: 'KB-TRAIN-SOP-01',
+            version: 'v3.0',
+            category: '标准作业程序',
+            excerpt: '针对大跨度悬挑中岛台与极简免拉手柜体铣型节点，提供寄送实物对比样板盒及15分钟Zoom远程方案投屏策略，锁定买家核心决策层。'
+          }
         ],
         confidence: 0.99
       }
@@ -192,8 +217,22 @@ const initialSessionsList: ChatSession[] = [
 **转化关键提示**：所有发布视频必须在评论区首条置顶中英文询盘通道，专人 30 分钟内承接海外私信询盘。`,
         timestamp: '09:20',
         sources: [
-          { title: "《海外社媒短视频分镜脚本与工艺实拍规范》", code: "KB-OPS-ASSET-01" },
-          { title: "《跨境B2B独立站高转化SEO与RFQ承接规范》", code: "KB-OPS-SEO-02" }
+          {
+            id: 'kb-ops-01',
+            title: '《海外社媒短视频分镜脚本与工艺实拍规范》',
+            code: 'KB-OPS-ASSET-01',
+            version: 'v1.8',
+            category: '海外营销与多模态推广',
+            excerpt: '视频前3秒须展现暴力测试（如50KG抽屉承重）或德国5轴数控精雕特写，评论区必须置顶中英文询盘通道。'
+          },
+          {
+            id: 'kb-ops-02',
+            title: '《跨境B2B独立站高转化SEO与RFQ承接规范》',
+            code: 'KB-OPS-SEO-02',
+            version: 'v2.0',
+            category: '独立站运营SOP',
+            excerpt: '以Custom Kitchen Cabinet Manufacturer等长尾词布局落地页，配备工程案例图册一键下载与30分钟RFQ极速响应机制。'
+          }
         ],
         confidence: 0.98
       }
@@ -254,8 +293,22 @@ const initialSessionsList: ChatSession[] = [
    - 差旅归国后 5 个工作日内，凭机票行程单、海外正规 Commercial Invoice 贴票并在 OA 系统提交审批。`,
         timestamp: '昨天 15:32',
         sources: [
-          { title: "《品爱家居集团员工手册与薪酬绩效激励方案 v3.0》", code: "KB-HR-POL-01" },
-          { title: "《外贸业务差旅报销与知识产权保密合规规范》", code: "KB-HR-EXP-02" }
+          {
+            id: 'kb-hr-01',
+            title: '《品爱家居集团员工手册与薪酬绩效激励方案 v3.0》',
+            code: 'KB-HR-POL-01',
+            version: 'v3.0',
+            category: '薪酬制度规范',
+            excerpt: '外贸业务员阶梯提成按单笔定制订单实际履约 FOB 净利润结算，毛利率≥35%按10%-12%计提，尾款到账电放提单后次月全额兑现。'
+          },
+          {
+            id: 'kb-hr-02',
+            title: '《外贸业务差旅报销与知识产权保密合规规范》',
+            code: 'KB-HR-EXP-02',
+            version: 'v2.1',
+            category: '行政制度规范',
+            excerpt: '国际展会出差住宿上限欧美最高$180/间夜，海外公杂与餐补$50/人/天包干，归国5个工作日内贴票审批。'
+          }
         ],
         confidence: 0.99
       }
@@ -307,8 +360,22 @@ const initialSessionsList: ChatSession[] = [
    - 品爱全线外贸柜体均采用符合 FSC 认证的进口多层实木与大亚/爱格 E0 级低甲醛基材，通过德国 Henkel PUR 激光封边锁住游离挥发物，完全满足欧美双重严苛标准。`,
         timestamp: '10:24',
         sources: [
-          { title: "2026版全屋家居出口材质合规手册 v3.2", code: "KB-FUR-2026-08" },
-          { title: "美欧海运包装及跌落测试 ISTA 3A 规范", code: "KB-PKG-2025" }
+          {
+            id: 'kb-gen-01',
+            title: '《柜体板材防潮防水性能对比白皮书》',
+            code: 'KB-FUR-2026-08',
+            version: 'v3.2',
+            category: '基材工艺标准',
+            excerpt: '经 SGS 浸水检测：多层实木在 PUR 封边工艺下，耐水泡膨胀率<0.5%，达到欧标 EN312 P3 级防水防潮要求。'
+          },
+          {
+            id: 'kb-gen-02',
+            title: '《工厂实验室测试数据标准手册》',
+            code: 'KB-PKG-2025',
+            version: 'v1.4',
+            category: '实验室质检规范',
+            excerpt: '72小时恒温恒湿循环浸泡实验中，多层实木结构胶合强度≥1.0MPa，无开裂分层现象。'
+          }
         ],
         confidence: 0.98
       }
@@ -354,8 +421,22 @@ const initialSessionsList: ChatSession[] = [
 🎯 **对练要求**：请运用 **3F 法则** 与 **全生命周期安装成本反差** 进行防守反击，切忌直接同意降价！请直接输入您的应答话术：`,
         timestamp: '11:15',
         sources: [
-          { title: "《海外买家刁钻异议模拟库》", code: "KB-DRILL-BUYER-01" },
-          { title: "《大客户采购心理博弈与守价战术》", code: "KB-DRILL-SOP-02" }
+          {
+            id: 'kb-drill-01',
+            title: '《海外买家刁钻异议模拟库》',
+            code: 'KB-DRILL-BUYER-01',
+            version: 'v2.4',
+            category: '对练知识库',
+            excerpt: '面对比价异议，应强调中国高定供应链装配精度对现场安装工时的节约（可降低18%以上现场人工）。'
+          },
+          {
+            id: 'kb-drill-02',
+            title: '《大客户采购心理博弈与守价战术》',
+            code: 'KB-DRILL-SOP-02',
+            version: 'v1.6',
+            category: '对练知识库',
+            excerpt: '切忌直接降价，可通过赠送核心五金升级包或海外现货打样试块建立价值锚点。'
+          }
         ],
         confidence: 0.99
       }
@@ -368,6 +449,7 @@ export const HomeModule: React.FC = () => {
   const [activeSessionId, setActiveSessionId] = useState<string>('sess-sales');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<'all' | 'general' | 'sales_drill' | 'training'>('all');
+  const [activeCitationModal, setActiveCitationModal] = useState<ChatCitation | null>(null);
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -1088,8 +1170,8 @@ export const HomeModule: React.FC = () => {
                 >
                   {/* Assistant Avatar */}
                   {!isUser && (
-                    <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-                      <Bot className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#EA3A20] to-[#ff6b4a] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                      <Sparkles className="w-4 h-4 text-white" />
                     </div>
                   )}
 
@@ -1107,11 +1189,17 @@ export const HomeModule: React.FC = () => {
                     <div
                       className={`p-4 rounded-2xl text-xs leading-relaxed shadow-2xs ${
                         isUser
-                          ? 'bg-[#EA3A20] text-white rounded-tr-xs font-medium'
-                          : 'bg-white border border-slate-200/90 text-slate-800 rounded-tl-xs whitespace-pre-line'
+                          ? 'bg-[#EA3A20] text-white rounded-tr-xs font-normal'
+                          : 'bg-slate-50 border border-slate-200/80 text-slate-800 rounded-tl-xs'
                       }`}
                     >
-                      {msg.content}
+                      {isUser ? (
+                        <div className="whitespace-pre-wrap">{msg.content}</div>
+                      ) : (
+                        <div className="text-xs leading-relaxed [&>p]:mb-2 last:[&>p]:mb-0 [&>ul]:list-disc [&>ul]:ml-4 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:ml-4 [&>ol]:mb-2 [&>strong]:font-bold [&>a]:text-indigo-600 [&>a]:underline">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                        </div>
+                      )}
                     </div>
 
                     {/* Attachments rendering */}
@@ -1151,15 +1239,41 @@ export const HomeModule: React.FC = () => {
                         <div className="flex flex-wrap items-center gap-2">
                           {msg.sources && msg.sources.length > 0 && (
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-slate-400">出处：</span>
-                              {msg.sources.map((src, idx) => (
-                                <span
-                                  key={idx}
-                                  className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-md font-mono text-[10px]"
-                                  title={src.title}
-                                >
-                                  {src.code || src.title}
-                                </span>
+                              <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1 shrink-0">
+                                <BookOpen className="w-3 h-3 text-slate-400" />
+                                引用来源
+                              </span>
+                              {msg.sources.map((cit, citIdx) => (
+                                <div key={cit.id || citIdx} className="relative group/cit">
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveCitationModal(cit)}
+                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100/90 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200/80 hover:border-indigo-200 text-[10px] font-medium transition-colors cursor-pointer"
+                                  >
+                                    <span className="font-mono font-bold text-indigo-600">[{citIdx + 1}]</span>
+                                    <span className="max-w-[130px] sm:max-w-[190px] truncate">{cit.title.replace(/^《|》$/g, '')}</span>
+                                  </button>
+
+                                  {/* Floating lightweight popover on hover */}
+                                  <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover/cit:flex flex-col z-50 w-72 p-3 bg-white rounded-xl shadow-xl border border-slate-200 text-left animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                    <div className="flex items-start justify-between gap-2 pb-1.5 border-b border-slate-100">
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="shrink-0 w-4 h-4 rounded bg-indigo-50 text-indigo-600 font-mono text-[10px] font-bold flex items-center justify-center">
+                                          {citIdx + 1}
+                                        </span>
+                                        <span className="text-xs font-bold text-slate-800 truncate">
+                                          {cit.title}
+                                        </span>
+                                      </div>
+                                      <span className="text-[9px] font-mono px-1 py-0.5 bg-slate-100 text-slate-500 rounded border border-slate-200 shrink-0">
+                                        {cit.version || cit.code || 'v1.0'}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-600 line-clamp-3 leading-relaxed mt-1.5">
+                                      {cit.excerpt || '收录于企业标准知识库与工艺标准文档，经管理部门负责人复审认证。'}
+                                    </p>
+                                  </div>
+                                </div>
                               ))}
                             </div>
                           )}
@@ -1196,8 +1310,8 @@ export const HomeModule: React.FC = () => {
 
                   {/* User Avatar */}
                   {isUser && (
-                    <div className="w-8 h-8 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 shadow-2xs mt-0.5 font-bold text-xs">
-                      <User className="w-4 h-4 text-slate-700" />
+                    <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200 mt-0.5 font-bold text-xs">
+                      <User className="w-4 h-4 text-slate-600" />
                     </div>
                   )}
                 </div>
@@ -1208,12 +1322,12 @@ export const HomeModule: React.FC = () => {
           {/* Loading Animation */}
           {loading && (
             <div className="flex gap-3.5 justify-start">
-              <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-                <Bot className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#EA3A20] to-[#ff6b4a] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                <Sparkles className="w-4 h-4 text-white animate-spin" />
               </div>
-              <div className="bg-white border border-slate-200/90 rounded-2xl rounded-tl-xs p-4 shadow-2xs flex items-center gap-2 text-xs text-slate-500">
-                <div className="w-4 h-4 border-2 border-[#0F4A47] border-t-transparent rounded-full animate-spin" />
-                <span>正在检索知识库并生成解答...</span>
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl rounded-tl-xs p-4 shadow-2xs flex items-center gap-2 text-xs text-slate-600 font-medium">
+                <div className="w-4 h-4 border-2 border-[#EA3A20] border-t-transparent rounded-full animate-spin" />
+                <span>正在检索企业知识库并生成解答...</span>
               </div>
             </div>
           )}
@@ -1464,6 +1578,59 @@ export const HomeModule: React.FC = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateSessionFromConfig}
       />
+
+      {/* Citation Detail Modal for clicking a citation badge */}
+      {activeCitationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-5 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">{activeCitationModal.title}</h3>
+                  <div className="text-[10px] text-slate-400 font-mono flex items-center gap-2">
+                    <span>版本: {activeCitationModal.version || activeCitationModal.code || 'v1.0'}</span>
+                    {activeCitationModal.category && <span>· 分类: {activeCitationModal.category}</span>}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveCitationModal(null)}
+                className="w-7 h-7 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center text-xs cursor-pointer transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-700 leading-relaxed">
+              <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">权威引述摘录 (Authoritative Excerpt)</div>
+              <p>{activeCitationModal.excerpt || '收录于品爱家居企业标准化工艺与知识库系统，已由对应管理部门复审认证。'}</p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => setActiveCitationModal(null)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                关闭
+              </button>
+              {activeSession.category === 'general' && (
+                <button
+                  onClick={() => {
+                    setActiveCitationModal(null);
+                    setIsKBDrawerOpen(true);
+                  }}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  在知识库中查阅 <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

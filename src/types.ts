@@ -459,7 +459,9 @@ export interface KBCategory {
   code: string;
   itemCount: number;
   isBuiltin?: boolean;
-  applicableRoles?: string[]; // 适用角色 (多选，如：外贸销售岗、内容推广岗、方案设计师等)
+  applicableRoles?: string[]; // 兼容保留历史角色配置
+  managementDept?: string; // 知识库管理部门（单选：只能选择一个管理部门）
+  viewableDepts?: string[]; // 可查看部门（多选：可选择多个部门）
   requireReview?: boolean; // 该分类下上传/编辑/删除是否需要平台管理员复核
   reviewTriggers?: {
     onUpload?: boolean; // 上传新知识需复核
@@ -601,20 +603,25 @@ export interface OperationPermissionsConfig {
   auditExport: boolean; // 导出审计日志
 }
 
+export type MenuDataScope = 'all' | 'dept_and_sub' | 'self_only';
+
+export interface RoleMenuPermission {
+  module: string;
+  view: boolean;
+  dataScope?: MenuDataScope; // 'all' (全部数据) | 'dept_and_sub' (所属部门及其子部门的数据) | 'self_only' (自己创建的数据)
+  edit?: boolean;
+  delete?: boolean;
+  export?: boolean;
+}
+
 export interface RoleConfig {
   id: string;
   roleName: string;
   description: string;
   userCount: number;
-  permissions: {
-    module: string;
-    view: boolean;
-    edit: boolean;
-    delete: boolean;
-    export: boolean;
-  }[];
-  dataPermission: DataPermissionConfig;
-  operationPermissions: OperationPermissionsConfig;
+  permissions: RoleMenuPermission[];
+  dataPermission?: DataPermissionConfig;
+  operationPermissions?: OperationPermissionsConfig;
 }
 
 // 8. System Config Types (智能体基础设置: 销售类智能体 Agent 配置 & 销售类 Skill 配置)
@@ -770,18 +777,27 @@ export interface ContentGenLog {
   status: '完成' | '生成中';
 }
 
-// 6. Product Price Maintenance & BOQ (产品价格维护与BOQ清单计算 - 国内价格与国外价格双轨制，均以人民币计价，国外价含关税与海运包装成本)
+// 6. Product Price Maintenance & BOQ (产品面价维护与BOQ清单计算 - 全球统一价格 RMB，支持S级/G级价格系数范围)
 export interface BOQPriceSpecVariant {
   id: string;
   specCode: string;          // 子规格编码 e.g. CAB-EGGER-E0-18MM
   specName: string;          // 子规格描述 e.g. 18mm / 双饰面耐磨层 / ABS激光封边
   unit?: '投影㎡' | '展开㎡' | '延米' | '个' | '套' | '米';
-  domesticPriceRMB: number;  // 🇨🇳 国内指导面价 (RMB) - 含13%税/内销出厂基准
-  overseasPriceRMB: number;  // 🌍 国外出口面价 (RMB) - 已含关税、港杂报关与海运免熏蒸包装
+  unifiedPriceRMB: number;   // 🌐 全球统一价格 (RMB)
+  basePriceRMB: number;      // 基准面价 (RMB)
+  sGradeFactor?: number;     // S级基准价格系数 (e.g. 0.90)
+  sGradeFactorMin?: number;  // S级价格系数范围下限 (e.g. 0.85)
+  sGradeFactorMax?: number;  // S级价格系数范围上限 (e.g. 0.92)
+  sGradeFactorRange?: [number, number]; // [0.85, 0.92]
+  sGradePriceRMB?: number;   // S级折后参考价 (RMB)
+  gGradeFactor?: number;     // G级基准价格系数 (e.g. 0.75)
+  gGradeFactorMin?: number;  // G级价格系数范围下限 (e.g. 0.70)
+  gGradeFactorMax?: number;  // G级价格系数范围上限 (e.g. 0.80)
+  gGradeFactorRange?: [number, number]; // [0.70, 0.80]
+  gGradePriceRMB?: number;   // G级折后参考价 (RMB)
+  domesticPriceRMB?: number; // 兼容
+  overseasPriceRMB?: number; // 兼容
   basePriceUSD?: number;     // 兼容/参考
-  basePriceRMB: number;      // 兼容国内基准
-  domesticRemarks?: string;  // 国内价格特殊说明 (如含税、质保等)
-  overseasRemarks?: string;  // 国外价格特殊说明 (如已报关税、港杂、免熏蒸木箱包装等)
   wasteRatePercent?: number; // 损耗率
   formulaDesc?: string;      // 专属算价公式说明
   remarks?: string;          // 备注说明
@@ -795,14 +811,25 @@ export interface BOQPriceItem {
   spec: string;               // 规格/材质说明 e.g. 18mm/双饰面/E0级/环保认证
   unit: '投影㎡' | '展开㎡' | '延米' | '个' | '套' | '米';
   currency?: 'RMB' | 'USD' | 'CNY';
-  domesticPriceRMB: number;   // 🇨🇳 国内指导面价 (RMB) - 含13%专票/出厂
-  overseasPriceRMB: number;   // 🌍 国外出口面价 (RMB) - 包含关税/港杂/海运免熏蒸包装/商检成本，非汇率折算
+  unifiedPriceRMB: number;    // 🌐 全球统一价格 (RMB)
+  basePriceRMB: number;       // 基准面价 (RMB)
+  sGradeFactor?: number;      // S级基准价格系数 (e.g. 0.90)
+  sGradeFactorMin?: number;   // S级价格系数范围下限 (e.g. 0.85)
+  sGradeFactorMax?: number;   // S级价格系数范围上限 (e.g. 0.92)
+  sGradeFactorRange?: [number, number]; // S级价格系数范围 e.g. [0.85, 0.92]
+  sGradePriceRMB?: number;    // S级参考价
+  gGradeFactor?: number;      // G级基准价格系数 (e.g. 0.75)
+  gGradeFactorMin?: number;   // G级价格系数范围下限 (e.g. 0.70)
+  gGradeFactorMax?: number;   // G级价格系数范围上限 (e.g. 0.80)
+  gGradeFactorRange?: [number, number]; // G级价格系数范围 e.g. [0.70, 0.80]
+  gGradePriceRMB?: number;    // G级参考价
+  domesticPriceRMB?: number;  // 兼容
+  overseasPriceRMB?: number;  // 兼容
   basePriceUSD?: number;      // 兼容/参考
-  basePriceRMB: number;       // 兼容国内基准
-  domesticRemarks?: string;   // 国内价格体系说明 (如内销含13%专票、国内入户安装与标准五金保修)
-  overseasRemarks?: string;   // 国外价格体系说明 (如包含出口关税、港杂报关、ISPM15海运免熏蒸高抗压包装)
+  domesticRemarks?: string;   // 国内体系说明 (兼容)
+  overseasRemarks?: string;   // 国外体系说明 (兼容)
   wasteRatePercent: number;   // 损耗率(%) e.g. 8%
-  formulaDesc: string;        // 算价公式逻辑说明 e.g. 展开面积 × 单价 × (1 + 损耗率)
+  formulaDesc: string;        // 算价公式逻辑说明
   status: '已生效' | '待生效' | '已停用';
   updatedAt: string;
   tags?: string[];

@@ -3,18 +3,8 @@ import {
   X,
   Search,
   Check,
-  Zap,
-  Wrench,
-  Bot,
-  Filter,
   CheckSquare,
-  Square,
-  ShieldCheck,
-  Coins,
-  Cpu,
-  Layers,
-  Sparkles,
-  Info
+  Square
 } from 'lucide-react';
 import { SalesAgentItem, AgentSkill } from '../../../types';
 
@@ -90,23 +80,10 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
       >
         {/* Modal Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-4 bg-linear-to-r from-slate-50 via-white to-amber-50/30">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold shadow-xs">
-              <Wrench className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-bold text-slate-900">
-                  为【{agent.name}】挂载与管理 Skill 算力
-                </h3>
-                <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold">
-                  {agent.code}
-                </span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                  {agent.category}
-                </span>
-              </div>
-            </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">
+              为【{agent.name}】挂载 Skill
+            </h3>
           </div>
 
           <button
@@ -153,8 +130,6 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
               </button>
             </div>
           </div>
-
-
         </div>
 
         {/* Skills Selection Grid */}
@@ -166,14 +141,14 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
                 <div
                   key={skill.id || skill.code}
                   onClick={() => handleToggleSkill(skill.code)}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
+                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 select-none ${
                     isSelected
                       ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40 shadow-xs'
                       : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-2xs'
                   }`}
                 >
                   {/* Checkbox */}
-                  <div className="pt-0.5 shrink-0">
+                  <div className="shrink-0">
                     <div
                       className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
                         isSelected
@@ -186,25 +161,14 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
                   </div>
 
                   {/* Skill details */}
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <h4 className="text-xs font-bold text-slate-900 truncate">{skill.name}</h4>
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 shrink-0">
-                        {skill.code}
-                      </span>
-                    </div>
+                  <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                    <h4 className="text-xs font-bold text-slate-900 truncate">{skill.name}</h4>
 
                     {isSelected && (
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-900">
-                          ● 已挂载到该Agent
-                        </span>
-                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+                        ● 已挂载到该Agent
+                      </span>
                     )}
-
-                    <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-                      {skill.description}
-                    </p>
                   </div>
                 </div>
               );
@@ -241,7 +205,7 @@ export const SkillMountModal: React.FC<SkillMountModalProps> = ({
               className="px-5 py-2 rounded-xl bg-[#EA3A20] hover:bg-[#c42810] text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer flex items-center gap-1.5"
             >
               <Check className="w-4 h-4" />
-              <span>确认并保存挂载</span>
+              <span>确认挂载</span>
             </button>
           </div>
         </div>

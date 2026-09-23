@@ -663,7 +663,7 @@ Regarding your inquiry on environmental compliance:
                       className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5 text-amber-700" />
-                      <span>+ 挂载 / 管理技能</span>
+                      <span>挂载技能</span>
                     </button>
                   </div>
 
@@ -709,14 +709,9 @@ Regarding your inquiry on environmental compliance:
                                 <Zap className="w-4 h-4" />
                               </div>
                               <div className="min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <h5 className="text-xs font-bold text-slate-900 truncate">
-                                    {skill ? skill.name : skillCode}
-                                  </h5>
-                                  <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
-                                    {skillCode}
-                                  </span>
-                                </div>
+                                <h5 className="text-xs font-bold text-slate-900 truncate">
+                                  {skill ? skill.name : skillCode}
+                                </h5>
                                 <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
                                   {skill ? skill.description : '专业外贸销售算法组件'}
                                 </p>

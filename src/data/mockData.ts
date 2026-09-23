@@ -2916,6 +2916,8 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-BASE',
     itemCount: 48,
     isBuiltin: true,
+    managementDept: '产品中心',
+    viewableDepts: ['产品中心', '设计部', '市场部', '供应链部'],
     applicableRoles: ['外贸销售岗', '内容推广岗', '方案设计师'],
     requireReview: true,
     reviewTriggers: {
@@ -2930,6 +2932,8 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-BRAND',
         itemCount: 14,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['全公司/全员'],
         applicableRoles: ['外贸销售岗', '内容推广岗'],
         requireReview: true
       },
@@ -2939,16 +2943,18 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-PROD-TECH',
         itemCount: 22,
         isBuiltin: true,
+        managementDept: '产品中心',
+        viewableDepts: ['产品中心', '设计部', '装配车间', '供应链部'],
         applicableRoles: ['外贸销售岗', '方案设计师', '安装技术岗'],
         requireReview: true,
         children: [
-          { id: 'CAT-BASE-PROD-ENCY', name: '产品百科', code: 'KB-PROD-ENCY', itemCount: 14, isBuiltin: true, applicableRoles: ['外贸销售岗', '方案设计师'], requireReview: true,
+          { id: 'CAT-BASE-PROD-ENCY', name: '产品百科', code: 'KB-PROD-ENCY', itemCount: 14, isBuiltin: true, managementDept: '产品中心', viewableDepts: ['产品中心', '设计部', '市场部'], applicableRoles: ['外贸销售岗', '方案设计师'], requireReview: true,
             children: [
-              { id: 'CAT-PROD-CABINET', name: '柜类', code: 'KB-ITEM-CABINET', itemCount: 5, isBuiltin: true, applicableRoles: ['方案设计师', '外贸销售岗'], requireReview: true },
-              { id: 'CAT-PROD-WALL', name: '门墙', code: 'KB-ITEM-WALL', itemCount: 3, isBuiltin: true, applicableRoles: ['方案设计师', '安装技术岗'], requireReview: true },
-              { id: 'CAT-PROD-WINDOW', name: '门窗', code: 'KB-ITEM-WINDOW', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师', '安装技术岗'], requireReview: false },
-              { id: 'CAT-PROD-BATH', name: '全卫', code: 'KB-ITEM-BATH', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师', '外贸销售岗'], requireReview: true },
-              { id: 'CAT-PROD-SMART', name: '智能对接', code: 'KB-ITEM-SMART', itemCount: 2, isBuiltin: true, applicableRoles: ['安装技术岗', '海外项目管家'], requireReview: false }
+              { id: 'CAT-PROD-CABINET', name: '柜类', code: 'KB-ITEM-CABINET', itemCount: 5, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部', '市场部', '装配车间'], applicableRoles: ['方案设计师', '外贸销售岗'], requireReview: true },
+              { id: 'CAT-PROD-WALL', name: '门墙', code: 'KB-ITEM-WALL', itemCount: 3, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部', '装配车间'], applicableRoles: ['方案设计师', '安装技术岗'], requireReview: true },
+              { id: 'CAT-PROD-WINDOW', name: '门窗', code: 'KB-ITEM-WINDOW', itemCount: 2, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部', '装配车间'], applicableRoles: ['方案设计师', '安装技术岗'], requireReview: false },
+              { id: 'CAT-PROD-BATH', name: '全卫', code: 'KB-ITEM-BATH', itemCount: 2, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部', '市场部'], applicableRoles: ['方案设计师', '外贸销售岗'], requireReview: true },
+              { id: 'CAT-PROD-SMART', name: '智能对接', code: 'KB-ITEM-SMART', itemCount: 2, isBuiltin: true, managementDept: '研究所', viewableDepts: ['研究所', '装配车间', '售后服务部'], applicableRoles: ['安装技术岗', '海外项目管家'], requireReview: false }
             ]
           },
           {
@@ -2957,21 +2963,25 @@ export const initialKBCategories: KBCategory[] = [
             code: 'KB-PROD-COMBO',
             itemCount: 8,
             isBuiltin: true,
+            managementDept: '产品管理部',
+            viewableDepts: ['产品中心', '设计部', '市场部'],
             applicableRoles: ['外贸销售岗', '方案设计师'],
             requireReview: false,
             children: [
-              { id: 'CAT-PROD-TIER', name: '按低中高端', code: 'KB-COMBO-TIER', itemCount: 2, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
-              { id: 'CAT-PROD-STYLE', name: '按风格', code: 'KB-COMBO-STYLE', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师', '外贸销售岗'] },
-              { id: 'CAT-PROD-BUDGET', name: '按预算', code: 'KB-COMBO-BUDGET', itemCount: 2, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
+              { id: 'CAT-PROD-TIER', name: '按低中高端', code: 'KB-COMBO-TIER', itemCount: 2, isBuiltin: true, managementDept: '产品管理部', viewableDepts: ['市场部', '设计部'], applicableRoles: ['外贸销售岗'] },
+              { id: 'CAT-PROD-STYLE', name: '按风格', code: 'KB-COMBO-STYLE', itemCount: 2, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部', '市场部'], applicableRoles: ['方案设计师', '外贸销售岗'] },
+              { id: 'CAT-PROD-BUDGET', name: '按预算', code: 'KB-COMBO-BUDGET', itemCount: 2, isBuiltin: true, managementDept: '产品管理部', viewableDepts: ['市场部', '财务部'], applicableRoles: ['外贸销售岗'] },
               {
                 id: 'CAT-PROD-LAYOUT',
                 name: '按户型分类',
                 code: 'KB-COMBO-LAYOUT',
                 itemCount: 2,
                 isBuiltin: true,
+                managementDept: '设计部',
+                viewableDepts: ['设计部', '市场部'],
                 applicableRoles: ['方案设计师'],
                 children: [
-                  { id: 'CAT-PROD-COLOR', name: '按色系', code: 'KB-COMBO-COLOR', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师'] }
+                  { id: 'CAT-PROD-COLOR', name: '按色系', code: 'KB-COMBO-COLOR', itemCount: 2, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部', '市场部'], applicableRoles: ['方案设计师'] }
                 ]
               }
             ]
@@ -2984,13 +2994,15 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-SPACE-AESTHETICS',
         itemCount: 12,
         isBuiltin: true,
+        managementDept: '设计部',
+        viewableDepts: ['设计部', '市场部', '产品管理部'],
         applicableRoles: ['方案设计师', '外贸销售岗'],
         requireReview: false,
         children: [
-          { id: 'CAT-SPACE-LAYOUT', name: '按户型', code: 'KB-SPACE-LAYOUT', itemCount: 3, isBuiltin: true, applicableRoles: ['方案设计师'] },
-          { id: 'CAT-SPACE-STYLE', name: '按风格', code: 'KB-SPACE-STYLE', itemCount: 3, isBuiltin: true, applicableRoles: ['方案设计师'] },
-          { id: 'CAT-SPACE-COLOR', name: '按色系', code: 'KB-SPACE-COLOR', itemCount: 2, isBuiltin: true, applicableRoles: ['方案设计师'] },
-          { id: 'CAT-SPACE-REAL-CASES', name: '业主真实案例', code: 'KB-SPACE-CASES', itemCount: 4, isBuiltin: true, applicableRoles: ['外贸销售岗', '方案设计师'] }
+          { id: 'CAT-SPACE-LAYOUT', name: '按户型', code: 'KB-SPACE-LAYOUT', itemCount: 3, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部'], applicableRoles: ['方案设计师'] },
+          { id: 'CAT-SPACE-STYLE', name: '按风格', code: 'KB-SPACE-STYLE', itemCount: 3, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部', '市场部'], applicableRoles: ['方案设计师'] },
+          { id: 'CAT-SPACE-COLOR', name: '按色系', code: 'KB-SPACE-COLOR', itemCount: 2, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部'], applicableRoles: ['方案设计师'] },
+          { id: 'CAT-SPACE-REAL-CASES', name: '业主真实案例', code: 'KB-SPACE-CASES', itemCount: 4, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部', '设计部', '售后服务部'], applicableRoles: ['外贸销售岗', '方案设计师'] }
         ]
       }
     ]
@@ -3002,6 +3014,8 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-SALES-SCRIPTS',
     itemCount: 36,
     isBuiltin: true,
+    managementDept: '市场部',
+    viewableDepts: ['市场部', '设计部', '售后服务部'],
     applicableRoles: ['外贸销售岗', '海外项目管家'],
     requireReview: true,
     reviewTriggers: {
@@ -3016,13 +3030,15 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-STAGE-SCRIPTS',
         itemCount: 24,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部'],
         applicableRoles: ['外贸销售岗'],
         children: [
-          { id: 'CAT-STAGE-1', name: '第一阶段：首次进店/咨询（破冰建信）', code: 'KB-STAGE-01', itemCount: 5, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
-          { id: 'CAT-STAGE-2', name: '第二阶段：上门初测/复尺（痛点挖掘）', code: 'KB-STAGE-02', itemCount: 5, isBuiltin: true, applicableRoles: ['外贸销售岗', '方案设计师'] },
-          { id: 'CAT-STAGE-3', name: '第三阶段：方案讲解/出图（美学引导）', code: 'KB-STAGE-03', itemCount: 6, isBuiltin: true, applicableRoles: ['外贸销售岗', '方案设计师'] },
-          { id: 'CAT-STAGE-4', name: '第四阶段：逼单与谈判（临门一脚）', code: 'KB-STAGE-04', itemCount: 5, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
-          { id: 'CAT-STAGE-5', name: '第五阶段：沉寂客户激活（长尾唤醒）', code: 'KB-STAGE-05', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗'] }
+          { id: 'CAT-STAGE-1', name: '第一阶段：首次进店/咨询（破冰建信）', code: 'KB-STAGE-01', itemCount: 5, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-STAGE-2', name: '第二阶段：上门初测/复尺（痛点挖掘）', code: 'KB-STAGE-02', itemCount: 5, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部', '设计部'], applicableRoles: ['外贸销售岗', '方案设计师'] },
+          { id: 'CAT-STAGE-3', name: '第三阶段：方案讲解/出图（美学引导）', code: 'KB-STAGE-03', itemCount: 6, isBuiltin: true, managementDept: '设计部', viewableDepts: ['市场部', '设计部'], applicableRoles: ['外贸销售岗', '方案设计师'] },
+          { id: 'CAT-STAGE-4', name: '第四阶段：逼单与谈判（临门一脚）', code: 'KB-STAGE-04', itemCount: 5, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-STAGE-5', name: '第五阶段：沉寂客户激活（长尾唤醒）', code: 'KB-STAGE-05', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['外贸销售岗'] }
         ]
       },
       {
@@ -3031,11 +3047,13 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-COMBAT-SCRIPTS',
         itemCount: 12,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部', '流程与质量', '财务部'],
         applicableRoles: ['外贸销售岗', '海外项目管家'],
         children: [
-          { id: 'CAT-COMBAT-COMPETITOR', name: '竞争对手话术', code: 'KB-COMBAT-RIVAL', itemCount: 4, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
-          { id: 'CAT-COMBAT-PRICING-LEGAL', name: '算价公式、权限与合同法务', code: 'KB-COMBAT-LEGAL', itemCount: 5, isBuiltin: true, applicableRoles: ['外贸销售岗', '关务跟单岗'] },
-          { id: 'CAT-COMBAT-DECISION-CHAIN', name: '决策链攻防策略', code: 'KB-COMBAT-STRATEGY', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗'] }
+          { id: 'CAT-COMBAT-COMPETITOR', name: '竞争对手话术', code: 'KB-COMBAT-RIVAL', itemCount: 4, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-COMBAT-PRICING-LEGAL', name: '算价公式、权限与合同法务', code: 'KB-COMBAT-LEGAL', itemCount: 5, isBuiltin: true, managementDept: '财务部', viewableDepts: ['市场部', '财务部', '流程与质量'], applicableRoles: ['外贸销售岗', '关务跟单岗'] },
+          { id: 'CAT-COMBAT-DECISION-CHAIN', name: '决策链攻防策略', code: 'KB-COMBAT-STRATEGY', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['外贸销售岗'] }
         ]
       }
     ]
@@ -3047,6 +3065,8 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-MARKETING-CAMPAIGNS',
     itemCount: 18,
     isBuiltin: true,
+    managementDept: '市场部',
+    viewableDepts: ['市场部', '产品管理部', '设计部'],
     applicableRoles: ['内容推广岗', '外贸销售岗'],
     children: [
       {
@@ -3055,10 +3075,12 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-MKT-PROMO',
         itemCount: 6,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部', '财务部'],
         applicableRoles: ['外贸销售岗', '内容推广岗'],
         children: [
-          { id: 'CAT-MKT-PROMO-CABINET', name: '全屋柜体首单定金膨胀方案', code: 'KB-MKT-PROMO-01', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
-          { id: 'CAT-MKT-PROMO-SAMPLE', name: '海外样板房/展厅上样补贴政策', code: 'KB-MKT-PROMO-02', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗'] }
+          { id: 'CAT-MKT-PROMO-CABINET', name: '全屋柜体首单定金膨胀方案', code: 'KB-MKT-PROMO-01', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-MKT-PROMO-SAMPLE', name: '海外样板房/展厅上样补贴政策', code: 'KB-MKT-PROMO-02', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['外贸销售岗'] }
         ]
       },
       {
@@ -3067,10 +3089,12 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-MKT-EXPO',
         itemCount: 6,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部', '产品管理部'],
         applicableRoles: ['内容推广岗', '外贸销售岗'],
         children: [
-          { id: 'CAT-MKT-EXPO-CANTON', name: '广交会 / 广州建博会专属邀约案', code: 'KB-MKT-EXPO-01', itemCount: 3, isBuiltin: true, applicableRoles: ['内容推广岗', '外贸销售岗'] },
-          { id: 'CAT-MKT-EXPO-OVERSEAS', name: '中东五大行业展 (Big 5 Dubai) 获客案', code: 'KB-MKT-EXPO-02', itemCount: 3, isBuiltin: true, applicableRoles: ['内容推广岗', '外贸销售岗'] }
+          { id: 'CAT-MKT-EXPO-CANTON', name: '广交会 / 广州建博会专属邀约案', code: 'KB-MKT-EXPO-01', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['内容推广岗', '外贸销售岗'] },
+          { id: 'CAT-MKT-EXPO-OVERSEAS', name: '中东五大行业展 (Big 5 Dubai) 获客案', code: 'KB-MKT-EXPO-02', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['内容推广岗', '外贸销售岗'] }
         ]
       },
       {
@@ -3079,10 +3103,12 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-MKT-SEASONAL',
         itemCount: 6,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部', '产品管理部'],
         applicableRoles: ['内容推广岗', '外贸销售岗'],
         children: [
-          { id: 'CAT-MKT-SEASON-RAMADAN', name: '中东斋月与开斋节 (Ramadan) 专享方案', code: 'KB-MKT-SEASON-01', itemCount: 3, isBuiltin: true, applicableRoles: ['内容推广岗', '外贸销售岗'] },
-          { id: 'CAT-MKT-SEASON-BLACKFRIDAY', name: '欧美黑五/圣诞年终筑家焕新季', code: 'KB-MKT-SEASON-02', itemCount: 3, isBuiltin: true, applicableRoles: ['内容推广岗', '外贸销售岗'] }
+          { id: 'CAT-MKT-SEASON-RAMADAN', name: '中东斋月与开斋节 (Ramadan) 专享方案', code: 'KB-MKT-SEASON-01', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['内容推广岗', '外贸销售岗'] },
+          { id: 'CAT-MKT-SEASON-BLACKFRIDAY', name: '欧美黑五/圣诞年终筑家焕新季', code: 'KB-MKT-SEASON-02', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['内容推广岗', '外贸销售岗'] }
         ]
       }
     ]
@@ -3094,6 +3120,8 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-FORBIDDEN-SCRIPTS',
     itemCount: 15,
     isBuiltin: true,
+    managementDept: '流程与质量',
+    viewableDepts: ['全公司/全员'],
     applicableRoles: ['全员通用'],
     children: [
       {
@@ -3102,6 +3130,8 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-FORBIDDEN-LAWS',
         itemCount: 6,
         isBuiltin: true,
+        managementDept: '流程与质量',
+        viewableDepts: ['全公司/全员'],
         applicableRoles: ['全员通用']
       },
       {
@@ -3110,11 +3140,13 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-FORBIDDEN-REGIONS',
         itemCount: 9,
         isBuiltin: true,
+        managementDept: '流程与质量',
+        viewableDepts: ['全公司/全员'],
         applicableRoles: ['全员通用'],
         children: [
-          { id: 'CAT-FORBIDDEN-MIDEAST', name: '中东/伊斯兰市场', code: 'KB-FORBIDDEN-MIDEAST', itemCount: 3, isBuiltin: true, applicableRoles: ['全员通用'] },
-          { id: 'CAT-FORBIDDEN-WEST', name: '欧美/北美市场', code: 'KB-FORBIDDEN-WEST', itemCount: 3, isBuiltin: true, applicableRoles: ['全员通用'] },
-          { id: 'CAT-FORBIDDEN-ASIA', name: '东南亚/东亚市场', code: 'KB-FORBIDDEN-ASIA', itemCount: 3, isBuiltin: true, applicableRoles: ['全员通用'] }
+          { id: 'CAT-FORBIDDEN-MIDEAST', name: '中东/伊斯兰市场', code: 'KB-FORBIDDEN-MIDEAST', itemCount: 3, isBuiltin: true, managementDept: '流程与质量', viewableDepts: ['全公司/全员'], applicableRoles: ['全员通用'] },
+          { id: 'CAT-FORBIDDEN-WEST', name: '欧美/北美市场', code: 'KB-FORBIDDEN-WEST', itemCount: 3, isBuiltin: true, managementDept: '流程与质量', viewableDepts: ['全公司/全员'], applicableRoles: ['全员通用'] },
+          { id: 'CAT-FORBIDDEN-ASIA', name: '东南亚/东亚市场', code: 'KB-FORBIDDEN-ASIA', itemCount: 3, isBuiltin: true, managementDept: '流程与质量', viewableDepts: ['全公司/全员'], applicableRoles: ['全员通用'] }
         ]
       }
     ]
@@ -3126,6 +3158,8 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-GLOSSARY',
     itemCount: 32,
     isBuiltin: true,
+    managementDept: '产品中心',
+    viewableDepts: ['全公司/全员'],
     applicableRoles: ['全员通用'],
     children: [
       {
@@ -3134,6 +3168,8 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-GLOSSARY-TRADE',
         itemCount: 8,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部', '供应链部'],
         applicableRoles: ['外贸销售岗', '关务跟单岗']
       },
       {
@@ -3142,6 +3178,8 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-GLOSSARY-FURNITURE',
         itemCount: 8,
         isBuiltin: true,
+        managementDept: '产品中心',
+        viewableDepts: ['设计部', '装配车间', '供应链部'],
         applicableRoles: ['方案设计师', '安装技术岗', '外贸采购岗']
       },
       {
@@ -3150,6 +3188,8 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-GLOSSARY-PAYMENT',
         itemCount: 6,
         isBuiltin: true,
+        managementDept: '财务部',
+        viewableDepts: ['市场部', '财务部'],
         applicableRoles: ['外贸销售岗', '关务跟单岗']
       },
       {
@@ -3158,6 +3198,8 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-GLOSSARY-CERT',
         itemCount: 5,
         isBuiltin: true,
+        managementDept: '流程与质量',
+        viewableDepts: ['市场部', '设计部', '流程与质量'],
         applicableRoles: ['外贸销售岗', '方案设计师']
       },
       {
@@ -3166,6 +3208,8 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-GLOSSARY-COMM',
         itemCount: 5,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部', '产品管理部'],
         applicableRoles: ['外贸销售岗', '内容推广岗']
       }
     ]
@@ -3177,6 +3221,8 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-INTERNAL-TRAINING',
     itemCount: 22,
     isBuiltin: true,
+    managementDept: '人力行政',
+    viewableDepts: ['全公司/全员'],
     applicableRoles: ['外贸销售岗', '方案设计师', '安装技术岗'],
     children: [
       {
@@ -3185,10 +3231,12 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-TRAIN-ONBOARD',
         itemCount: 7,
         isBuiltin: true,
+        managementDept: '人力行政',
+        viewableDepts: ['全公司/全员'],
         applicableRoles: ['全员通用'],
         children: [
-          { id: 'CAT-TRAIN-SOP-FLOW', name: '外贸定制大单全流程跟进 SOP', code: 'KB-TRAIN-SOP-01', itemCount: 4, isBuiltin: true, applicableRoles: ['外贸销售岗', '关务跟单岗'] },
-          { id: 'CAT-TRAIN-CORP-CULTURE', name: '品牌历史、产能优势与全案能力', code: 'KB-TRAIN-SOP-02', itemCount: 3, isBuiltin: true, applicableRoles: ['全员通用'] }
+          { id: 'CAT-TRAIN-SOP-FLOW', name: '外贸定制大单全流程跟进 SOP', code: 'KB-TRAIN-SOP-01', itemCount: 4, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部', '供应链部'], applicableRoles: ['外贸销售岗', '关务跟单岗'] },
+          { id: 'CAT-TRAIN-CORP-CULTURE', name: '品牌历史、产能优势与全案能力', code: 'KB-TRAIN-SOP-02', itemCount: 3, isBuiltin: true, managementDept: '人力行政', viewableDepts: ['全公司/全员'], applicableRoles: ['全员通用'] }
         ]
       },
       {
@@ -3197,10 +3245,12 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-TRAIN-PROD-DESIGN',
         itemCount: 8,
         isBuiltin: true,
+        managementDept: '设计部',
+        viewableDepts: ['设计部', '装配车间'],
         applicableRoles: ['方案设计师', '安装技术岗'],
         children: [
-          { id: 'CAT-TRAIN-CAD-STANDARD', name: 'CAD 平面拆图与 3D 云渲染出图规范', code: 'KB-TRAIN-CAD-01', itemCount: 4, isBuiltin: true, applicableRoles: ['方案设计师'] },
-          { id: 'CAT-TRAIN-HARDWARE-PRACTICE', name: '五金受力计算与激光无缝封边实操', code: 'KB-TRAIN-CAD-02', itemCount: 4, isBuiltin: true, applicableRoles: ['方案设计师', '安装技术岗'] }
+          { id: 'CAT-TRAIN-CAD-STANDARD', name: 'CAD 平面拆图与 3D 云渲染出图规范', code: 'KB-TRAIN-CAD-01', itemCount: 4, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部'], applicableRoles: ['方案设计师'] },
+          { id: 'CAT-TRAIN-HARDWARE-PRACTICE', name: '五金受力计算与激光无缝封边实操', code: 'KB-TRAIN-CAD-02', itemCount: 4, isBuiltin: true, managementDept: '设计部', viewableDepts: ['设计部', '装配车间'], applicableRoles: ['方案设计师', '安装技术岗'] }
         ]
       },
       {
@@ -3209,10 +3259,12 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-TRAIN-SALES',
         itemCount: 7,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部'],
         applicableRoles: ['外贸销售岗', '海外项目管家'],
         children: [
-          { id: 'CAT-TRAIN-NEGOTIATION', name: '高净值客户异议化解与心理博弈', code: 'KB-TRAIN-SALES-01', itemCount: 4, isBuiltin: true, applicableRoles: ['外贸销售岗'] },
-          { id: 'CAT-TRAIN-CROSS-CULTURE', name: '跨文化商务礼仪与多语种洽谈演练', code: 'KB-TRAIN-SALES-02', itemCount: 3, isBuiltin: true, applicableRoles: ['外贸销售岗', '海外项目管家'] }
+          { id: 'CAT-TRAIN-NEGOTIATION', name: '高净值客户异议化解与心理博弈', code: 'KB-TRAIN-SALES-01', itemCount: 4, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['外贸销售岗'] },
+          { id: 'CAT-TRAIN-CROSS-CULTURE', name: '跨文化商务礼仪与多语种洽谈演练', code: 'KB-TRAIN-SALES-02', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'], applicableRoles: ['外贸销售岗', '海外项目管家'] }
         ]
       }
     ]
@@ -3224,6 +3276,8 @@ export const initialKBCategories: KBCategory[] = [
     code: 'KB-OPERATIONS-ASSETS',
     itemCount: 26,
     isBuiltin: true,
+    managementDept: '市场部',
+    viewableDepts: ['市场部', '设计部'],
     applicableRoles: ['内容推广岗', '外贸销售岗'],
     requireReview: false,
     reviewTriggers: {
@@ -3238,10 +3292,12 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-OPS-VIDEO',
         itemCount: 12,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部'],
         children: [
-          { id: 'CAT-OPS-VIDEO-SHOWROOM', name: '家居展厅与工艺实拍原片', code: 'KB-OPS-VID-01', itemCount: 4, isBuiltin: true },
-          { id: 'CAT-OPS-VIDEO-FACTORY', name: '工业4.0数控智造车间镜头', code: 'KB-OPS-VID-02', itemCount: 4, isBuiltin: true },
-          { id: 'CAT-OPS-VIDEO-SCRIPTS', name: '出海爆款短视频旁白与分镜脚本', code: 'KB-OPS-VID-03', itemCount: 4, isBuiltin: true }
+          { id: 'CAT-OPS-VIDEO-SHOWROOM', name: '家居展厅与工艺实拍原片', code: 'KB-OPS-VID-01', itemCount: 4, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'] },
+          { id: 'CAT-OPS-VIDEO-FACTORY', name: '工业4.0数控智造车间镜头', code: 'KB-OPS-VID-02', itemCount: 4, isBuiltin: true, managementDept: '制造中心', viewableDepts: ['市场部', '制造中心'] },
+          { id: 'CAT-OPS-VIDEO-SCRIPTS', name: '出海爆款短视频旁白与分镜脚本', code: 'KB-OPS-VID-03', itemCount: 4, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'] }
         ]
       },
       {
@@ -3250,10 +3306,12 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-OPS-GRAPHIC',
         itemCount: 10,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部', '设计部'],
         children: [
-          { id: 'CAT-OPS-GRAPHIC-RENDERS', name: '高定全案 3D 渲染效果图库', code: 'KB-OPS-PIC-01', itemCount: 4, isBuiltin: true },
-          { id: 'CAT-OPS-GRAPHIC-POSTS', name: 'Instagram/LinkedIn 出海文案模板', code: 'KB-OPS-PIC-02', itemCount: 3, isBuiltin: true },
-          { id: 'CAT-OPS-GRAPHIC-POSTERS', name: '海外展会与促销活动海报源文件', code: 'KB-OPS-PIC-03', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-OPS-GRAPHIC-RENDERS', name: '高定全案 3D 渲染效果图库', code: 'KB-OPS-PIC-01', itemCount: 4, isBuiltin: true, managementDept: '设计部', viewableDepts: ['市场部', '设计部'] },
+          { id: 'CAT-OPS-GRAPHIC-POSTS', name: 'Instagram/LinkedIn 出海文案模板', code: 'KB-OPS-PIC-02', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'] },
+          { id: 'CAT-OPS-GRAPHIC-POSTERS', name: '海外展会与促销活动海报源文件', code: 'KB-OPS-PIC-03', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'] }
         ]
       },
       {
@@ -3262,9 +3320,11 @@ export const initialKBCategories: KBCategory[] = [
         code: 'KB-OPS-SHOWCASE',
         itemCount: 6,
         isBuiltin: true,
+        managementDept: '市场部',
+        viewableDepts: ['市场部', '售后服务部'],
         children: [
-          { id: 'CAT-OPS-SHOWCASE-INFLUENCER', name: '海外设计师/KOL 开箱评测实拍', code: 'KB-OPS-CASE-01', itemCount: 3, isBuiltin: true },
-          { id: 'CAT-OPS-SHOWCASE-RESIDENCE', name: '全球海外豪宅实景交付案例集', code: 'KB-OPS-CASE-02', itemCount: 3, isBuiltin: true }
+          { id: 'CAT-OPS-SHOWCASE-INFLUENCER', name: '海外设计师/KOL 开箱评测实拍', code: 'KB-OPS-CASE-01', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部'] },
+          { id: 'CAT-OPS-SHOWCASE-RESIDENCE', name: '全球海外豪宅实景交付案例集', code: 'KB-OPS-CASE-02', itemCount: 3, isBuiltin: true, managementDept: '市场部', viewableDepts: ['市场部', '设计部'] }
         ]
       }
     ]
@@ -3769,16 +3829,16 @@ export const initialRoles: RoleConfig[] = [
     description: '拥有外贸 AI 平台所有模块的全局读写、权限分配与系统配置最高权限。',
     userCount: 1,
     permissions: [
-      { module: '知识问答', view: true, edit: true, delete: true, export: true },
-      { module: '销售助手', view: true, edit: true, delete: true, export: true },
-      { module: '运营助手', view: true, edit: true, delete: true, export: true },
-      { module: '售前询盘', view: true, edit: true, delete: true, export: true },
-      { module: '知识库管理', view: true, edit: true, delete: true, export: true },
-      { module: '面价汇率', view: true, edit: true, delete: true, export: true },
-      { module: '数据统计', view: true, edit: true, delete: true, export: true },
-      { module: '员工权限', view: true, edit: true, delete: true, export: true },
-      { module: '智能体基础设置', view: true, edit: true, delete: true, export: true },
-      { module: '日志与审计', view: true, edit: true, delete: true, export: true }
+      { module: '知识问答', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '销售助手', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '运营助手', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '售前询盘', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '知识库管理', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '面价汇率', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '数据统计', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '员工权限', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '智能体基础设置', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '日志与审计', view: true, dataScope: 'all', edit: true, delete: true, export: true }
     ],
     dataPermission: {
       scope: 'all',
@@ -3812,13 +3872,13 @@ export const initialRoles: RoleConfig[] = [
     description: '负责售前询盘、知识库管理、面价汇率、数据统计、员工权限、智能体基础设置及日志审计等后台基础数据与运营配置。',
     userCount: 2,
     permissions: [
-      { module: '售前询盘', view: true, edit: true, delete: true, export: true },
-      { module: '知识库管理', view: true, edit: true, delete: true, export: true },
-      { module: '面价汇率', view: true, edit: true, delete: true, export: true },
-      { module: '数据统计', view: true, edit: true, delete: false, export: true },
-      { module: '员工权限', view: true, edit: true, delete: true, export: true },
-      { module: '智能体基础设置', view: true, edit: true, delete: true, export: true },
-      { module: '日志与审计', view: true, edit: true, delete: false, export: true }
+      { module: '售前询盘', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '知识库管理', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '面价汇率', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '数据统计', view: true, dataScope: 'all', edit: true, delete: false, export: true },
+      { module: '员工权限', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '智能体基础设置', view: true, dataScope: 'all', edit: true, delete: true, export: true },
+      { module: '日志与审计', view: true, dataScope: 'all', edit: true, delete: false, export: true }
     ],
     dataPermission: {
       scope: 'all',
@@ -3852,10 +3912,10 @@ export const initialRoles: RoleConfig[] = [
     description: '拥有【知识问答】、【销售助手】、【知识库管理】、【面价汇率】菜单权限，负责客户沟通与报价转化。',
     userCount: 8,
     permissions: [
-      { module: '知识问答', view: true, edit: false, delete: false, export: true },
-      { module: '销售助手', view: true, edit: true, delete: false, export: true },
-      { module: '知识库管理', view: true, edit: false, delete: false, export: true },
-      { module: '面价汇率', view: true, edit: false, delete: false, export: true }
+      { module: '知识问答', view: true, dataScope: 'dept_and_sub', edit: false, delete: false, export: true },
+      { module: '销售助手', view: true, dataScope: 'dept_and_sub', edit: true, delete: false, export: true },
+      { module: '知识库管理', view: true, dataScope: 'dept_and_sub', edit: false, delete: false, export: true },
+      { module: '面价汇率', view: true, dataScope: 'all', edit: false, delete: false, export: true }
     ],
     dataPermission: {
       scope: 'dept_and_sub',
@@ -3889,9 +3949,9 @@ export const initialRoles: RoleConfig[] = [
     description: '拥有【知识问答】、【运营助手】、【知识库管理】菜单权限，负责海外社媒多模态营销获客。',
     userCount: 3,
     permissions: [
-      { module: '知识问答', view: true, edit: false, delete: false, export: true },
-      { module: '运营助手', view: true, edit: true, delete: true, export: true },
-      { module: '知识库管理', view: true, edit: false, delete: false, export: true }
+      { module: '知识问答', view: true, dataScope: 'dept_and_sub', edit: false, delete: false, export: true },
+      { module: '运营助手', view: true, dataScope: 'dept_and_sub', edit: true, delete: true, export: true },
+      { module: '知识库管理', view: true, dataScope: 'dept_and_sub', edit: false, delete: false, export: true }
     ],
     dataPermission: {
       scope: 'dept_only',
@@ -4141,14 +4201,17 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '18mm / 双饰面耐磨层 / E0级环保 / 含ABS激光封边',
     unit: '展开㎡',
     currency: 'CNY',
-    domesticPriceRMB: 260.0,
-    overseasPriceRMB: 298.0,
-    basePriceRMB: 260.0,
-    basePriceUSD: 36.5,
-    domesticRemarks: '含13%增值税专票、国内出厂交付、5年质保',
-    overseasRemarks: '已含出口关税、港杂报关费、ISPM15海运免熏蒸高抗压出口包装',
+    unifiedPriceRMB: 280.0,
+    basePriceRMB: 280.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 252.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 210.0,
+    domesticPriceRMB: 280.0,
+    overseasPriceRMB: 252.0,
+    basePriceUSD: 39.0,
     wasteRatePercent: 8,
-    formulaDesc: '展开面积(㎡) × 基准面价(RMB) × (1 + 损耗率 8%)',
+    formulaDesc: '展开面积(㎡) × 全球统一面价(¥280) × 客户系数[S级0.90/G级0.75] × (1 + 损耗率 8%)',
     status: '已生效',
     updatedAt: '2026-08-28 14:30',
     tags: ['爱格', 'E0', '激光封边', '常备库存'],
@@ -4158,36 +4221,48 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'CAB-EGGER-E0-18MM',
         specName: '18mm 标准柜身主板 / 双饰面耐磨 / ABS激光封边',
         unit: '展开㎡',
-        domesticPriceRMB: 260.0,
-        overseasPriceRMB: 298.0,
-        basePriceRMB: 260.0,
-        basePriceUSD: 36.5,
+        unifiedPriceRMB: 280.0,
+        basePriceRMB: 280.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 252.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 210.0,
+        domesticPriceRMB: 280.0,
+        overseasPriceRMB: 252.0,
         wasteRatePercent: 8,
-        formulaDesc: '展开面积(㎡) × 面价(RMB) × (1 + 8%)'
+        formulaDesc: '展开面积(㎡) × 面价(¥280) × 系数 × (1 + 8%)'
       },
       {
         id: 'VAR-CAB-001-2',
         specCode: 'CAB-EGGER-E0-25MM',
         specName: '25mm 加厚层板·顶底板 / 承重增强 / 激光封边',
         unit: '展开㎡',
-        domesticPriceRMB: 328.0,
-        overseasPriceRMB: 375.0,
-        basePriceRMB: 328.0,
-        basePriceUSD: 46.0,
+        unifiedPriceRMB: 350.0,
+        basePriceRMB: 350.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 315.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 262.5,
+        domesticPriceRMB: 350.0,
+        overseasPriceRMB: 315.0,
         wasteRatePercent: 8,
-        formulaDesc: '展开面积(㎡) × 面价(RMB) × (1 + 8%)'
+        formulaDesc: '展开面积(㎡) × 面价(¥350) × 系数 × (1 + 8%)'
       },
       {
         id: 'VAR-CAB-001-3',
         specCode: 'CAB-EGGER-E0-09MM',
         specName: '9mm 嵌入式防潮背板 / 单饰面平衡层 / 插槽工艺',
         unit: '展开㎡',
-        domesticPriceRMB: 162.0,
-        overseasPriceRMB: 186.0,
-        basePriceRMB: 162.0,
-        basePriceUSD: 22.8,
+        unifiedPriceRMB: 180.0,
+        basePriceRMB: 180.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 162.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 135.0,
+        domesticPriceRMB: 180.0,
+        overseasPriceRMB: 162.0,
         wasteRatePercent: 5,
-        formulaDesc: '展开面积(㎡) × 面价(RMB) × (1 + 5%)'
+        formulaDesc: '展开面积(㎡) × 面价(¥180) × 系数 × (1 + 5%)'
       }
     ]
   },
@@ -4199,14 +4274,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '18mm / 桉木多层芯材 / CARB P2级 / 厨房卫浴优选',
     unit: '展开㎡',
     currency: 'CNY',
-    domesticPriceRMB: 302.0,
-    overseasPriceRMB: 348.0,
-    basePriceRMB: 302.0,
-    basePriceUSD: 42.0,
-    domesticRemarks: '含13%增值税专票、内销出厂、防潮防水质保',
-    overseasRemarks: '已含出口关税、熏蒸木托盘打包、CARB P2清关认证',
+    unifiedPriceRMB: 320.0,
+    basePriceRMB: 320.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 288.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 240.0,
+    domesticPriceRMB: 320.0,
+    overseasPriceRMB: 288.0,
     wasteRatePercent: 8,
-    formulaDesc: '展开面积(㎡) × 基准面价(RMB) × (1 + 损耗率 8%)',
+    formulaDesc: '展开面积(㎡) × 全球统一面价(¥320) × 客户系数[S级0.90/G级0.75] × (1 + 损耗率 8%)',
     status: '已生效',
     updatedAt: '2026-08-25 10:15',
     tags: ['多层板', '防水防潮', 'CARB P2'],
@@ -4216,36 +4293,42 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'CAB-PLYWOOD-18MM',
         specName: '18mm 柜体主结构板 / 桉木多层芯材 / CARB P2级',
         unit: '展开㎡',
-        domesticPriceRMB: 302.0,
-        overseasPriceRMB: 348.0,
-        basePriceRMB: 302.0,
-        basePriceUSD: 42.0,
+        unifiedPriceRMB: 320.0,
+        basePriceRMB: 320.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 288.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 240.0,
         wasteRatePercent: 8,
-        formulaDesc: '展开面积(㎡) × 面价(RMB) × (1 + 8%)'
+        formulaDesc: '展开面积(㎡) × 面价(¥320) × 系数 × (1 + 8%)'
       },
       {
         id: 'VAR-CAB-002-2',
         specCode: 'CAB-PLYWOOD-25MM',
         specName: '25mm 加厚承重板·台面垫板 / 防潮耐水煮 / CARB P2',
         unit: '展开㎡',
-        domesticPriceRMB: 375.0,
-        overseasPriceRMB: 430.0,
-        basePriceRMB: 375.0,
-        basePriceUSD: 52.5,
+        unifiedPriceRMB: 398.0,
+        basePriceRMB: 398.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 358.2,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 298.5,
         wasteRatePercent: 8,
-        formulaDesc: '展开面积(㎡) × 面价(RMB) × (1 + 8%)'
+        formulaDesc: '展开面积(㎡) × 面价(¥398) × 系数 × (1 + 8%)'
       },
       {
         id: 'VAR-CAB-002-3',
         specCode: 'CAB-PLYWOOD-09MM',
         specName: '9mm 桉木多层背板 / 封闭式防潮插槽',
         unit: '展开㎡',
-        domesticPriceRMB: 186.0,
-        overseasPriceRMB: 215.0,
-        basePriceRMB: 186.0,
-        basePriceUSD: 26.0,
+        unifiedPriceRMB: 198.0,
+        basePriceRMB: 198.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 178.2,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 148.5,
         wasteRatePercent: 6,
-        formulaDesc: '展开面积(㎡) × 面价(RMB) × (1 + 6%)'
+        formulaDesc: '展开面积(㎡) × 面价(¥198) × 系数 × (1 + 6%)'
       }
     ]
   },
@@ -4257,14 +4340,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '18mm / MDI生态胶水 / 无醛添加 / 握钉力极强',
     unit: '展开㎡',
     currency: 'CNY',
-    domesticPriceRMB: 286.0,
-    overseasPriceRMB: 328.0,
-    basePriceRMB: 286.0,
-    basePriceUSD: 39.8,
-    domesticRemarks: '含13%增值税专票、MDI无醛环保等级',
-    overseasRemarks: '含出口关税、防潮缠绕膜与硬质护角打包、商检证明',
+    unifiedPriceRMB: 300.0,
+    basePriceRMB: 300.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 270.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 225.0,
+    domesticPriceRMB: 300.0,
+    overseasPriceRMB: 270.0,
     wasteRatePercent: 7,
-    formulaDesc: '展开面积(㎡) × 基准面价(RMB) × (1 + 损耗率 7%)',
+    formulaDesc: '展开面积(㎡) × 全球统一面价(¥300) × 客户系数[S级0.90/G级0.75] × (1 + 损耗率 7%)',
     status: '已生效',
     updatedAt: '2026-08-20 16:40',
     tags: ['欧松板', '无醛级', '承重优选'],
@@ -4274,24 +4359,28 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'CAB-OSB-18MM',
         specName: '18mm 无醛添加OSB柜体 / MDI生态胶 / 握钉力强',
         unit: '展开㎡',
-        domesticPriceRMB: 286.0,
-        overseasPriceRMB: 328.0,
-        basePriceRMB: 286.0,
-        basePriceUSD: 39.8,
+        unifiedPriceRMB: 300.0,
+        basePriceRMB: 300.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 270.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 225.0,
         wasteRatePercent: 7,
-        formulaDesc: '展开面积(㎡) × 面价(RMB) × (1 + 7%)'
+        formulaDesc: '展开面积(㎡) × 面价(¥300) × 系数 × (1 + 7%)'
       },
       {
         id: 'VAR-CAB-003-2',
         specCode: 'CAB-OSB-09MM',
         specName: '9mm 无醛添加OSB背板 / 高强度抗下坠',
         unit: '展开㎡',
-        domesticPriceRMB: 176.0,
-        overseasPriceRMB: 202.0,
-        basePriceRMB: 176.0,
-        basePriceUSD: 24.5,
+        unifiedPriceRMB: 188.0,
+        basePriceRMB: 188.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 169.2,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 141.0,
         wasteRatePercent: 5,
-        formulaDesc: '展开面积(㎡) × 面价(RMB) × (1 + 5%)'
+        formulaDesc: '展开面积(㎡) × 面价(¥188) × 系数 × (1 + 5%)'
       }
     ]
   },
@@ -4303,14 +4392,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '22mm / 抗指纹PET耐划膜 / 铝合金隐形拉直器 / 柜体匹配',
     unit: '投影㎡',
     currency: 'CNY',
-    domesticPriceRMB: 630.0,
-    overseasPriceRMB: 725.0,
-    basePriceRMB: 630.0,
-    basePriceUSD: 88.0,
-    domesticRemarks: '含13%专票、国内运输气泡膜包装、含铝合金隐形拉直器',
-    overseasRemarks: '已含出口关税、防刮PET双面保护膜、加强蜂窝护角木箱',
+    unifiedPriceRMB: 680.0,
+    basePriceRMB: 680.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 612.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 510.0,
+    domesticPriceRMB: 680.0,
+    overseasPriceRMB: 612.0,
     wasteRatePercent: 5,
-    formulaDesc: '立面投影面积(㎡) × 门板基准面价(RMB) × (1 + 损耗 5%)',
+    formulaDesc: '立面投影面积(㎡) × 全球统一面价(¥680) × 客户系数[S级0.90/G级0.75] × (1 + 损耗 5%)',
     status: '已生效',
     updatedAt: '2026-08-30 09:12',
     tags: ['PET肤感', '极简门板', '抗指纹'],
@@ -4320,36 +4411,42 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'DOOR-PET-18MM',
         specName: '18mm 标准门板 / 抗指纹PET耐划膜 / 铝合金拉直器',
         unit: '投影㎡',
-        domesticPriceRMB: 543.0,
-        overseasPriceRMB: 625.0,
-        basePriceRMB: 543.0,
-        basePriceUSD: 76.0,
+        unifiedPriceRMB: 580.0,
+        basePriceRMB: 580.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 522.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 435.0,
         wasteRatePercent: 5,
-        formulaDesc: '立面投影面积(㎡) × 面价(RMB) × (1 + 5%)'
+        formulaDesc: '立面投影面积(㎡) × 面价(¥580) × 系数 × (1 + 5%)'
       },
       {
         id: 'VAR-DOOR-001-2',
         specCode: 'DOOR-PET-22MM',
         specName: '22mm 加厚平整门板 / 抗指纹PET膜 / 预埋通长拉手',
         unit: '投影㎡',
-        domesticPriceRMB: 630.0,
-        overseasPriceRMB: 725.0,
-        basePriceRMB: 630.0,
-        basePriceUSD: 88.0,
+        unifiedPriceRMB: 680.0,
+        basePriceRMB: 680.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 612.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 510.0,
         wasteRatePercent: 5,
-        formulaDesc: '立面投影面积(㎡) × 面价(RMB) × (1 + 5%)'
+        formulaDesc: '立面投影面积(㎡) × 面价(¥680) × 系数 × (1 + 5%)'
       },
       {
         id: 'VAR-DOOR-001-3',
         specCode: 'DOOR-PET-25MM',
         specName: '25mm 别墅超高通顶门板 / 双面覆膜 / 双拉直器防变形',
         unit: '投影㎡',
-        domesticPriceRMB: 750.0,
-        overseasPriceRMB: 865.0,
-        basePriceRMB: 750.0,
-        basePriceUSD: 105.0,
+        unifiedPriceRMB: 800.0,
+        basePriceRMB: 800.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 720.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 600.0,
         wasteRatePercent: 6,
-        formulaDesc: '立面投影面积(㎡) × 面价(RMB) × (1 + 6%)'
+        formulaDesc: '立面投影面积(㎡) × 面价(¥800) × 系数 × (1 + 6%)'
       }
     ]
   },
@@ -4361,14 +4458,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '20mm中纤板 / 六面全包覆喷粉 / 零甲醛释放 / 防水耐刮',
     unit: '投影㎡',
     currency: 'CNY',
-    domesticPriceRMB: 825.0,
-    overseasPriceRMB: 950.0,
-    basePriceRMB: 825.0,
-    basePriceUSD: 115.0,
-    domesticRemarks: '含13%增值税专票、国内防磕碰软包、六面全喷粉',
-    overseasRemarks: '已含出口关税、国际海运全包覆抗冲击胶合板木箱',
+    unifiedPriceRMB: 880.0,
+    basePriceRMB: 880.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 792.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 660.0,
+    domesticPriceRMB: 880.0,
+    overseasPriceRMB: 792.0,
     wasteRatePercent: 6,
-    formulaDesc: '立面投影面积(㎡) × 烤漆面价(RMB) × (1 + 损耗 6%)',
+    formulaDesc: '立面投影面积(㎡) × 全球统一面价(¥880) × 客户系数[S级0.90/G级0.75] × (1 + 损耗 6%)',
     status: '已生效',
     updatedAt: '2026-08-26 15:20',
     tags: ['无缝喷粉', '六面全包', '高端定制'],
@@ -4378,36 +4477,42 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'DOOR-LACQUER-18MM',
         specName: '18mm 哑光喷粉烤漆 / 六面全包覆 / 零甲醛释放',
         unit: '投影㎡',
-        domesticPriceRMB: 700.0,
-        overseasPriceRMB: 810.0,
-        basePriceRMB: 700.0,
-        basePriceUSD: 98.0,
+        unifiedPriceRMB: 750.0,
+        basePriceRMB: 750.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 675.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 562.5,
         wasteRatePercent: 6,
-        formulaDesc: '立面投影面积(㎡) × 面价(RMB) × (1 + 6%)'
+        formulaDesc: '立面投影面积(㎡) × 面价(¥750) × 系数 × (1 + 6%)'
       },
       {
         id: 'VAR-DOOR-002-2',
         specCode: 'DOOR-LACQUER-20MM',
         specName: '20mm 加厚高定喷粉 / 哑光肤感抗刮 / 防水防潮',
         unit: '投影㎡',
-        domesticPriceRMB: 825.0,
-        overseasPriceRMB: 950.0,
-        basePriceRMB: 825.0,
-        basePriceUSD: 115.0,
+        unifiedPriceRMB: 880.0,
+        basePriceRMB: 880.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 792.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 660.0,
         wasteRatePercent: 6,
-        formulaDesc: '立面投影面积(㎡) × 面价(RMB) × (1 + 6%)'
+        formulaDesc: '立面投影面积(㎡) × 面价(¥880) × 系数 × (1 + 6%)'
       },
       {
         id: 'VAR-DOOR-002-3',
         specCode: 'DOOR-LACQUER-25MM',
         specName: '25mm 豪宅加厚实心烤漆 / 铣型拉手 / 顶奢定制',
         unit: '投影㎡',
-        domesticPriceRMB: 986.0,
-        overseasPriceRMB: 1140.0,
-        basePriceRMB: 986.0,
-        basePriceUSD: 138.0,
+        unifiedPriceRMB: 1050.0,
+        basePriceRMB: 1050.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 945.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 787.5,
         wasteRatePercent: 7,
-        formulaDesc: '立面投影面积(㎡) × 面价(RMB) × (1 + 7%)'
+        formulaDesc: '立面投影面积(㎡) × 面价(¥1050) × 系数 × (1 + 7%)'
       }
     ]
   },
@@ -4419,14 +4524,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '极窄铝合金边框 / 4mm汽车级钢化玻璃 / 预埋通长拉手',
     unit: '投影㎡',
     currency: 'CNY',
-    domesticPriceRMB: 970.0,
-    overseasPriceRMB: 1115.0,
-    basePriceRMB: 970.0,
-    basePriceUSD: 135.0,
-    domesticRemarks: '含13%专票、防爆膜贴装、国内保护纸箱',
-    overseasRemarks: '已含出口关税、ISPM15实木骨架免熏蒸防震木箱',
+    unifiedPriceRMB: 1020.0,
+    basePriceRMB: 1020.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 918.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 765.0,
+    domesticPriceRMB: 1020.0,
+    overseasPriceRMB: 918.0,
     wasteRatePercent: 5,
-    formulaDesc: '玻璃门投影面积(㎡) × 铝玻面价(RMB)',
+    formulaDesc: '玻璃门投影面积(㎡) × 全球统一面价(¥1020) × 客户系数[S级0.90/G级0.75]',
     status: '已生效',
     updatedAt: '2026-08-29 11:45',
     tags: ['铝框玻璃门', '长虹玻璃', '轻奢'],
@@ -4436,36 +4543,42 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'DOOR-ALUM-GREY-4MM',
         specName: '4mm 汽车级钢化灰玻 / 极窄黑钛边框 / 预埋通长拉手',
         unit: '投影㎡',
-        domesticPriceRMB: 970.0,
-        overseasPriceRMB: 1115.0,
-        basePriceRMB: 970.0,
-        basePriceUSD: 135.0,
+        unifiedPriceRMB: 1020.0,
+        basePriceRMB: 1020.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 918.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 765.0,
         wasteRatePercent: 5,
-        formulaDesc: '玻璃门投影面积(㎡) × 面价(RMB)'
+        formulaDesc: '玻璃门投影面积(㎡) × 面价(¥1020) × 系数'
       },
       {
         id: 'VAR-DOOR-003-2',
         specCode: 'DOOR-ALUM-REED-4MM',
         specName: '4mm 钢化长虹超白玻 / 极窄黑钛边框 / 预埋通长拉手',
         unit: '投影㎡',
-        domesticPriceRMB: 1060.0,
-        overseasPriceRMB: 1220.0,
-        basePriceRMB: 1060.0,
-        basePriceUSD: 148.0,
+        unifiedPriceRMB: 1120.0,
+        basePriceRMB: 1120.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 1008.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 840.0,
         wasteRatePercent: 5,
-        formulaDesc: '玻璃门投影面积(㎡) × 面价(RMB)'
+        formulaDesc: '玻璃门投影面积(㎡) × 面价(¥1120) × 系数'
       },
       {
         id: 'VAR-DOOR-003-3',
         specCode: 'DOOR-ALUM-MESH-5MM',
         specName: '5mm 夹丝防爆茶玻 / 极窄氟碳香槟金铝框 / 顶奢通高门',
         unit: '投影㎡',
-        domesticPriceRMB: 1180.0,
-        overseasPriceRMB: 1360.0,
-        basePriceRMB: 1180.0,
-        basePriceUSD: 165.0,
+        unifiedPriceRMB: 1250.0,
+        basePriceRMB: 1250.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 1125.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 937.5,
         wasteRatePercent: 5,
-        formulaDesc: '玻璃门投影面积(㎡) × 面价(RMB)'
+        formulaDesc: '玻璃门投影面积(㎡) × 面价(¥1250) × 系数'
       }
     ]
   },
@@ -4477,14 +4590,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '20mm / 0.6mm天然白橡木皮 / 环保开放漆纹理',
     unit: '投影㎡',
     currency: 'CNY',
-    domesticPriceRMB: 1110.0,
-    overseasPriceRMB: 1280.0,
-    basePriceRMB: 1110.0,
-    basePriceUSD: 155.0,
-    domesticRemarks: '含13%专票、实木开放漆、天然木皮拼花',
-    overseasRemarks: '已含出口关税、防潮干燥剂包扎、全密闭免熏蒸木箱',
+    unifiedPriceRMB: 1180.0,
+    basePriceRMB: 1180.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 1062.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 885.0,
+    domesticPriceRMB: 1180.0,
+    overseasPriceRMB: 1062.0,
     wasteRatePercent: 8,
-    formulaDesc: '立面投影面积(㎡) × 实木贴皮面价(RMB) × (1 + 损耗率 8%)',
+    formulaDesc: '立面投影面积(㎡) × 全球统一面价(¥1180) × 客户系数[S级0.90/G级0.75] × (1 + 损耗率 8%)',
     status: '已生效',
     updatedAt: '2026-08-24 17:00',
     tags: ['天然木皮', '白橡木', '天然纹理']
@@ -4497,14 +4612,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '15mm厚度 / 莫氏硬度7级 / 纳米防污渗透 / 45度海棠角倒边',
     unit: '延米',
     currency: 'CNY',
-    domesticPriceRMB: 560.0,
-    overseasPriceRMB: 645.0,
-    basePriceRMB: 560.0,
-    basePriceUSD: 78.0,
-    domesticRemarks: '含13%专票、国内台面加工费、45度倒角',
-    overseasRemarks: '已含出口关税、A字架出口加固包装、海运防碎保险装载',
+    unifiedPriceRMB: 590.0,
+    basePriceRMB: 590.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 531.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 442.5,
+    domesticPriceRMB: 590.0,
+    overseasPriceRMB: 531.0,
     wasteRatePercent: 10,
-    formulaDesc: '延米长度(m) × 延米基准面价(RMB) × (1 + 损耗率 10%) + 倒角加工费',
+    formulaDesc: '延米长度(m) × 全球统一面价(¥590) × 客户系数[S级0.90/G级0.75] × (1 + 损耗率 10%)',
     status: '已生效',
     updatedAt: '2026-08-27 13:50',
     tags: ['鱼肚金岩板', '15mm厚', '莫氏硬度7级'],
@@ -4514,36 +4631,42 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'TOP-PORCELAIN-12MM',
         specName: '12mm 轻薄岩板 / 45度海棠角倒边 / 纳米防污',
         unit: '延米',
-        domesticPriceRMB: 488.0,
-        overseasPriceRMB: 565.0,
-        basePriceRMB: 488.0,
-        basePriceUSD: 68.0,
+        unifiedPriceRMB: 510.0,
+        basePriceRMB: 510.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 459.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 382.5,
         wasteRatePercent: 10,
-        formulaDesc: '延米长度(m) × 面价(RMB) × (1 + 10%)'
+        formulaDesc: '延米长度(m) × 面价(¥510) × 系数 × (1 + 10%)'
       },
       {
         id: 'VAR-TOP-001-2',
         specCode: 'TOP-PORCELAIN-15MM',
         specName: '15mm 标准厚度通体岩板 / 莫氏7级 / 双层加固',
         unit: '延米',
-        domesticPriceRMB: 560.0,
-        overseasPriceRMB: 645.0,
-        basePriceRMB: 560.0,
-        basePriceUSD: 78.0,
+        unifiedPriceRMB: 590.0,
+        basePriceRMB: 590.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 531.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 442.5,
         wasteRatePercent: 10,
-        formulaDesc: '延米长度(m) × 面价(RMB) × (1 + 10%)'
+        formulaDesc: '延米长度(m) × 面价(¥590) × 系数 × (1 + 10%)'
       },
       {
         id: 'VAR-TOP-001-3',
         specCode: 'TOP-PORCELAIN-20MM',
         specName: '20mm 豪华通体岩板 / 罗马倒边 / 纯实心抗冲击',
         unit: '延米',
-        domesticPriceRMB: 702.0,
-        overseasPriceRMB: 810.0,
-        basePriceRMB: 702.0,
-        basePriceUSD: 98.0,
+        unifiedPriceRMB: 740.0,
+        basePriceRMB: 740.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 666.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 555.0,
         wasteRatePercent: 10,
-        formulaDesc: '延米长度(m) × 面价(RMB) × (1 + 10%)'
+        formulaDesc: '延米长度(m) × 面价(¥740) × 系数 × (1 + 10%)'
       }
     ]
   },
@@ -4555,14 +4678,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '20mm厚度 / 93%天然石英结晶 / 抗渗油抗渗透',
     unit: '延米',
     currency: 'CNY',
-    domesticPriceRMB: 445.0,
-    overseasPriceRMB: 510.0,
-    basePriceRMB: 445.0,
-    basePriceUSD: 62.0,
-    domesticRemarks: '含13%专票、国内台面加工费',
-    overseasRemarks: '已含出口关税、防撞护边木架与熏蒸出口包装',
+    unifiedPriceRMB: 470.0,
+    basePriceRMB: 470.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 423.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 352.5,
+    domesticPriceRMB: 470.0,
+    overseasPriceRMB: 423.0,
     wasteRatePercent: 8,
-    formulaDesc: '延米长度(m) × 石英石基准面价(RMB) × (1 + 损耗率 8%)',
+    formulaDesc: '延米长度(m) × 全球统一面价(¥470) × 客户系数[S级0.90/G级0.75] × (1 + 损耗率 8%)',
     status: '已生效',
     updatedAt: '2026-08-22 14:10',
     tags: ['纯白石英石', '20mm厚', '食品级接触'],
@@ -4572,24 +4697,28 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'TOP-QUARTZ-15MM',
         specName: '15mm 厚度石英石 / 93%石英砂晶体 / 直边磨边',
         unit: '延米',
-        domesticPriceRMB: 372.0,
-        overseasPriceRMB: 428.0,
-        basePriceRMB: 372.0,
-        basePriceUSD: 52.0,
+        unifiedPriceRMB: 395.0,
+        basePriceRMB: 395.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 355.5,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 296.25,
         wasteRatePercent: 8,
-        formulaDesc: '延米长度(m) × 面价(RMB) × (1 + 8%)'
+        formulaDesc: '延米长度(m) × 面价(¥395) × 系数 × (1 + 8%)'
       },
       {
         id: 'VAR-TOP-002-2',
         specCode: 'TOP-QUARTZ-20MM',
         specName: '20mm 加厚石英石 / 93%石英砂 / 罗马边或小斜边',
         unit: '延米',
-        domesticPriceRMB: 445.0,
-        overseasPriceRMB: 510.0,
-        basePriceRMB: 445.0,
-        basePriceUSD: 62.0,
+        unifiedPriceRMB: 470.0,
+        basePriceRMB: 470.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 423.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 352.5,
         wasteRatePercent: 8,
-        formulaDesc: '延米长度(m) × 面价(RMB) × (1 + 8%)'
+        formulaDesc: '延米长度(m) × 面价(¥470) × 系数 × (1 + 8%)'
       }
     ]
   },
@@ -4601,14 +4730,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '110度快装铰链 / 71B3550 内置阻尼 / 20万次开合寿命',
     unit: '个',
     currency: 'CNY',
-    domesticPriceRMB: 23.0,
-    overseasPriceRMB: 26.5,
-    basePriceRMB: 23.0,
-    basePriceUSD: 3.2,
-    domesticRemarks: '含13%增值税专票、百隆原厂正品质保20年',
-    overseasRemarks: '已含出口关税、防锈密封出口包装',
+    unifiedPriceRMB: 25.0,
+    basePriceRMB: 25.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 22.5,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 18.75,
+    domesticPriceRMB: 25.0,
+    overseasPriceRMB: 22.5,
     wasteRatePercent: 3,
-    formulaDesc: '实际门板铰链配比数量(个) × 面价(RMB)',
+    formulaDesc: '实际门板铰链配比数量(个) × 全球统一面价(¥25) × 客户系数[S级0.90/G级0.75]',
     status: '已生效',
     updatedAt: '2026-08-30 08:30',
     tags: ['Blum百隆', '阻尼铰链', '质保20年'],
@@ -4618,48 +4749,56 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'BLUM-HINGE-FULL',
         specName: '110° 全盖(直臂)集成阻尼快装铰链 71B3550',
         unit: '个',
-        domesticPriceRMB: 23.0,
-        overseasPriceRMB: 26.5,
-        basePriceRMB: 23.0,
-        basePriceUSD: 3.2,
+        unifiedPriceRMB: 25.0,
+        basePriceRMB: 25.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 22.5,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 18.75,
         wasteRatePercent: 3,
-        formulaDesc: '铰链配比数量(个) × 面价(RMB)'
+        formulaDesc: '铰链配比数量(个) × 面价(¥25) × 系数'
       },
       {
         id: 'VAR-BLUM-HINGE-2',
         specCode: 'BLUM-HINGE-HALF',
         specName: '110° 半盖(中弯)集成阻尼快装铰链 71B3650',
         unit: '个',
-        domesticPriceRMB: 24.3,
-        overseasPriceRMB: 28.0,
-        basePriceRMB: 24.3,
-        basePriceUSD: 3.4,
+        unifiedPriceRMB: 26.5,
+        basePriceRMB: 26.5,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 23.85,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 19.88,
         wasteRatePercent: 3,
-        formulaDesc: '铰链配比数量(个) × 面价(RMB)'
+        formulaDesc: '铰链配比数量(个) × 面价(¥26.5) × 系数'
       },
       {
         id: 'VAR-BLUM-HINGE-3',
         specCode: 'BLUM-HINGE-INSET',
         specName: '110° 内嵌(大弯)集成阻尼快装铰链 71B3750',
         unit: '个',
-        domesticPriceRMB: 25.7,
-        overseasPriceRMB: 29.5,
-        basePriceRMB: 25.7,
-        basePriceUSD: 3.6,
+        unifiedPriceRMB: 28.0,
+        basePriceRMB: 28.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 25.2,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 21.0,
         wasteRatePercent: 3,
-        formulaDesc: '铰链配比数量(个) × 面价(RMB)'
+        formulaDesc: '铰链配比数量(个) × 面价(¥28) × 系数'
       },
       {
         id: 'VAR-BLUM-HINGE-4',
         specCode: 'BLUM-HINGE-155DEG',
         specName: '155° 广角大角度快装铰链 71B7550 (内抽专用)',
         unit: '个',
-        domesticPriceRMB: 48.6,
-        overseasPriceRMB: 56.0,
-        basePriceRMB: 48.6,
-        basePriceUSD: 6.8,
+        unifiedPriceRMB: 52.0,
+        basePriceRMB: 52.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 46.8,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 39.0,
         wasteRatePercent: 3,
-        formulaDesc: '大角度铰链数量(个) × 面价(RMB)'
+        formulaDesc: '大角度铰链数量(个) × 面价(¥52) × 系数'
       }
     ]
   },
@@ -4671,14 +4810,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '标配500mm / 40KG承重 / 带豪华金属高抽帮 / 静音自闭',
     unit: '套',
     currency: 'CNY',
-    domesticPriceRMB: 176.0,
-    overseasPriceRMB: 202.0,
-    basePriceRMB: 176.0,
-    basePriceUSD: 24.5,
-    domesticRemarks: '含13%专票、原装百隆质保',
-    overseasRemarks: '已含出口关税、高强度抗震独立套盒包装',
+    unifiedPriceRMB: 190.0,
+    basePriceRMB: 190.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 171.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 142.5,
+    domesticPriceRMB: 190.0,
+    overseasPriceRMB: 171.0,
     wasteRatePercent: 2,
-    formulaDesc: '抽屉组数量(套) × 骑马抽面价(RMB)',
+    formulaDesc: '抽屉组数量(套) × 全球统一面价(¥190) × 客户系数[S级0.90/G级0.75]',
     status: '已生效',
     updatedAt: '2026-08-29 16:20',
     tags: ['骑马抽', '隐形滑轨', '高承重'],
@@ -4688,36 +4829,42 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
         specCode: 'BLUM-BOX-350MM',
         specName: '350mm 14寸 / 动载30kg / 静音自闭全拉出',
         unit: '套',
-        domesticPriceRMB: 150.0,
-        overseasPriceRMB: 173.0,
-        basePriceRMB: 150.0,
-        basePriceUSD: 21.0,
+        unifiedPriceRMB: 165.0,
+        basePriceRMB: 165.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 148.5,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 123.75,
         wasteRatePercent: 2,
-        formulaDesc: '抽屉组数量(套) × 面价(RMB)'
+        formulaDesc: '抽屉组数量(套) × 面价(¥165) × 系数'
       },
       {
         id: 'VAR-BLUM-BOX-2',
         specCode: 'BLUM-BOX-450MM',
         specName: '450mm 18寸 / 动载40kg / 标配金属高抽帮',
         unit: '套',
-        domesticPriceRMB: 176.0,
-        overseasPriceRMB: 202.0,
-        basePriceRMB: 176.0,
-        basePriceUSD: 24.5,
+        unifiedPriceRMB: 190.0,
+        basePriceRMB: 190.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 171.0,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 142.5,
         wasteRatePercent: 2,
-        formulaDesc: '抽屉组数量(套) × 面价(RMB)'
+        formulaDesc: '抽屉组数量(套) × 面价(¥190) × 系数'
       },
       {
         id: 'VAR-BLUM-BOX-3',
         specCode: 'BLUM-BOX-550MM',
         specName: '550mm 22寸加深型 / 动载50kg / 联动同步齿轮',
         unit: '套',
-        domesticPriceRMB: 208.0,
-        overseasPriceRMB: 240.0,
-        basePriceRMB: 208.0,
-        basePriceUSD: 29.0,
+        unifiedPriceRMB: 225.0,
+        basePriceRMB: 225.0,
+        sGradeFactor: 0.90,
+        sGradePriceRMB: 202.5,
+        gGradeFactor: 0.75,
+        gGradePriceRMB: 168.75,
         wasteRatePercent: 2,
-        formulaDesc: '抽屉组数量(套) × 面价(RMB)'
+        formulaDesc: '抽屉组数量(套) × 面价(¥225) × 系数'
       }
     ]
   },
@@ -4729,14 +4876,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '3000K-4000K暖白调光 / 预埋型铝合金开槽 / 含明纬感应电源',
     unit: '米',
     currency: 'CNY',
-    domesticPriceRMB: 68.0,
-    overseasPriceRMB: 78.0,
-    basePriceRMB: 68.0,
-    basePriceUSD: 9.5,
-    domesticRemarks: '含13%专票、含明纬变压电源',
-    overseasRemarks: '已含出口关税、CE/UL认证变压器、出口管装防挤压',
+    unifiedPriceRMB: 75.0,
+    basePriceRMB: 75.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 67.5,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 56.25,
+    domesticPriceRMB: 75.0,
+    overseasPriceRMB: 67.5,
     wasteRatePercent: 5,
-    formulaDesc: '布灯长度(米) × 面价(RMB) + 电源驱动套件',
+    formulaDesc: '布灯长度(米) × 全球统一面价(¥75) × 客户系数[S级0.90/G级0.75] + 电源驱动套件',
     status: '已生效',
     updatedAt: '2026-08-28 11:15',
     tags: ['嵌入式LED', '感应灯带', '氛围照明']
@@ -4749,14 +4898,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: 'ISPM 15出口免检 / 12mm胶合板 / 内部高密EPE珍珠棉护角',
     unit: '套',
     currency: 'CNY',
-    domesticPriceRMB: 395.0,
-    overseasPriceRMB: 455.0,
-    basePriceRMB: 395.0,
-    basePriceUSD: 55.0,
-    domesticRemarks: '国内重型长途搬运木箱',
-    overseasRemarks: '已含出口关税、ISPM15海运免熏蒸出口钢带木箱',
+    unifiedPriceRMB: 420.0,
+    basePriceRMB: 420.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 378.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 315.0,
+    domesticPriceRMB: 420.0,
+    overseasPriceRMB: 378.0,
     wasteRatePercent: 0,
-    formulaDesc: '整柜包装体积分摊或按每单元柜(套)计取',
+    formulaDesc: '整柜包装体积分摊或按每单元柜(套) × 全球统一面价(¥420) × 系数',
     status: '已生效',
     updatedAt: '2026-08-26 10:00',
     tags: ['免熏蒸木箱', '海运防震', '出口免检']
@@ -4769,14 +4920,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: 'A=A 加强型瓦楞纸板 / 边缘高密度硬质护角 / 收缩膜防潮',
     unit: '套',
     currency: 'CNY',
-    domesticPriceRMB: 115.0,
-    overseasPriceRMB: 132.0,
-    basePriceRMB: 115.0,
-    basePriceUSD: 16.0,
-    domesticRemarks: '国内标准纸箱平包装',
-    overseasRemarks: '已含出口关税、高抗压加厚蜂窝纸箱与防水缠绕膜',
+    unifiedPriceRMB: 125.0,
+    basePriceRMB: 125.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 112.5,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 93.75,
+    domesticPriceRMB: 125.0,
+    overseasPriceRMB: 112.5,
     wasteRatePercent: 0,
-    formulaDesc: '按平包分件数量计取',
+    formulaDesc: '按平包分件数量 × 全球统一面价(¥125) × 系数',
     status: '已生效',
     updatedAt: '2026-08-21 15:30',
     tags: ['蜂窝纸箱', '防潮缠绕膜', '平包装']
@@ -4789,14 +4942,16 @@ export const initialBOQPriceItems: BOQPriceItem[] = [
     spec: '出厂前100%试装校验 / 柜体垂直度平整度复验 / 防尘静电膜',
     unit: '套',
     currency: 'CNY',
-    domesticPriceRMB: 200.0,
-    overseasPriceRMB: 230.0,
-    basePriceRMB: 200.0,
-    basePriceUSD: 28.0,
-    domesticRemarks: '工厂预装检验、平整度复验工时',
-    overseasRemarks: '已含出口前100%全检、海外组装英文标签编码与封膜',
+    unifiedPriceRMB: 220.0,
+    basePriceRMB: 220.0,
+    sGradeFactor: 0.90,
+    sGradePriceRMB: 198.0,
+    gGradeFactor: 0.75,
+    gGradePriceRMB: 165.0,
+    domesticPriceRMB: 220.0,
+    overseasPriceRMB: 198.0,
     wasteRatePercent: 0,
-    formulaDesc: '按定制主柜单元套数计费',
+    formulaDesc: '按定制主柜单元套数 × 全球统一面价(¥220) × 系数',
     status: '已生效',
     updatedAt: '2026-08-25 18:00',
     tags: ['工厂预装', '全检合格', '质保品控']
